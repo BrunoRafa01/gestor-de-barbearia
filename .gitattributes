@@ -1,0 +1,18 @@
+# Normaliza os finais de linha para evitar ruido entre Windows/Linux/macOS.
+* text=auto eol=lf
+
+# Arquivos binarios que nao devem ser normalizados.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+# Arquivos do Windows com CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Evita que o GitHub trate o projeto como linguagem errada.
+package-lock.json linguist-generated=true

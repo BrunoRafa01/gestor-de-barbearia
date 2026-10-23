@@ -1,0 +1,39 @@
+# ---------------------------------------------------------------------------
+# Gestor de Barbearia - Nova Runtime
+# Render Blueprint (Infrastructure as Code).
+#
+# Como usar:
+#   1. Suba este projeto para um repositorio no GitHub.
+#   2. No Render, clique em "New > Blueprint" e escolha o repositorio.
+#   3. Informe TURSO_DATABASE_URL e TURSO_AUTH_TOKEN quando solicitado.
+#   4. O Render cria o servico, o HTTPS e o dominio *.onrender.com automaticamente.
+#
+# Por que Turso? O disco do plano gratuito do Render e efemero
+# (some a cada deploy/reinicio), entao o banco fica na nuvem do Turso (gratuito).
+# ---------------------------------------------------------------------------
+
+services:
+  - type: web
+    name: gestor-de-barbearia
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    autoDeploy: true
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      # Senha inicial do painel: o Render gera um valor forte automaticamente.
+      # Veja em: Dashboard do servico > Environment > ADMIN_PASSWORD.
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      # Banco persistente na nuvem (Turso/libSQL). Preencha no dashboard.
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false

@@ -1,0 +1,39 @@
+# Dependencias
+node_modules/
+
+# Banco de dados local (contem dados reais - NUNCA versionar)
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Segredos e variaveis de ambiente
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs e caches
+*.log
+npm-debug.log*
+coverage/
+tests/tmp/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.idea/
+.vscode/
+
+# Ferramentas locais de agentes/IDE (nao fazem parte do projeto)
+.trae/
+.cursor/
+.ai_completion/
+.cagent/
+.codex/
+.gemini/
