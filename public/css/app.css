@@ -75,6 +75,11 @@ button, input, select, textarea {
   color: inherit;
 }
 
+button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
@@ -448,6 +453,7 @@ button, input, select, textarea {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -996,7 +1002,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .choice-grid {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 }
 
 .choice {
@@ -1039,7 +1045,12 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   padding-bottom: 6px;
+}
+.day-strip::-webkit-scrollbar {
+  display: none;
 }
 
 .day-chip {
@@ -1104,14 +1115,23 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
     position: fixed;
     left: 0;
     top: 0;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-104%);
     transition: transform 0.22s ease;
     box-shadow: var(--shadow);
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-backdrop.open { display: block; }
-  .sidebar-toggle { display: grid; }
-  .topbar { padding: 12px 14px; gap: 12px; }
+  .sidebar-toggle {
+    display: grid;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .topbar {
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 12px;
+    gap: 12px;
+  }
   .topbar-title h1 { font-size: 16px; }
   .content { padding: 16px 14px 50px; }
   .card { padding: 16px; border-radius: 14px; }
@@ -1132,6 +1152,13 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .booking-main { padding: 16px 14px 40px; }
   .hours-head { display: none; }
   .hours-row { grid-template-columns: 1fr 1fr; row-gap: 10px; }
+  /* Inputs em 16px impedem o zoom automatico indesejado no iOS Safari */
+  input, select, textarea, .control, .field input, .field select, .field textarea {
+    font-size: 16px !important;
+  }
+  .btn {
+    min-height: 44px;
+  }
 }
 
 /* --------------------------- Ajudantes de layout -------------------------- */
