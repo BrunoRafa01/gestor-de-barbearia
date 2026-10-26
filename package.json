@@ -14,7 +14,9 @@
     "dev": "node --watch --experimental-sqlite server/server.js",
     "demo": "node --experimental-sqlite scripts/demo.mjs",
     "test": "node tests/smoke.mjs",
-    "test:turso": "node tests/turso-check.mjs"
+    "test:turso": "node tests/turso-check.mjs",
+    "test:responsive": "node tests/responsive-check.mjs",
+    "test:all": "node tests/smoke.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0"
