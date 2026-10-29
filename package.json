@@ -14,11 +14,17 @@
     "dev": "node --watch --experimental-sqlite server/server.js",
     "demo": "node --experimental-sqlite scripts/demo.mjs",
     "test": "node tests/smoke.mjs",
+    "typecheck": "tsc --noEmit",
     "test:turso": "node tests/turso-check.mjs",
     "test:responsive": "node tests/responsive-check.mjs",
-    "test:all": "node tests/smoke.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs"
+    "test:all": "npm run typecheck && node tests/smoke.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

@@ -90,6 +90,31 @@ const PAGE_ALIASES = {
   '/agendar.html': 'agendar.html',
 };
 
+function validateOrigin(request) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(request.method || '')) return true;
+  const origin = request.headers.origin || request.headers.referer;
+  if (!origin) return true;
+  try {
+    const originUrl = new URL(origin);
+    const hostHeader = request.headers.host;
+    if (hostHeader) {
+      const expectedHost = hostHeader.toLowerCase().split(':')[0];
+      const actualHost = originUrl.hostname.toLowerCase();
+      if (
+        actualHost !== expectedHost &&
+        actualHost !== 'localhost' &&
+        actualHost !== '127.0.0.1' &&
+        actualHost !== '0.0.0.0'
+      ) {
+        return false;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return true;
+}
+
 function translateError(error) {
   const message = String(error?.message || '');
   if (message.includes('UNIQUE constraint failed') && message.includes('appointments')) {
@@ -122,6 +147,11 @@ const server = createServer(async (request, response) => {
 
   try {
     if (isApiPath(pathname)) {
+      if (!validateOrigin(request)) {
+        sendError(response, 403, 'Origem nao autorizada (protecao CSRF).');
+        return;
+      }
+
       const match = findRoute(request.method, pathname);
       if (!match) {
         sendError(response, 404, 'Endpoint nao encontrado.');
@@ -164,7 +194,13 @@ const server = createServer(async (request, response) => {
     const httpError = translateError(error);
     if (!(httpError instanceof HttpError)) {
       console.error(`[erro:${requestId}]`, error);
-      sendError(response, 500, 'Erro interno no servidor.', String(error?.message || error));
+      const isProd = process.env.NODE_ENV === 'production';
+      sendError(
+        response,
+        500,
+        'Erro interno no servidor.',
+        isProd ? undefined : String(error?.message || error)
+      );
       return;
     }
     sendError(response, httpError.status, httpError.message, httpError.details);

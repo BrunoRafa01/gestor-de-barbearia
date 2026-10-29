@@ -71,7 +71,7 @@ function sign(payload, secret) {
 }
 
 export function createSessionToken() {
-  const secret = getSetting('session_secret');
+  const secret = process.env.SESSION_SECRET || getSetting('session_secret');
   const payload = base64url(
     JSON.stringify({ sub: 'admin', iat: Date.now(), exp: Date.now() + SESSION_TTL_MS })
   );
@@ -85,7 +85,7 @@ export function verifySessionToken(token) {
 
   const payload = token.slice(0, separator);
   const signature = token.slice(separator + 1);
-  const secret = getSetting('session_secret');
+  const secret = process.env.SESSION_SECRET || getSetting('session_secret');
   if (!secret) return false;
 
   const expected = sign(payload, secret);

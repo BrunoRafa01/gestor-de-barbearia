@@ -4,9 +4,11 @@ Sistema web completo para gestão de barbearias: agenda diária e semanal, cadas
 clientes, profissionais e serviços, controle de faturamento, relatórios, backup e uma
 **página pública de agendamento otimizada para celular**.
 
-Interface em português, tema escuro premium (preto, branco e dourado discreto),
-responsiva para computador e celular. Escrito em **Node.js puro**, sem etapa de build,
-com persistência em **SQLite** (local) ou **Turso/libSQL** (produção gratuita na nuvem).
+Interface em português com **identidade visual premium Preto e Azul** (Preto profundo `#090B10`,
+superfícies `#111722`/`#182232` e acentos em azul `#2563EB`/`#3B82F6`), totalmente responsiva
+para computador e celular. Arquitetura em **Node.js** com tipagem estrita **TypeScript**
+(`tsconfig.json` e `server/types.ts`), sem dependências pesadas, com persistência em
+**SQLite** (local) ou **Turso/libSQL** (produção na nuvem).
 
 Desenvolvido por **Nova Runtime**.
 
@@ -85,12 +87,13 @@ Todas as imagens abaixo são capturas reais da aplicação rodando em **modo dem
 
 | Camada | Escolha | Motivo |
 | --- | --- | --- |
-| Runtime | Node.js 22.5+ | `node:sqlite` nativo, sem dependências de banco |
-| Backend | HTTP nativo (`node:http`) + módulos ES | Simples, sem framework e sem etapa de build |
-| Frontend | HTML + CSS + JavaScript (módulos ES) | SPA com roteamento por hash, sem bundler |
+| Runtime | Node.js 22.5+ | `node:sqlite` nativo, sem compilações externas |
+| Tipagem / Tipos | TypeScript (Strict) | Tipagem estrita de contratos de domínio (`server/types.ts`) e validação via `npm run typecheck` |
+| Backend | HTTP nativo (`node:http`) + módulos ES | Rápido, leve, sem overhead de frameworks |
+| Frontend | HTML + CSS + JavaScript (módulos ES) | SPA nativa com design tokens preto & azul e alta performance |
 | Banco (local) | SQLite via `node:sqlite` | Zero configuração |
 | Banco (produção) | Turso / libSQL via `@libsql/client` | Persistência real no plano gratuito do Render |
-| Segurança | `node:crypto` (scrypt, HMAC-SHA256) | Senha e sessão sem dependências externas |
+| Segurança | `node:crypto` (scrypt, HMAC-SHA256) | Criptografia forte para senhas e sessões |
 | Hospedagem | Render (plano gratuito) | HTTPS e domínio `*.onrender.com` inclusos |
 
 A escolha do banco é automática: se a variável `TURSO_DATABASE_URL` estiver definida, o
@@ -140,11 +143,14 @@ clientes e agendamentos são gerados automaticamente e **não representam pessoa
 
 ---
 
-## Testes
+## Testes e Verificação de Tipos
 
 ```bash
-npm test          # 121 verificacoes end-to-end (API, regras de negocio e seguranca)
-npm run test:turso # 21 verificacoes de persistencia com libSQL (sobrevive a reinicio)
+npm run typecheck       # Verificação estrita de tipos com TypeScript (tsc --noEmit)
+npm test                # 121 verificações end-to-end (API, regras de negócio e segurança)
+npm run test:turso      # 21 verificações de persistência com libSQL (sobrevive a reinício)
+npm run test:responsive # 10 verificações de conformidade mobile (touch targets >= 44px, safe area)
+npm run test:all        # Executa todas as suites de testes e validação de tipos
 ```
 
 O teste `test:turso` sobe o servidor sobre um banco libSQL, grava dados, **reinicia o
@@ -223,7 +229,9 @@ Todos os serviços usados têm plano gratuito. Nenhum recurso pago é necessári
 
 - Senha do painel com **scrypt** (salt aleatório) e comparação em tempo constante.
 - Sessão assinada com **HMAC-SHA256**, em cookie `HttpOnly`, `SameSite=Lax` e `Secure`
-  quando servido por HTTPS.
+  quando servido por HTTPS (suporte a `SESSION_SECRET` customizado via ambiente).
+- **Proteção CSRF / Origin Validation** em todas as requisições mutantes (`POST`, `PUT`, `PATCH`, `DELETE`).
+- **Ocultação de detalhes internos em produção**: erros e exceções não vazam stack traces ou schemas internos (`NODE_ENV=production`).
 - Cabeçalhos de segurança: `Content-Security-Policy`, `Strict-Transport-Security`,
   `X-Frame-Options`, `X-Content-Type-Options` e `Referrer-Policy`.
 - **Rate limiting** por IP no login e nos endpoints públicos de agendamento.

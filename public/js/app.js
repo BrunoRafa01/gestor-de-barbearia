@@ -374,6 +374,14 @@ async function viewDashboard() {
   const { today, week, month } = data;
   const rate = today.occupancy.rate;
 
+  const quickActionsBar = `
+    <div class="row-actions" style="margin-bottom:16px;gap:10px">
+      <button class="btn btn-primary" id="dash-quick-new" type="button">${icon('plus')} Novo Agendamento</button>
+      <button class="btn" id="dash-quick-client" type="button">${icon('users')} Novo Cliente</button>
+      <button class="btn" id="dash-quick-link" type="button">${icon('external')} Link de Agendamento</button>
+      <button class="btn btn-ghost" id="dash-quick-agenda" type="button">${icon('calendar')} Ver Agenda Completa</button>
+    </div>`;
+
   const dayNav = `
     <div class="toolbar">
       <button class="icon-btn" id="dash-prev" type="button" aria-label="Dia anterior">${icon('left')}</button>
@@ -416,15 +424,21 @@ async function viewDashboard() {
         .join('')}</div>`
     : emptyBlock('Sem agendamentos futuros');
 
-  const rankTable = (rows, emptyLabel) =>
-    rows.length
-      ? `<table class="data"><thead><tr><th>Nome</th><th>Atendimentos</th><th>Receita</th></tr></thead><tbody>${rows
-          .map(
-            (row) =>
-              `<tr><td class="cell-strong">${esc(row.name)}</td><td class="mono">${row.total}</td><td class="mono">${esc(money(row.revenue))}</td></tr>`
-          )
-          .join('')}</tbody></table>`
-      : `<div class="empty">${esc(emptyLabel)}</div>`;
+  const rankTable = (rows, emptyLabel) => {
+    if (!rows.length) return `<div class="empty">${esc(emptyLabel)}</div>`;
+    const maxVal = Math.max(...rows.map((r) => r.total || 1), 1);
+    return `<div class="bars" style="padding:10px 0">${rows
+      .map((row) => {
+        const pct = Math.round((row.total / maxVal) * 100);
+        return `
+        <div class="bar-row">
+          <span class="bar-label" title="${esc(row.name)}">${esc(row.name)}</span>
+          <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
+          <span class="bar-value mono"><strong>${row.total}</strong> <small class="faint">(${esc(money(row.revenue))})</small></span>
+        </div>`;
+      })
+      .join('')}</div>`;
+  };
 
   const notice = onboardingNotice();
 
@@ -460,6 +474,7 @@ async function viewDashboard() {
 
   content().innerHTML = `
     ${notice}
+    ${quickActionsBar}
     ${heroBlock}
 
     <div class="grid grid-kpi" style="margin-top:16px">
@@ -528,6 +543,43 @@ async function viewDashboard() {
   document.getElementById('dash-new').addEventListener('click', () => {
     openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
   });
+
+  const quickNew = document.getElementById('dash-quick-new');
+  if (quickNew) {
+    quickNew.addEventListener('click', () => {
+      openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
+    });
+  }
+
+  const quickClient = document.getElementById('dash-quick-client');
+  if (quickClient) {
+    quickClient.addEventListener('click', () => {
+      openClientForm(null);
+    });
+  }
+
+  const quickLink = document.getElementById('dash-quick-link');
+  if (quickLink) {
+    quickLink.addEventListener('click', () => {
+      const publicUrl = `${location.origin}/agendar`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(publicUrl).then(() => {
+          toast('Link de agendamento copiado para a area de transferencia!', 'ok');
+        }).catch(() => {
+          window.open('/agendar', '_blank');
+        });
+      } else {
+        window.open('/agendar', '_blank');
+      }
+    });
+  }
+
+  const quickAgenda = document.getElementById('dash-quick-agenda');
+  if (quickAgenda) {
+    quickAgenda.addEventListener('click', () => {
+      location.hash = '#/agenda';
+    });
+  }
 
   content()
     .querySelectorAll('[data-appt]')
