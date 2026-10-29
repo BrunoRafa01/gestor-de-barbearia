@@ -40,14 +40,14 @@ import { openAppointmentDetails, openAppointmentForm } from './appointments-ui.j
 /* --------------------------------- Estado -------------------------------- */
 
 const NAV = [
-  { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', group: 'Gestao' },
-  { key: 'agenda', label: 'Agenda', icon: 'calendar', group: 'Gestao' },
-  { key: 'appointments', label: 'Agendamentos', icon: 'list', group: 'Gestao' },
-  { key: 'clients', label: 'Clientes', icon: 'users', group: 'Gestao' },
-  { key: 'reports', label: 'Relatorios', icon: 'chart', group: 'Gestao' },
+  { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', group: 'Gestão' },
+  { key: 'agenda', label: 'Agenda', icon: 'calendar', group: 'Gestão' },
+  { key: 'appointments', label: 'Agendamentos', icon: 'list', group: 'Gestão' },
+  { key: 'clients', label: 'Clientes', icon: 'users', group: 'Gestão' },
+  { key: 'reports', label: 'Relatórios', icon: 'chart', group: 'Gestão' },
   { key: 'barbers', label: 'Profissionais', icon: 'scissors', group: 'Cadastros' },
-  { key: 'services', label: 'Servicos', icon: 'tag', group: 'Cadastros' },
-  { key: 'settings', label: 'Configuracoes', icon: 'settings', group: 'Sistema' },
+  { key: 'services', label: 'Serviços', icon: 'tag', group: 'Cadastros' },
+  { key: 'settings', label: 'Configurações', icon: 'settings', group: 'Sistema' },
   { key: 'backup', label: 'Backup', icon: 'grid', group: 'Sistema' },
 ];
 
@@ -117,7 +117,7 @@ async function loadCatalog(force = false) {
 
 function onboardingNotice() {
   const missing = [];
-  if (!state.catalog.services.length) missing.push('servicos');
+  if (!state.catalog.services.length) missing.push('serviços');
   if (!state.catalog.barbers.length) missing.push('profissionais');
   if (!missing.length) return '';
   return `
@@ -126,15 +126,15 @@ function onboardingNotice() {
         <div class="kpi-icon" style="position:static">${icon('sparkles')}</div>
         <div>
           <h3>Comece por aqui</h3>
-          <div class="card-sub">O sistema esta vazio: nenhum dado de demonstracao e exibido como real.</div>
+          <div class="card-sub">O sistema está vazio: nenhum dado de demonstração é exibido como real.</div>
         </div>
       </div>
       <p class="muted">
-        Para liberar a agenda falta cadastrar ${esc(missing.join(' e '))}. Depois disso voce ja pode
-        criar agendamentos, ver o faturamento e liberar a pagina publica de agendamento.
+        Para liberar a agenda falta cadastrar ${esc(missing.join(' e '))}. Depois disso você já pode
+        criar agendamentos, ver o faturamento e liberar a página pública de agendamento.
       </p>
       <div class="row-actions" style="margin-top:14px">
-        ${!state.catalog.services.length ? button(`${icon('tag')} Cadastrar servico`, () => { location.hash = '#/services'; }, 'btn') : ''}
+        ${!state.catalog.services.length ? button(`${icon('tag')} Cadastrar serviço`, () => { location.hash = '#/services'; }, 'btn') : ''}
         ${!state.catalog.barbers.length ? button(`${icon('scissors')} Cadastrar profissional`, () => { location.hash = '#/barbers'; }, 'btn') : ''}
         ${button(`${icon('settings')} Configurar funcionamento`, () => { location.hash = '#/settings'; }, 'btn btn-ghost')}
       </div>
@@ -149,7 +149,7 @@ function securityNotice() {
       <div class="notice-icon">${icon('lock')}</div>
       <div class="grow">
         <strong>Troque a senha do painel</strong>
-        <span>O sistema ainda esta com a senha inicial. Defina uma senha sua em Configuracoes > Seguranca.</span>
+        <span>O sistema ainda está com a senha inicial. Defina uma senha sua em Configurações > Segurança.</span>
       </div>
       ${button(`${icon('settings')} Trocar agora`, () => { location.hash = '#/settings'; }, 'btn btn-sm')}
     </div>`;
@@ -162,8 +162,8 @@ function demoNotice() {
     <div class="notice notice-demo">
       <div class="notice-icon">${icon('sparkles')}</div>
       <div class="grow">
-        <strong>Modo demonstracao</strong>
-        <span>Todos os dados exibidos sao ficticios e servem apenas para apresentar o sistema.</span>
+        <strong>Modo demonstração</strong>
+        <span>Todos os dados exibidos são fictícios e servem apenas para apresentar o sistema.</span>
       </div>
     </div>`;
 }
@@ -192,8 +192,8 @@ function renderLogin() {
           <button class="btn btn-primary btn-block" type="submit">Entrar</button>
         </div>
         <div class="auth-hint">
-          Primeiro acesso: a senha inicial vem da variavel <b>ADMIN_PASSWORD</b> no arquivo <b>.env</b>
-          (padrao <b>admin123</b>). Apos entrar, troque a senha em <b>Configuracoes</b>.
+          Primeiro acesso: a senha inicial vem da variável <b>ADMIN_PASSWORD</b> no arquivo <b>.env</b>
+          (padrão <b>admin123</b>). Após entrar, troque a senha em <b>Configurações</b>.
         </div>
       </form>
     </div>`;
@@ -224,7 +224,7 @@ function navItem(item) {
 }
 
 function shellHtml() {
-  const groups = ['Gestao', 'Cadastros', 'Sistema'];
+  const groups = ['Gestão', 'Cadastros', 'Sistema'];
   const navHtml = groups
     .map((group) => {
       const items = NAV.filter((item) => item.group === group);
@@ -245,7 +245,7 @@ function shellHtml() {
         </div>
         <nav class="nav">${navHtml}</nav>
         <div class="sidebar-footer">
-          <a class="nav-item" href="/agendar" target="_blank" rel="noopener">${icon('external')}<span>Pagina de agendamento</span></a>
+          <a class="nav-item" href="/agendar" target="_blank" rel="noopener">${icon('external')}<span>Página de agendamento</span></a>
           <button class="nav-item" type="button" id="logout">${icon('logout')}<span>Sair do painel</span></button>
           <div class="company">Desenvolvido por Nova Runtime</div>
         </div>
@@ -308,10 +308,10 @@ const TITLES = {
   agenda: 'Agenda',
   appointments: 'Agendamentos',
   clients: 'Clientes',
-  reports: 'Relatorios',
+  reports: 'Relatórios',
   barbers: 'Profissionais',
-  services: 'Servicos',
-  settings: 'Configuracoes',
+  services: 'Serviços',
+  settings: 'Configurações',
   backup: 'Backup e dados',
 };
 
@@ -326,15 +326,15 @@ function subtitleFor(view) {
     case 'appointments':
       return 'Crie, confirme, edite e cancele agendamentos.';
     case 'clients':
-      return 'Cadastro e historico de atendimentos.';
+      return 'Cadastro e histórico de atendimentos.';
     case 'reports':
-      return 'Faturamento, ocupacao e desempenho por periodo.';
+      return 'Faturamento, ocupação e desempenho por período.';
     case 'barbers':
-      return 'Equipe, comissoes e horarios de trabalho.';
+      return 'Equipe, comissões e horários de trabalho.';
     case 'services':
-      return 'Servicos, duracao e precos.';
+      return 'Serviços, duração e preços.';
     case 'settings':
-      return 'Funcionamento, folgas, WhatsApp e seguranca.';
+      return 'Funcionamento, folgas, WhatsApp e segurança.';
     case 'backup':
       return 'Exporte, restaure e proteja os dados da barbearia.';
     default:
@@ -378,7 +378,7 @@ async function viewDashboard() {
     <div class="row-actions" style="margin-bottom:16px;gap:10px">
       <button class="btn btn-primary" id="dash-quick-new" type="button">${icon('plus')} Novo Agendamento</button>
       <button class="btn" id="dash-quick-client" type="button">${icon('users')} Novo Cliente</button>
-      <button class="btn" id="dash-quick-link" type="button">${icon('external')} Link de Agendamento</button>
+      <button class="btn" id="dash-quick-link" type="button">${icon('copy')} Copiar Link Público</button>
       <button class="btn btn-ghost" id="dash-quick-agenda" type="button">${icon('calendar')} Ver Agenda Completa</button>
     </div>`;
 
@@ -386,7 +386,7 @@ async function viewDashboard() {
     <div class="toolbar">
       <button class="icon-btn" id="dash-prev" type="button" aria-label="Dia anterior">${icon('left')}</button>
       <button class="btn" id="dash-today" type="button">Hoje</button>
-      <button class="icon-btn" id="dash-next" type="button" aria-label="Proximo dia">${icon('right')}</button>
+      <button class="icon-btn" id="dash-next" type="button" aria-label="Próximo dia">${icon('right')}</button>
       <input class="control" type="date" id="dash-date" value="${esc(state.date)}" />
       <span class="grow"></span>
       <button class="btn btn-primary" id="dash-new" type="button">${icon('plus')} Novo agendamento</button>
@@ -400,13 +400,13 @@ async function viewDashboard() {
             <div class="timeline-time">${esc(item.start_time)}</div>
             <div class="timeline-main">
               <strong>${esc(item.client_name)}</strong>
-              <span>${esc(item.service_name || 'Servico')} - ${esc(item.barber_name)} - ${esc(money(item.price))}</span>
+              <span>${esc(item.service_name || 'Serviço')} - ${esc(item.barber_name)} - ${esc(money(item.price))}</span>
             </div>
             ${statusPill(item.status)}
           </div>`
         )
         .join('')}</div>`
-    : emptyBlock('Nenhum agendamento neste dia', 'Clique em "Novo agendamento" para comecar.');
+    : emptyBlock('Nenhum agendamento neste dia', 'Clique em "Novo agendamento" para começar.');
 
   const upcomingList = data.upcoming.length
     ? `<div>${data.upcoming
@@ -416,7 +416,7 @@ async function viewDashboard() {
             <div class="avatar">${esc(initials(item.client_name))}</div>
             <div class="grow">
               <strong>${esc(item.client_name)}</strong>
-              <span>${esc(formatDateBR(item.date))} as ${esc(item.start_time)} - ${esc(item.barber_name)}</span>
+              <span>${esc(formatDateBR(item.date))} às ${esc(item.start_time)} - ${esc(item.barber_name)}</span>
             </div>
             ${statusPill(item.status)}
           </div>`
@@ -455,11 +455,11 @@ async function viewDashboard() {
         <div class="hero-meta">
           <span class="pill pill-pending">${today.pending} aguardando</span>
           <span class="pill pill-confirmed">${today.confirmed} confirmados</span>
-          <span class="pill pill-completed">${today.completed} concluidos</span>
+          <span class="pill pill-completed">${today.completed} concluídos</span>
         </div>
       </div>
       <div class="hero-gauge">
-        <span class="hero-gauge-label">Ocupacao do dia</span>
+        <span class="hero-gauge-label">Ocupação do dia</span>
         <strong>${rate === null ? '--' : `${rate}%`}</strong>
         <div class="progress"><span style="width:${occupancyPct}%"></span></div>
         <span class="hero-gauge-foot">${today.occupancy.barbers} profissional(is) ativo(s)</span>
@@ -480,15 +480,15 @@ async function viewDashboard() {
     <div class="grid grid-kpi" style="margin-top:16px">
       ${kpi({ label: 'Agendamentos do dia', value: today.total, iconName: 'calendar', foot: `${today.pending} aguardando - ${today.confirmed} confirmados` })}
       ${kpi({ label: 'Receita prevista', value: esc(money(today.revenue_expected)), small: true, iconName: 'wallet', foot: 'Agendamentos ativos de hoje' })}
-      ${kpi({ label: 'Receita realizada', value: esc(money(today.revenue_realized)), small: true, iconName: 'chart', foot: `${today.completed} concluidos` })}
+      ${kpi({ label: 'Receita realizada', value: esc(money(today.revenue_realized)), small: true, iconName: 'chart', foot: `${today.completed} concluído(s)` })}
       ${kpi({ label: 'Faltas e cancelamentos', value: today.cancelled + today.no_show, iconName: 'ban', foot: `${today.cancelled} cancelado(s) - ${today.no_show} falta(s)` })}
     </div>
 
     <div class="grid grid-kpi" style="margin-top:16px">
       ${kpi({ label: 'Esta semana', value: week.total, foot: `Previsto: ${esc(money(week.revenue_expected))}` })}
-      ${kpi({ label: 'Este mes', value: month.total, foot: `Previsto: ${esc(money(month.revenue_expected))}` })}
-      ${kpi({ label: 'Ticket medio (mes)', value: esc(money(month.average_ticket)), small: true, foot: `${month.completed} atendimentos concluidos` })}
-      ${kpi({ label: 'Novos clientes (mes)', value: month.new_clients })}
+      ${kpi({ label: 'Este mês', value: month.total, foot: `Previsto: ${esc(money(month.revenue_expected))}` })}
+      ${kpi({ label: 'Ticket médio (mês)', value: esc(money(month.average_ticket)), small: true, foot: `${month.completed} atendimentos concluídos` })}
+      ${kpi({ label: 'Novos clientes (mês)', value: month.new_clients })}
     </div>
 
     ${dayNav}
@@ -503,7 +503,7 @@ async function viewDashboard() {
         ${todayTimeline}
       </div>
       <div class="card">
-        <div class="card-header"><h2>Proximos agendamentos</h2></div>
+        <div class="card-header"><h2>Próximos agendamentos</h2></div>
         ${upcomingList}
       </div>
     </div>
@@ -511,11 +511,11 @@ async function viewDashboard() {
     <div class="grid grid-2" style="margin-top:16px">
       <div class="card">
         <div class="card-header">
-          <h2>Servicos mais procurados</h2>
+          <h2>Serviços mais procurados</h2>
           <span class="spacer"></span>
           <span class="card-sub">${esc(formatMonthYear(state.date))}</span>
         </div>
-        ${rankTable(data.top_services, 'Nenhum atendimento no mes.')}
+        ${rankTable(data.top_services, 'Nenhum atendimento no mês.')}
       </div>
       <div class="card">
         <div class="card-header">
@@ -523,7 +523,7 @@ async function viewDashboard() {
           <span class="spacer"></span>
           <span class="card-sub">${esc(formatMonthYear(state.date))}</span>
         </div>
-        ${rankTable(data.top_barbers, 'Nenhum atendimento no mes.')}
+        ${rankTable(data.top_barbers, 'Nenhum atendimento no mês.')}
       </div>
     </div>`;
 
@@ -564,7 +564,7 @@ async function viewDashboard() {
       const publicUrl = `${location.origin}/agendar`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(publicUrl).then(() => {
-          toast('Link de agendamento copiado para a area de transferencia!', 'ok');
+          toast('Link de agendamento copiado para a área de transferência!', 'ok');
         }).catch(() => {
           window.open('/agendar', '_blank');
         });
@@ -640,7 +640,7 @@ function blockHtml(item, rangeStart, laneCount, compact) {
     : `${item.client_name}`;
   const sub = compact
     ? `${item.barber_name}`
-    : `${item.start_time}-${item.end_time} - ${item.service_name || 'Servico'}`;
+    : `${item.start_time}-${item.end_time} — ${item.service_name || 'Serviço'}`;
   return `
     <div class="appt-block status-${esc(item.status)}${compact ? ' compact' : ''}" data-appt="${item.id}"
          style="top:${offset + 2}px;height:${Math.max(22, height - 4)}px;left:calc(${leftPct}% + 3px);width:calc(${widthPct}% - 6px);right:auto">
@@ -660,7 +660,7 @@ async function viewAgenda() {
       </div>
       <button class="icon-btn" id="agenda-prev" type="button" aria-label="Anterior">${icon('left')}</button>
       <button class="btn" id="agenda-today" type="button">Hoje</button>
-      <button class="icon-btn" id="agenda-next" type="button" aria-label="Proximo">${icon('right')}</button>
+      <button class="icon-btn" id="agenda-next" type="button" aria-label="Próximo">${icon('right')}</button>
       <input class="control" type="date" id="agenda-date" value="${esc(state.date)}" />
       <span class="grow"></span>
       <select class="control" id="agenda-barber">
@@ -677,9 +677,9 @@ async function viewAgenda() {
     <div class="legend" style="margin-top:16px">
       <span><i style="background:#d9a441"></i>Aguardando</span>
       <span><i style="background:#43b581"></i>Confirmado</span>
-      <span><i style="background:#5b8def"></i>Concluido</span>
-      <span><i style="background:rgba(255,255,255,.25)"></i>Cancelado / Nao compareceu</span>
-      <span><i style="background:var(--gold)"></i>Clique em um horario livre para agendar</span>
+      <span><i style="background:#5b8def"></i>Concluído</span>
+      <span><i style="background:rgba(255,255,255,.25)"></i>Cancelado / Não compareceu</span>
+      <span><i style="background:var(--gold)"></i>Clique em um horário livre para agendar</span>
     </div>`;
 
   content().innerHTML = toolbar;
@@ -724,7 +724,7 @@ async function renderCalendar(holder) {
   if (!barbers.length) {
     holder.innerHTML = emptyBlock(
       'Nenhum profissional ativo',
-      'Cadastre um profissional com horario de trabalho para liberar a agenda.'
+      'Cadastre um profissional com horário de trabalho para liberar a agenda.'
     );
     return;
   }
@@ -848,7 +848,7 @@ async function viewAppointments() {
     <div class="toolbar">
       <div class="search-input">
         ${icon('search')}
-        <input id="af-search" placeholder="Buscar cliente, telefone ou servico" value="${esc(filters.search)}" />
+        <input id="af-search" placeholder="Buscar cliente, telefone ou serviço" value="${esc(filters.search)}" />
       </div>
       <input class="control" type="date" id="af-from" value="${esc(filters.from)}" />
       <input class="control" type="date" id="af-to" value="${esc(filters.to)}" />
@@ -927,8 +927,8 @@ async function loadAppointmentList() {
       <table class="data">
         <thead>
           <tr>
-            <th>Data</th><th>Hora</th><th>Cliente</th><th>Servico</th>
-            <th>Profissional</th><th>Valor</th><th>Status</th><th class="actions">Acoes</th>
+            <th>Data</th><th>Hora</th><th>Cliente</th><th>Serviço</th>
+            <th>Profissional</th><th>Valor</th><th>Status</th><th class="actions">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -947,10 +947,10 @@ async function loadAppointmentList() {
                 <div class="row-actions" style="justify-content:flex-end">
                   ${
                     item.status === 'pending'
-                      ? `<button class="btn btn-ok btn-sm" data-confirm="${item.id}" type="button">Confirmar</button>`
+                      ? `<button class="btn btn-ok btn-sm" data-confirm="${item.id}" type="button">${icon('check')} Confirmar</button>`
                       : ''
                   }
-                  <button class="btn btn-sm" data-details="${item.id}" type="button">Detalhes</button>
+                  <button class="btn btn-sm" data-details="${item.id}" type="button">${icon('edit')} Detalhes</button>
                 </div>
               </td>
             </tr>`
@@ -1023,7 +1023,7 @@ async function loadClients(search) {
   if (!rows.length) {
     holder.innerHTML = `<div class="table-wrap">${emptyBlock(
       'Nenhum cliente cadastrado',
-      'Cadastre o primeiro cliente para comecar a agendar.'
+      'Cadastre o primeiro cliente para começar a agendar.'
     )}</div>`;
     return;
   }
@@ -1032,7 +1032,7 @@ async function loadClients(search) {
     <div class="table-wrap">
       <table class="data">
         <thead>
-          <tr><th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Atendimentos</th><th>Ultima visita</th><th class="actions">Acoes</th></tr>
+          <tr><th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Atendimentos</th><th>Última visita</th><th class="actions">Ações</th></tr>
         </thead>
         <tbody>
           ${rows
@@ -1053,10 +1053,10 @@ async function loadClients(search) {
               <td class="mono">${client.last_visit ? esc(formatDateBR(client.last_visit)) : '-'}</td>
               <td class="actions">
                 <div class="row-actions" style="justify-content:flex-end">
-                  <button class="btn btn-sm" data-history="${client.id}" type="button">Historico</button>
-                  <button class="btn btn-sm" data-schedule="${client.id}" type="button">Agendar</button>
-                  <button class="btn btn-sm" data-edit="${client.id}" type="button">Editar</button>
-                  <button class="btn btn-sm btn-danger" data-del="${client.id}" type="button">Excluir</button>
+                  <button class="btn btn-sm" data-history="${client.id}" type="button">${icon('list')} Histórico</button>
+                  <button class="btn btn-sm" data-schedule="${client.id}" type="button">${icon('plus')} Agendar</button>
+                  <button class="btn btn-sm" data-edit="${client.id}" type="button">${icon('edit')} Editar</button>
+                  <button class="btn btn-sm btn-danger" data-del="${client.id}" type="button">${icon('trash')} Excluir</button>
                 </div>
               </td>
             </tr>`
@@ -1088,14 +1088,14 @@ async function loadClients(search) {
       const client = rows.find((item) => Number(item.id) === Number(element.dataset.del));
       const confirmed = await confirmDialog({
         title: 'Excluir cliente',
-        message: `Excluir ${client.name}? O historico de agendamentos tambem sera removido.`,
+        message: `Excluir ${client.name}? O histórico de agendamentos também será removido.`,
         confirmLabel: 'Excluir',
         danger: true,
       });
       if (!confirmed) return;
       try {
         await api.del(`/api/clients/${client.id}`);
-        toast('Cliente excluido.');
+        toast('Cliente excluído.');
         loadClients('');
       } catch (error) {
         toast(error.message, 'error');
@@ -1125,8 +1125,8 @@ function openClientForm(client) {
         <input name="birth_date" type="date" value="${esc(client?.birth_date || '')}" />
       </div>
       <div class="field span-2">
-        <label>Observacoes</label>
-        <textarea name="notes" placeholder="Preferencias, alergias...">${esc(client?.notes || '')}</textarea>
+        <label>Observações</label>
+        <textarea name="notes" placeholder="Preferências, alergias...">${esc(client?.notes || '')}</textarea>
       </div>
     </div>`;
 
@@ -1134,7 +1134,7 @@ function openClientForm(client) {
   modal.setFooter([
     button('Cancelar', () => modal.close(), 'btn btn-ghost'),
     button(
-      editing ? 'Salvar alteracoes' : 'Cadastrar cliente',
+      editing ? `${icon('check')} Salvar alterações` : `${icon('plus')} Cadastrar cliente`,
       async (event) => {
         const data = readForm(modal.body);
         if (!data.name) return toast('Informe o nome do cliente.', 'error');
@@ -1173,13 +1173,13 @@ async function openClientHistory(id) {
         <div><span>WhatsApp</span><strong>${esc(formatPhone(client.phone))}</strong></div>
         <div><span>E-mail</span><strong>${esc(client.email || '-')}</strong></div>
         <div><span>Atendimentos</span><strong>${Number(client.appointments_total || 0)}</strong></div>
-        <div><span>Ultima visita</span><strong>${client.last_visit ? esc(formatDateBR(client.last_visit)) : '-'}</strong></div>
+        <div><span>Última visita</span><strong>${client.last_visit ? esc(formatDateBR(client.last_visit)) : '-'}</strong></div>
       </div>
       ${
         history.length
           ? `<div class="table-wrap">
                <table class="data" style="min-width:420px">
-                 <thead><tr><th>Data</th><th>Hora</th><th>Servico</th><th>Profissional</th><th>Valor</th><th>Status</th></tr></thead>
+                 <thead><tr><th>Data</th><th>Hora</th><th>Serviço</th><th>Profissional</th><th>Valor</th><th>Status</th></tr></thead>
                  <tbody>
                    ${history
                      .map(
@@ -1201,9 +1201,9 @@ async function openClientHistory(id) {
       }
     </div>`;
 
-  const modal = openModal({ title: 'Historico do cliente', body });
+  const modal = openModal({ title: 'Histórico do cliente', body });
   modal.setFooter([
-    button(`WhatsApp`, () => openWhatsapp(client.phone, `Ola ${client.name}! Tudo bem?`), 'btn btn-whats'),
+    button(`${icon('whatsapp')} WhatsApp`, () => openWhatsapp(client.phone, `Olá ${client.name}! Tudo bem?`), 'btn btn-whats'),
     button('Fechar', () => modal.close(), 'btn btn-primary'),
   ]);
 }
@@ -1250,18 +1250,18 @@ async function viewBarbers() {
           ${Number(barber.active) ? '<span class="pill pill-confirmed">Ativo</span>' : '<span class="pill pill-no_show">Inativo</span>'}
         </div>
         <div class="grid" style="gap:8px;font-size:12.5px">
-          <div class="muted">${icon('phone', 'inline')} ${esc(formatPhone(barber.phone) || 'Telefone nao informado')}</div>
-          <div class="muted">${esc(barber.email || 'E-mail nao informado')}</div>
-          <div class="muted">Comissao: ${esc(String(Number(barber.commission) || 0))}%</div>
+          <div class="muted">${icon('phone', 'inline')} ${esc(formatPhone(barber.phone) || 'Telefone não informado')}</div>
+          <div class="muted">${esc(barber.email || 'E-mail não informado')}</div>
+          <div class="muted">Comissão: ${esc(String(Number(barber.commission) || 0))}%</div>
           <div class="faint" style="line-height:1.6">${esc(hoursSummary(barber))}</div>
         </div>
         <div class="row-actions" style="margin-top:16px">
-          <button class="btn btn-sm" data-hours="${barber.id}" type="button">Horarios</button>
-          <button class="btn btn-sm" data-edit="${barber.id}" type="button">Editar</button>
+          <button class="btn btn-sm" data-hours="${barber.id}" type="button">${icon('clock')} Horários</button>
+          <button class="btn btn-sm" data-edit="${barber.id}" type="button">${icon('edit')} Editar</button>
           <button class="btn btn-sm ${Number(barber.active) ? 'btn-danger' : 'btn-ok'}" data-toggle="${barber.id}" type="button">
             ${Number(barber.active) ? 'Desativar' : 'Ativar'}
           </button>
-          <button class="btn btn-sm btn-danger" data-del="${barber.id}" type="button">Excluir</button>
+          <button class="btn btn-sm btn-danger" data-del="${barber.id}" type="button">${icon('trash')} Excluir</button>
         </div>
       </div>`
       )
@@ -1304,14 +1304,14 @@ async function viewBarbers() {
       const barber = barbers.find((item) => Number(item.id) === Number(element.dataset.del));
       const confirmed = await confirmDialog({
         title: 'Excluir profissional',
-        message: `Excluir ${barber.name}? Se houver agendamentos, o profissional sera apenas desativado.`,
+        message: `Excluir ${barber.name}? Se houver agendamentos, o profissional será apenas desativado.`,
         confirmLabel: 'Excluir',
         danger: true,
       });
       if (!confirmed) return;
       try {
         const result = await api.del(`/api/barbers/${barber.id}`);
-        toast(result.deactivated ? 'Profissional possui agendamentos e foi desativado.' : 'Profissional excluido.');
+        toast(result.deactivated ? 'Profissional possui agendamentos e foi desativado.' : 'Profissional excluído.');
         refresh();
       } catch (error) {
         toast(error.message, 'error');
@@ -1337,12 +1337,12 @@ function openBarberForm(barber) {
         <input name="email" type="email" value="${esc(barber?.email || '')}" />
       </div>
       <div class="field">
-        <label>Comissao (%)</label>
+        <label>Comissão (%)</label>
         <input name="commission" type="number" min="0" max="100" step="0.5" value="${esc(barber?.commission ?? '')}" />
       </div>
       <div class="field">
         <label>Cor na agenda</label>
-        <input name="color" type="color" value="${esc(barber?.color || '#c8a24a')}" />
+        <input name="color" type="color" value="${esc(barber?.color || '#3B82F6')}" />
       </div>
       <label class="field-check">
         <input type="checkbox" name="active" ${!barber || Number(barber.active) ? 'checked' : ''} />
@@ -1354,7 +1354,7 @@ function openBarberForm(barber) {
   modal.setFooter([
     button('Cancelar', () => modal.close(), 'btn btn-ghost'),
     button(
-      editing ? 'Salvar alteracoes' : 'Cadastrar',
+      editing ? `${icon('check')} Salvar alterações` : `${icon('plus')} Cadastrar`,
       async (event) => {
         const data = readForm(modal.body);
         if (!data.name) return toast('Informe o nome do profissional.', 'error');
@@ -1410,19 +1410,19 @@ function openBarberHours(barber) {
 
   const body = `
     <p class="muted" style="margin-bottom:14px">
-      Defina em quais dias e horarios <b>${esc(barber.name)}</b> atende. Os horarios livres da agenda
+      Defina em quais dias e horários <b>${esc(barber.name)}</b> atende. Os horários livres da agenda
       respeitam automaticamente estes limites, o intervalo e as folgas.
     </p>
     <div class="hours-head">
-      <span>Dia</span><span>Inicio</span><span>Fim</span><span>Intervalo inicio</span><span>Intervalo fim</span>
+      <span>Dia</span><span>Início</span><span>Fim</span><span>Intervalo início</span><span>Intervalo fim</span>
     </div>
     ${rows}`;
 
-  const modal = openModal({ title: 'Horarios de trabalho', body });
+  const modal = openModal({ title: 'Horários de trabalho', body });
   modal.setFooter([
     button('Cancelar', () => modal.close(), 'btn btn-ghost'),
     button(
-      'Salvar horarios',
+      `${icon('check')} Salvar horários`,
       async (event) => {
         const days = [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
           const read = (key) =>
@@ -1440,7 +1440,7 @@ function openBarberHours(barber) {
         try {
           await api.put(`/api/barbers/${barber.id}/hours`, { days });
           modal.close();
-          toast('Horarios atualizados.');
+          toast('Horários atualizados.');
           refresh();
         } catch (error) {
           toast(error.message, 'error');
@@ -1452,7 +1452,7 @@ function openBarberHours(barber) {
   ]);
 }
 
-/* --------------------------------- Servicos ------------------------------- */
+/* --------------------------------- Serviços ------------------------------- */
 
 async function viewServices() {
   await loadCatalog(true);
@@ -1461,7 +1461,7 @@ async function viewServices() {
   content().innerHTML = `
     <div class="toolbar">
       <span class="grow"></span>
-      <button class="btn btn-primary" id="sv-new" type="button">${icon('plus')} Novo servico</button>
+      <button class="btn btn-primary" id="sv-new" type="button">${icon('plus')} Novo serviço</button>
     </div>
     <div id="services-holder"></div>`;
 
@@ -1469,15 +1469,15 @@ async function viewServices() {
 
   if (!services.length) {
     holder.innerHTML = `<div class="table-wrap">${emptyBlock(
-      'Nenhum servico cadastrado',
-      'Cadastre os servicos com duracao e preco para permitir agendamentos.'
+      'Nenhum serviço cadastrado',
+      'Cadastre os serviços com duração e preço para permitir agendamentos.'
     )}</div>`;
   } else {
     holder.innerHTML = `
       <div class="table-wrap">
         <table class="data">
           <thead>
-            <tr><th>Servico</th><th>Duracao</th><th>Preco</th><th>Status</th><th class="actions">Acoes</th></tr>
+            <tr><th>Serviço</th><th>Duração</th><th>Preço</th><th>Status</th><th class="actions">Ações</th></tr>
           </thead>
           <tbody>
             ${services
@@ -1493,11 +1493,11 @@ async function viewServices() {
                 <td>${Number(service.active) ? '<span class="pill pill-confirmed">Ativo</span>' : '<span class="pill pill-no_show">Inativo</span>'}</td>
                 <td class="actions">
                   <div class="row-actions" style="justify-content:flex-end">
-                    <button class="btn btn-sm" data-edit="${service.id}" type="button">Editar</button>
+                    <button class="btn btn-sm" data-edit="${service.id}" type="button">${icon('edit')} Editar</button>
                     <button class="btn btn-sm ${Number(service.active) ? 'btn-danger' : 'btn-ok'}" data-toggle="${service.id}" type="button">
                       ${Number(service.active) ? 'Desativar' : 'Ativar'}
                     </button>
-                    <button class="btn btn-sm btn-danger" data-del="${service.id}" type="button">Excluir</button>
+                    <button class="btn btn-sm btn-danger" data-del="${service.id}" type="button">${icon('trash')} Excluir</button>
                   </div>
                 </td>
               </tr>`
@@ -1526,7 +1526,7 @@ async function viewServices() {
           price: Number(service.price),
           active: !Number(service.active),
         });
-        toast('Servico atualizado.');
+        toast('Serviço atualizado.');
         refresh();
       } catch (error) {
         toast(error.message, 'error');
@@ -1537,15 +1537,15 @@ async function viewServices() {
     element.addEventListener('click', async () => {
       const service = services.find((item) => Number(item.id) === Number(element.dataset.del));
       const confirmed = await confirmDialog({
-        title: 'Excluir servico',
-        message: `Excluir ${service.name}? Se houver agendamentos, o servico sera apenas desativado.`,
+        title: 'Excluir serviço',
+        message: `Excluir ${service.name}? Se houver agendamentos, o serviço será apenas desativado.`,
         confirmLabel: 'Excluir',
         danger: true,
       });
       if (!confirmed) return;
       try {
         const result = await api.del(`/api/services/${service.id}`);
-        toast(result.deactivated ? 'Servico possui agendamentos e foi desativado.' : 'Servico excluido.');
+        toast(result.deactivated ? 'Serviço possui agendamentos e foi desativado.' : 'Serviço excluído.');
         refresh();
       } catch (error) {
         toast(error.message, 'error');
@@ -1559,36 +1559,36 @@ function openServiceForm(service) {
   const body = `
     <div class="form-grid">
       <div class="field span-2">
-        <label>Nome do servico</label>
+        <label>Nome do serviço</label>
         <input name="name" value="${esc(service?.name || '')}" placeholder="Ex.: Corte masculino" />
       </div>
       <div class="field">
-        <label>Duracao (minutos)</label>
+        <label>Duração (minutos)</label>
         <input name="duration_min" type="number" min="5" max="600" step="5" value="${esc(service?.duration_min ?? 30)}" />
       </div>
       <div class="field">
-        <label>Preco (R$)</label>
+        <label>Preço (R$)</label>
         <input name="price" type="number" min="0" step="0.01" value="${esc(service?.price ?? '')}" placeholder="0,00" />
       </div>
       <div class="field span-2">
-        <label>Descricao</label>
-        <textarea name="description" placeholder="Detalhes do servico (opcional)">${esc(service?.description || '')}</textarea>
+        <label>Descrição</label>
+        <textarea name="description" placeholder="Detalhes do serviço (opcional)">${esc(service?.description || '')}</textarea>
       </div>
       <label class="field-check">
         <input type="checkbox" name="active" ${!service || Number(service.active) ? 'checked' : ''} />
-        <span>Servico ativo</span>
+        <span>Serviço ativo</span>
       </label>
     </div>`;
 
-  const modal = openModal({ title: editing ? 'Editar servico' : 'Novo servico', body });
+  const modal = openModal({ title: editing ? 'Editar serviço' : 'Novo serviço', body });
   modal.setFooter([
     button('Cancelar', () => modal.close(), 'btn btn-ghost'),
     button(
-      editing ? 'Salvar alteracoes' : 'Cadastrar',
+      editing ? `${icon('check')} Salvar alterações` : `${icon('plus')} Cadastrar`,
       async (event) => {
         const data = readForm(modal.body);
-        if (!data.name) return toast('Informe o nome do servico.', 'error');
-        if (data.price === '') return toast('Informe o preco do servico.', 'error');
+        if (!data.name) return toast('Informe o nome do serviço.', 'error');
+        if (data.price === '') return toast('Informe o preço do serviço.', 'error');
         const payload = {
           name: data.name,
           description: data.description,
@@ -1601,7 +1601,7 @@ function openServiceForm(service) {
           if (editing) await api.put(`/api/services/${service.id}`, payload);
           else await api.post('/api/services', payload);
           modal.close();
-          toast(editing ? 'Servico atualizado.' : 'Servico cadastrado.');
+          toast(editing ? 'Serviço atualizado.' : 'Serviço cadastrado.');
           refresh();
         } catch (error) {
           toast(error.message, 'error');
@@ -1688,7 +1688,7 @@ async function viewSettings() {
             <input class="control" name="shop_whatsapp" value="${esc(settings.shop_whatsapp || '')}" />
           </div>
           <div class="field">
-            <label>Endereco</label>
+            <label>Endereço</label>
             <input class="control" name="shop_address" value="${esc(settings.shop_address || '')}" />
           </div>
           <div class="field">
@@ -1697,7 +1697,7 @@ async function viewSettings() {
           </div>
         </div>
         <div class="row-actions" style="margin-top:16px">
-          <button class="btn btn-primary" id="save-shop" type="button">Salvar dados</button>
+          <button class="btn btn-primary" id="save-shop" type="button">${icon('check')} Salvar dados</button>
         </div>
       </div>
 
@@ -1709,38 +1709,38 @@ async function viewSettings() {
             <span>Permitir que clientes agendem pelo celular</span>
           </label>
           <div class="field">
-            <label>Intervalo entre horarios (minutos)</label>
+            <label>Intervalo entre horários (minutos)</label>
             <input class="control" type="number" min="5" max="120" step="5" id="slot_interval" value="${esc(settings.slot_interval || 15)}" />
           </div>
           <div class="field">
-            <label>Antecedencia minima (minutos)</label>
+            <label>Antecedência mínima (minutos)</label>
             <input class="control" type="number" min="0" max="1440" step="15" id="min_advance_minutes" value="${esc(settings.min_advance_minutes || 0)}" />
           </div>
           <div class="field">
-            <label>Antecedencia maxima (dias)</label>
+            <label>Antecedência máxima (dias)</label>
             <input class="control" type="number" min="1" max="365" step="1" id="max_advance_days" value="${esc(settings.max_advance_days || 60)}" />
           </div>
         </div>
         <div class="row-actions" style="margin-top:16px">
-          <button class="btn btn-primary" id="save-booking" type="button">Salvar agendamento</button>
+          <button class="btn btn-primary" id="save-booking" type="button">${icon('check')} Salvar agendamento</button>
         </div>
         <div class="section-title" style="margin-top:22px">Link para o cliente</div>
         <div class="link-row">
           <div class="code-inline" id="public-link">${esc(publicLink)}</div>
-          <button class="btn btn-sm" id="copy-link" type="button">Copiar link</button>
-          <a class="btn btn-sm" href="/agendar" target="_blank" rel="noopener">Abrir</a>
+          <button class="btn btn-sm" id="copy-link" type="button">${icon('copy')} Copiar link</button>
+          <a class="btn btn-sm" href="/agendar" target="_blank" rel="noopener">${icon('external')} Abrir</a>
         </div>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px">
       <div class="card-header">
-        <h2>Horario de funcionamento</h2>
+        <h2>Horário de funcionamento</h2>
         <span class="spacer"></span>
-        <button class="btn btn-primary btn-sm" id="save-hours" type="button">Salvar horarios</button>
+        <button class="btn btn-primary btn-sm" id="save-hours" type="button">${icon('check')} Salvar horários</button>
       </div>
       <div class="hours-head">
-        <span>Dia</span><span>Abre</span><span>Fecha</span><span>Intervalo inicio</span><span>Intervalo fim</span>
+        <span>Dia</span><span>Abre</span><span>Fecha</span><span>Intervalo início</span><span>Intervalo fim</span>
       </div>
       ${businessRows}
     </div>
@@ -1751,13 +1751,13 @@ async function viewSettings() {
         <div class="row-actions" style="margin-bottom:14px">
           <input class="control" type="date" id="closure-date" />
           <input class="control grow" id="closure-reason" placeholder="Motivo (opcional)" />
-          <button class="btn btn-primary" id="add-closure" type="button">Adicionar folga</button>
+          <button class="btn btn-primary" id="add-closure" type="button">${icon('plus')} Adicionar folga</button>
         </div>
         ${closuresHtml}
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>Seguranca</h2></div>
+        <div class="card-header"><h2>Segurança</h2></div>
         <div class="form-grid" style="grid-template-columns:1fr">
           <div class="field">
             <label>Senha atual</label>
@@ -1773,10 +1773,10 @@ async function viewSettings() {
           </div>
         </div>
         <div class="row-actions" style="margin-top:16px">
-          <button class="btn btn-primary" id="save-password" type="button">Alterar senha</button>
+          <button class="btn btn-primary" id="save-password" type="button">${icon('lock')} Alterar senha</button>
         </div>
         <p class="faint" style="margin-top:12px;font-size:12px">
-          A senha e armazenada com hash scrypt e a sessao e assinada no servidor.
+          A senha é armazenada com hash scrypt e a sessão é assinada no servidor.
         </p>
       </div>
     </div>
@@ -1785,24 +1785,24 @@ async function viewSettings() {
       <div class="card-header">
         <h2>Mensagens de WhatsApp</h2>
         <span class="spacer"></span>
-        <button class="btn btn-primary btn-sm" id="save-templates" type="button">Salvar mensagens</button>
+        <button class="btn btn-primary btn-sm" id="save-templates" type="button">${icon('check')} Salvar mensagens</button>
       </div>
       <p class="muted" style="margin-bottom:14px">
-        Variaveis disponiveis: <b>{cliente}</b>, <b>{loja}</b>, <b>{data}</b>, <b>{hora}</b>,
-        <b>{barbeiro}</b>, <b>{servico}</b>. Os botoes usam links oficiais do WhatsApp (wa.me).
+        Variáveis disponíveis: <b>{cliente}</b>, <b>{loja}</b>, <b>{data}</b>, <b>{hora}</b>,
+        <b>{barbeiro}</b>, <b>{serviço}</b>. Os botões usam links oficiais do WhatsApp (wa.me).
       </p>
       <div class="form-grid" style="grid-template-columns:1fr">
         <div class="field">
-          <label>Pedido de confirmacao</label>
-          <textarea id="tpl_confirmation" placeholder="Ola {cliente}! Aqui e da {loja}. Seu horario esta agendado para {data} as {hora} com {barbeiro} ({servico}). Podemos confirmar?">${esc(settings.whatsapp_message_confirmation || '')}</textarea>
+          <label>Pedido de confirmação</label>
+          <textarea id="tpl_confirmation" placeholder="Olá {cliente}! Aqui é da {loja}. Seu horário está agendado para {data} às {hora} com {barbeiro} ({serviço}). Podemos confirmar?">${esc(settings.whatsapp_message_confirmation || '')}</textarea>
         </div>
         <div class="field">
           <label>Lembrete</label>
-          <textarea id="tpl_reminder" placeholder="Oi {cliente}! Lembrete do seu horario na {loja}: {data} as {hora} com {barbeiro}. Esperamos voce!">${esc(settings.whatsapp_message_reminder || '')}</textarea>
+          <textarea id="tpl_reminder" placeholder="Oi {cliente}! Lembrete do seu horário na {loja}: {data} às {hora} com {barbeiro}. Esperamos você!">${esc(settings.whatsapp_message_reminder || '')}</textarea>
         </div>
         <div class="field">
           <label>Aviso de cancelamento</label>
-          <textarea id="tpl_cancellation" placeholder="Ola {cliente}, seu horario na {loja} em {data} as {hora} foi cancelado. Se quiser, podemos reagendar.">${esc(settings.whatsapp_message_cancellation || '')}</textarea>
+          <textarea id="tpl_cancellation" placeholder="Olá {cliente}, seu horário na {loja} em {data} às {hora} foi cancelado. Se quiser, podemos reagendar.">${esc(settings.whatsapp_message_cancellation || '')}</textarea>
         </div>
       </div>
     </div>`;
@@ -1838,7 +1838,7 @@ async function viewSettings() {
         min_advance_minutes: plain('min_advance_minutes').value,
         max_advance_days: plain('max_advance_days').value,
       });
-      saved('Configuracoes de agendamento salvas.');
+      saved('Configurações de agendamento salvas.');
     } catch (error) {
       toast(error.message, 'error');
     } finally {
@@ -1858,7 +1858,7 @@ async function viewSettings() {
     setBusy(event.currentTarget, true);
     try {
       await api.put('/api/business-hours', { days });
-      saved('Horario de funcionamento salvo.');
+      saved('Horário de funcionamento salvo.');
     } catch (error) {
       toast(error.message, 'error');
     } finally {
@@ -1899,7 +1899,7 @@ async function viewSettings() {
     const next = plain('new_password').value;
     const confirm = plain('confirm_password').value;
     if (!current || !next) return toast('Preencha a senha atual e a nova senha.', 'error');
-    if (next !== confirm) return toast('A confirmacao da nova senha nao confere.', 'error');
+    if (next !== confirm) return toast('A confirmação da nova senha não confere.', 'error');
     if (next.length < 6) return toast('A nova senha deve ter ao menos 6 caracteres.', 'error');
     setBusy(event.currentTarget, true);
     try {
@@ -1936,12 +1936,12 @@ async function viewSettings() {
       await navigator.clipboard.writeText(publicLink);
       toast('Link copiado.');
     } catch {
-      toast('Nao foi possivel copiar automaticamente.', 'error');
+      toast('Não foi possível copiar automaticamente.', 'error');
     }
   });
 }
 
-/* -------------------------------- Relatorios ------------------------------ */
+/* -------------------------------- Relatórios ------------------------------ */
 
 function barRow(label, total, max, formatValue) {
   const width = max > 0 ? Math.max(2, Math.round((total / max) * 100)) : 0;
@@ -1954,7 +1954,7 @@ function barRow(label, total, max, formatValue) {
 }
 
 function statusTable(byStatus) {
-  if (!byStatus.length) return emptyBlock('Nenhum agendamento no periodo');
+  if (!byStatus.length) return emptyBlock('Nenhum agendamento no período');
   const rows = byStatus
     .slice()
     .sort((a, b) => b.total - a.total)
@@ -1963,7 +1963,7 @@ function statusTable(byStatus) {
         `<tr><td>${statusPill(row.status)}</td><td class="mono">${row.total}</td><td class="mono">${esc(money(row.revenue))}</td></tr>`
     )
     .join('');
-  return `<table class="data" style="min-width:0"><thead><tr><th>Situacao</th><th>Total</th><th>Valor</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return `<table class="data" style="min-width:0"><thead><tr><th>Situação</th><th>Total</th><th>Valor</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 async function viewReports() {
@@ -1981,10 +1981,10 @@ async function viewReports() {
       <div class="segmented" id="report-range">
         <button type="button" data-range="7">7 dias</button>
         <button type="button" data-range="30">30 dias</button>
-        <button type="button" data-range="month">Este mes</button>
+        <button type="button" data-range="month">Este mês</button>
       </div>
       <input class="control" type="date" id="report-from" value="${esc(initial.from)}" />
-      <span class="faint">ate</span>
+      <span class="faint">até</span>
       <input class="control" type="date" id="report-to" value="${esc(initial.to)}" />
       <select class="control" id="report-barber">
         <option value="">Todos os profissionais</option>
@@ -1993,7 +1993,7 @@ async function viewReports() {
       <span class="grow"></span>
       <button class="btn btn-primary" id="report-refresh" type="button">${icon('chart')} Atualizar</button>
     </div>
-    <div id="report-body">${spinnerBlock('Calculando relatorios...')}</div>`;
+    <div id="report-body">${spinnerBlock('Calculando relatórios...')}</div>`;
 
   content().innerHTML = toolbar;
 
@@ -2024,7 +2024,7 @@ async function viewReports() {
 
 async function loadReport(body) {
   const filters = state.reportFilters || { from: todayISO().slice(0, 7) + '-01', to: todayISO() };
-  body.innerHTML = spinnerBlock('Calculando relatorios...');
+  body.innerHTML = spinnerBlock('Calculando relatórios...');
 
   let report;
   try {
@@ -2032,7 +2032,7 @@ async function loadReport(body) {
       `/api/reports${query({ from: filters.from, to: filters.to, barber_id: filters.barber_id })}`
     );
   } catch (error) {
-    body.innerHTML = emptyBlock('Nao foi possivel gerar o relatorio', error.message);
+    body.innerHTML = emptyBlock('Não foi possível gerar o relatório', error.message);
     return;
   }
 
@@ -2048,7 +2048,7 @@ async function loadReport(body) {
         .slice(-31)
         .map((day) => barRow(formatDateBR(day.date), day.revenue, dailyMax, (value) => esc(money(value))))
         .join('')
-    : emptyBlock('Sem faturamento registrado no periodo');
+    : emptyBlock('Sem faturamento registrado no período');
 
   const weekdayBars = report.by_weekday
     .map((day) => barRow(day.label, day.total, weekdayMax, (value) => String(value)))
@@ -2061,14 +2061,14 @@ async function loadReport(body) {
             `<tr><td class="cell-strong">${esc(item.name)}</td><td class="mono">${item.total}</td><td class="mono">${esc(money(item.revenue))}</td></tr>`
         )
         .join('')
-    : `<tr><td colspan="3"><div class="empty">Nenhum atendimento no periodo.</div></td></tr>`;
+    : `<tr><td colspan="3"><div class="empty">Nenhum atendimento no período.</div></td></tr>`;
 
   const barberRows = report.by_barber.length
     ? report.by_barber
         .map(
           (item) => `
           <tr>
-            <td class="cell-strong">${esc(item.name)}<div class="cell-sub">${item.commission_percent}% de comissao</div></td>
+            <td class="cell-strong">${esc(item.name)}<div class="cell-sub">${item.commission_percent}% de comissão</div></td>
             <td class="mono">${item.total}</td>
             <td class="mono">${item.completed}</td>
             <td class="mono">${esc(money(item.realized))}</td>
@@ -2076,21 +2076,21 @@ async function loadReport(body) {
           </tr>`
         )
         .join('')
-    : `<tr><td colspan="5"><div class="empty">Nenhum atendimento no periodo.</div></td></tr>`;
+    : `<tr><td colspan="5"><div class="empty">Nenhum atendimento no período.</div></td></tr>`;
 
   body.innerHTML = `
     <div class="grid grid-kpi">
       ${kpi({ label: 'Agendamentos', value: totals.appointments, iconName: 'calendar', foot: `${range.active_days} dia(s) com movimento` })}
-      ${kpi({ label: 'Receita realizada', value: esc(money(totals.revenue_realized)), small: true, iconName: 'wallet', foot: `${totals.completed} concluido(s)` })}
+      ${kpi({ label: 'Receita realizada', value: esc(money(totals.revenue_realized)), small: true, iconName: 'wallet', foot: `${totals.completed} concluído(s)` })}
       ${kpi({ label: 'Receita prevista', value: esc(money(totals.revenue_expected)), small: true, iconName: 'chart', foot: 'Exclui cancelados' })}
-      ${kpi({ label: 'Ticket medio', value: esc(money(totals.average_ticket)), small: true, iconName: 'sparkles', foot: 'Por atendimento concluido' })}
+      ${kpi({ label: 'Ticket médio', value: esc(money(totals.average_ticket)), small: true, iconName: 'sparkles', foot: 'Por atendimento concluído' })}
     </div>
 
     <div class="grid grid-kpi" style="margin-top:16px">
-      ${kpi({ label: 'Taxa de conclusao', value: percent(totals.completion_rate), foot: `${totals.completed} de ${totals.appointments}` })}
+      ${kpi({ label: 'Taxa de conclusão', value: percent(totals.completion_rate), foot: `${totals.completed} de ${totals.appointments}` })}
       ${kpi({ label: 'Taxa de cancelamento', value: percent(totals.cancellation_rate), foot: `${totals.cancelled} cancelado(s)` })}
       ${kpi({ label: 'Faltas (no-show)', value: percent(totals.no_show_rate), foot: `${totals.no_show} falta(s)` })}
-      ${kpi({ label: 'Novos clientes', value: totals.new_clients, foot: 'Cadastrados no periodo' })}
+      ${kpi({ label: 'Novos clientes', value: totals.new_clients, foot: 'Cadastrados no período' })}
     </div>
 
     <div class="grid grid-2" style="margin-top:16px">
@@ -2098,7 +2098,7 @@ async function loadReport(body) {
         <div class="card-header">
           <h2>Faturamento por dia</h2>
           <span class="spacer"></span>
-          <span class="card-sub">${esc(formatDateBR(range.from))} - ${esc(formatDateBR(range.to))}</span>
+          <span class="card-sub">${esc(formatDateBR(range.from))} — ${esc(formatDateBR(range.to))}</span>
         </div>
         <div class="bars">${dailyBars}</div>
       </div>
@@ -2116,11 +2116,11 @@ async function loadReport(body) {
       <div class="card-header">
         <h2>Desempenho por profissional</h2>
         <span class="spacer"></span>
-        <span class="card-sub">Comissao calculada sobre a receita realizada</span>
+        <span class="card-sub">Comissão calculada sobre a receita realizada</span>
       </div>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Profissional</th><th>Total</th><th>Concluidos</th><th>Receita</th><th>Comissao</th></tr></thead>
+          <thead><tr><th>Profissional</th><th>Total</th><th>Concluídos</th><th>Receita</th><th>Comissão</th></tr></thead>
           <tbody>${barberRows}</tbody>
         </table>
       </div>
@@ -2128,7 +2128,7 @@ async function loadReport(body) {
 
     <div class="grid grid-2" style="margin-top:16px">
       <div class="card">
-        <div class="card-header"><h2>Servicos mais procurados</h2></div>
+        <div class="card-header"><h2>Serviços mais procurados</h2></div>
         <div class="bars">${
           report.by_service.length
             ? report.by_service
@@ -2138,19 +2138,19 @@ async function loadReport(body) {
         }</div>
         <div class="table-wrap" style="margin-top:14px">
           <table class="data" style="min-width:0">
-            <thead><tr><th>Servico</th><th>Total</th><th>Receita</th></tr></thead>
+            <thead><tr><th>Serviço</th><th>Total</th><th>Receita</th></tr></thead>
             <tbody>${serviceRows}</tbody>
           </table>
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><h2>Agendamentos por situacao</h2></div>
+        <div class="card-header"><h2>Agendamentos por situação</h2></div>
         <div class="table-wrap">${statusTable(report.by_status)}</div>
       </div>
     </div>
 
     <p class="faint" style="margin-top:16px;font-size:11.5px">
-      Relatorio gerado em ${esc(new Date(report.generated_at).toLocaleString('pt-BR'))}.
+      Relatório gerado em ${esc(new Date(report.generated_at).toLocaleString('pt-BR'))}.
     </p>`;
 }
 
@@ -2161,22 +2161,22 @@ async function viewBackup() {
     <div class="grid grid-2">
       <div class="card">
         <div class="card-header">
-          <div class="kpi-icon" style="position:static">${icon('grid')}</div>
+          <div class="kpi-icon" style="position:static">${icon('download')}</div>
           <div><h3>Exportar dados</h3><div class="card-sub">Arquivo JSON com todas as tabelas</div></div>
         </div>
         <p class="muted">
-          Baixe uma copia completa dos clientes, profissionais, servicos e agendamentos.
+          Baixe uma cópia completa dos clientes, profissionais, serviços e agendamentos.
           Guarde o arquivo em um lugar seguro: ele permite restaurar o sistema a qualquer momento.
         </p>
         <div class="row-actions" style="margin-top:16px">
-          <button class="btn btn-primary" id="backup-export" type="button">${icon('external')} Baixar backup agora</button>
+          <button class="btn btn-primary" id="backup-export" type="button">${icon('download')} Baixar backup agora</button>
         </div>
         <div id="backup-meta" style="margin-top:16px"></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="kpi-icon" style="position:static">${icon('lock')}</div>
+          <div class="kpi-icon" style="position:static">${icon('upload')}</div>
           <div><h3>Restaurar backup</h3><div class="card-sub">Importe um arquivo previamente exportado</div></div>
         </div>
         <p class="muted">
@@ -2188,21 +2188,21 @@ async function viewBackup() {
           <input id="backup-file" type="file" accept="application/json,.json" />
         </div>
         <div class="field" style="margin-top:12px">
-          <label for="backup-mode">Modo de importacao</label>
+          <label for="backup-mode">Modo de importação</label>
           <select class="control" id="backup-mode">
             <option value="merge">Mesclar (recomendado)</option>
             <option value="replace">Substituir tudo</option>
           </select>
         </div>
         <div class="row-actions" style="margin-top:16px">
-          <button class="btn btn-primary" id="backup-import" type="button">${icon('check')} Importar arquivo</button>
+          <button class="btn btn-primary" id="backup-import" type="button">${icon('upload')} Importar arquivo</button>
         </div>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px">
       <div class="card-header">
-        <h2>Armazenamento e persistencia</h2>
+        <h2>Armazenamento e persistência</h2>
         <span class="spacer"></span>
         <button class="btn btn-sm" id="backup-health" type="button">Verificar servidor</button>
       </div>
@@ -2210,10 +2210,10 @@ async function viewBackup() {
         Clique em "Verificar servidor" para ver o driver de banco em uso e o tempo de atividade.
       </div>
       <p class="faint" style="margin-top:14px;font-size:12px">
-        Em producao no plano gratuito do Render o disco e temporario, por isso o sistema usa um banco
-        gerenciado na nuvem (Turso/libSQL) quando as variaveis <b>TURSO_DATABASE_URL</b> e
-        <b>TURSO_AUTH_TOKEN</b> estao configuradas. Se estiver aparecendo <b>sqlite</b> em producao,
-        configure o Turso para nao perder dados a cada reinicio.
+        Em produção no plano gratuito do Render o disco é temporário, por isso o sistema usa um banco
+        gerenciado na nuvem (Turso/libSQL) quando as variáveis <b>TURSO_DATABASE_URL</b> e
+        <b>TURSO_AUTH_TOKEN</b> estão configuradas. Se estiver aparecendo <b>sqlite</b> em produção,
+        configure o Turso para não perder dados a cada reinício.
       </p>
     </div>`;
 
@@ -2231,7 +2231,7 @@ async function viewBackup() {
       link.remove();
       URL.revokeObjectURL(url);
       renderBackupMeta(backup.meta);
-      toast('Backup baixado.');
+      toast('Backup baixado com sucesso.');
     } catch (error) {
       toast(error.message, 'error');
     } finally {
@@ -2248,15 +2248,15 @@ async function viewBackup() {
     try {
       parsed = JSON.parse(await input.files[0].text());
     } catch {
-      return toast('O arquivo selecionado nao e um JSON valido.', 'error');
+      return toast('O arquivo selecionado não é um JSON válido.', 'error');
     }
 
     const confirmed = await confirmDialog({
       title: mode === 'replace' ? 'Substituir todos os dados?' : 'Mesclar backup?',
       message:
         mode === 'replace'
-          ? 'Esta acao apaga os dados atuais e restaura apenas o que esta no arquivo. Nao pode ser desfeita.'
-          : 'Os registros do arquivo serao somados aos dados atuais, sobrescrevendo os de mesmo identificador.',
+          ? 'Esta ação apaga os dados atuais e restaura apenas o que está no arquivo. Não pode ser desfeita.'
+          : 'Os registros do arquivo serão somados aos dados atuais, sobrescrevendo os de mesmo identificador.',
       confirmLabel: mode === 'replace' ? 'Substituir tudo' : 'Importar',
       danger: mode === 'replace',
     });
@@ -2286,7 +2286,7 @@ async function viewBackup() {
           <div><span>Banco</span><strong>${esc(health.driver || '-')}</strong></div>
           <div><span>Destino</span><strong>${esc(health.target || '-')}</strong></div>
           <div><span>Ambiente</span><strong>${esc(health.environment || '-')}</strong></div>
-          <div><span>Ativo ha</span><strong>${Math.round(Number(health.uptime_seconds || 0))}s</strong></div>
+          <div><span>Ativo há</span><strong>${Math.round(Number(health.uptime_seconds || 0))}s</strong></div>
         </div>`;
     } catch (error) {
       box.innerHTML = `<span class="muted">${esc(error.message)}</span>`;
@@ -2367,7 +2367,7 @@ function boot() {
       root.innerHTML = `
         <div class="boot-screen">
           <div class="brand-mark" style="width:52px;height:52px;font-size:17px">GB</div>
-          <strong>Nao foi possivel iniciar o painel</strong>
+          <strong>Não foi possível iniciar o painel</strong>
           <span>${esc(error.message)}</span>
           <button class="btn" id="boot-retry" type="button">Tentar novamente</button>
         </div>`;

@@ -1,4 +1,4 @@
-// Componentes compartilhados de agendamento: formulario e painel de detalhes.
+// Componentes compartilhados de agendamento: formulário e painel de detalhes.
 
 import { api, query } from './api.js';
 import {
@@ -8,6 +8,7 @@ import {
   formatDateBR,
   formatPhone,
   hhmmToMinutes,
+  icon,
   money,
   openModal,
   openWhatsapp,
@@ -36,7 +37,7 @@ function options(list, selected, labelFn, valueFn = (item) => item.id) {
     .join('');
 }
 
-/** Cadastro rapido de cliente a partir do formulario de agendamento. */
+/** Cadastro rápido de cliente a partir do formulário de agendamento. */
 async function quickCreateClient() {
   return new Promise((resolve) => {
     const modal = openModal({
@@ -60,7 +61,7 @@ async function quickCreateClient() {
         modal.close();
         resolve(null);
       }, 'btn btn-ghost'),
-      button('Cadastrar', async (event) => {
+      button(`${icon('check')} Cadastrar`, async (event) => {
         const data = readForm(modal.body);
         if (!data.name || !data.phone) {
           toast('Informe nome e WhatsApp.', 'error');
@@ -96,7 +97,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
   let clients = catalog.clients;
 
   if (!services.length) {
-    toast('Cadastre pelo menos um servico antes de agendar.', 'error');
+    toast('Cadastre pelo menos um serviço antes de agendar.', 'error');
     return;
   }
   if (!barbers.length) {
@@ -123,12 +124,12 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
             <option value="">Selecione o cliente</option>
             ${options(clients, current.client_id, (item) => `${item.name} - ${formatPhone(item.phone)}`)}
           </select>
-          <button type="button" class="btn" id="ap-new-client">Novo</button>
+          <button type="button" class="btn" id="ap-new-client">${icon('plus')} Novo</button>
         </div>
       </div>
 
       <div class="field">
-        <label for="ap-service">Servico</label>
+        <label for="ap-service">Serviço</label>
         <select id="ap-service" name="service_id">
           ${options(services, current.service_id, (item) => `${item.name} - ${item.duration_min} min - ${money(item.price)}`)}
         </select>
@@ -147,7 +148,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
       </div>
 
       <div class="field">
-        <label for="ap-time">Horario</label>
+        <label for="ap-time">Horário</label>
         <select id="ap-time" name="start_time">
           <option value="">Carregando...</option>
         </select>
@@ -158,7 +159,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
         <label for="ap-price">Valor (opcional)</label>
         <input type="number" step="0.01" min="0" id="ap-price" name="price" value="${
           appointment?.price ?? ''
-        }" placeholder="Usa o preco do servico" />
+        }" placeholder="Usa o preço do serviço" />
       </div>
 
       ${
@@ -170,9 +171,9 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
                    [
                      { id: 'pending', name: 'Aguardando' },
                      { id: 'confirmed', name: 'Confirmado' },
-                     { id: 'completed', name: 'Concluido' },
+                     { id: 'completed', name: 'Concluído' },
                      { id: 'cancelled', name: 'Cancelado' },
-                     { id: 'no_show', name: 'Nao compareceu' },
+                     { id: 'no_show', name: 'Não compareceu' },
                    ],
                    current.status,
                    (item) => item.name
@@ -183,12 +184,12 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
       }
 
       <div class="field span-2">
-        <label for="ap-notes">Observacoes</label>
-        <textarea id="ap-notes" name="notes" placeholder="Preferencias, alergias, observacoes...">${esc(current.notes || '')}</textarea>
+        <label for="ap-notes">Observações</label>
+        <textarea id="ap-notes" name="notes" placeholder="Preferências, alergias, observações...">${esc(current.notes || '')}</textarea>
       </div>
 
       <div class="field span-2" id="ap-error" style="display:none">
-        <span class="hint" style="color:#eb9ba0" id="ap-error-text"></span>
+        <span class="hint" style="color:#f87171" id="ap-error-text"></span>
       </div>
     </div>`;
 
@@ -218,7 +219,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
     const previous = keepSelection ? timeSelect.value : '';
 
     if (!serviceId || !barberId || !date) {
-      timeSelect.innerHTML = '<option value="">Selecione servico, profissional e data</option>';
+      timeSelect.innerHTML = '<option value="">Selecione serviço, profissional e data</option>';
       return;
     }
 
@@ -244,15 +245,15 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
       slots.sort();
 
       if (!slots.length) {
-        timeSelect.innerHTML = '<option value="">Nenhum horario livre</option>';
-        timeHint.textContent = result.reason || 'Todos os horarios deste dia estao ocupados.';
+        timeSelect.innerHTML = '<option value="">Nenhum horário livre</option>';
+        timeHint.textContent = result.reason || 'Todos os horários deste dia estão ocupados.';
         return;
       }
 
       timeSelect.innerHTML = slots
         .map((slot) => `<option value="${esc(slot)}"${slot === previous ? ' selected' : ''}>${esc(slot)}</option>`)
         .join('');
-      timeHint.textContent = `${slots.length} horarios disponiveis`;
+      timeHint.textContent = `${slots.length} horários disponíveis`;
     } catch (error) {
       timeSelect.innerHTML = '<option value="">Erro ao carregar</option>';
       showError(error.message);
@@ -277,14 +278,14 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
 
   modal.setFooter([
     button('Cancelar', () => modal.close(), 'btn btn-ghost'),
-    button(editing ? 'Salvar alteracoes' : 'Agendar', async (event) => {
+    button(editing ? `${icon('check')} Salvar alterações` : `${icon('plus')} Agendar`, async (event) => {
       const data = readForm(modal.body);
       if (!data.client_id) {
         showError('Selecione o cliente.');
         return;
       }
       if (!data.start_time) {
-        showError('Selecione um horario disponivel.');
+        showError('Selecione um horário disponível.');
         return;
       }
 
@@ -316,7 +317,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
   await refreshSlots({ keepSelection: editing });
 }
 
-/** Painel com detalhes e acoes rapidas de um agendamento. */
+/** Painel com detalhes e ações rápidas de um agendamento. */
 export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
   const body = `
     <div class="grid" style="gap:14px">
@@ -328,32 +329,32 @@ export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
       <div class="booking-summary">
         <div><span>Cliente</span><strong>${esc(appointment.client_name)}</strong></div>
         <div><span>WhatsApp</span><strong>${esc(formatPhone(appointment.client_phone))}</strong></div>
-        <div><span>Servico</span><strong>${esc(appointment.service_name || '-')}</strong></div>
+        <div><span>Serviço</span><strong>${esc(appointment.service_name || '-')}</strong></div>
         <div><span>Profissional</span><strong>${esc(appointment.barber_name)}</strong></div>
         <div><span>Data</span><strong>${esc(formatDateBR(appointment.date))}</strong></div>
-        <div><span>Horario</span><strong>${esc(appointment.start_time)} as ${esc(appointment.end_time)}</strong></div>
+        <div><span>Horário</span><strong>${esc(appointment.start_time)} às ${esc(appointment.end_time)}</strong></div>
         <div><span>Valor</span><strong>${esc(money(appointment.price))}</strong></div>
       </div>
 
-      ${appointment.notes ? `<p class="muted"><strong>Observacoes:</strong> ${esc(appointment.notes)}</p>` : ''}
+      ${appointment.notes ? `<p class="muted"><strong>Observações:</strong> ${esc(appointment.notes)}</p>` : ''}
 
       <div>
         <p class="muted" style="margin-bottom:8px">Enviar por WhatsApp</p>
         <div class="row-actions">
-          <button type="button" class="btn btn-whats btn-sm" data-wa="confirmation">Pedir confirmacao</button>
-          <button type="button" class="btn btn-whats btn-sm" data-wa="reminder">Enviar lembrete</button>
-          <button type="button" class="btn btn-sm" data-wa="cancellation">Avisar cancelamento</button>
+          <button type="button" class="btn btn-whats btn-sm" data-wa="confirmation">${icon('whatsapp')} Pedir confirmação</button>
+          <button type="button" class="btn btn-whats btn-sm" data-wa="reminder">${icon('whatsapp')} Enviar lembrete</button>
+          <button type="button" class="btn btn-sm" data-wa="cancellation">${icon('whatsapp')} Avisar cancelamento</button>
         </div>
       </div>
 
       <div>
         <p class="muted" style="margin-bottom:8px">Alterar status</p>
         <div class="row-actions">
-          <button type="button" class="btn btn-ok btn-sm" data-status="confirmed">Confirmar</button>
-          <button type="button" class="btn btn-sm" data-status="completed">Concluir</button>
-          <button type="button" class="btn btn-sm" data-status="pending">Voltar para aguardando</button>
-          <button type="button" class="btn btn-sm" data-status="no_show">Nao compareceu</button>
-          <button type="button" class="btn btn-danger btn-sm" data-status="cancelled">Cancelar</button>
+          <button type="button" class="btn btn-ok btn-sm" data-status="confirmed">${icon('check')} Confirmar</button>
+          <button type="button" class="btn btn-sm" data-status="completed">${icon('check')} Concluir</button>
+          <button type="button" class="btn btn-sm" data-status="pending">${icon('clock')} Aguardando</button>
+          <button type="button" class="btn btn-sm" data-status="no_show">${icon('ban')} Não compareceu</button>
+          <button type="button" class="btn btn-danger btn-sm" data-status="cancelled">${icon('x')} Cancelar</button>
         </div>
       </div>
     </div>`;
@@ -371,7 +372,7 @@ export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
       try {
         const result = await api.get(`/api/appointments/${appointment.id}/whatsapp?type=${element.dataset.wa}`);
         if (!result.link) {
-          toast('Cliente sem telefone valido cadastrado.', 'error');
+          toast('Cliente sem telefone válido cadastrado.', 'error');
           return;
         }
         openWhatsapp(result.phone, result.message);
@@ -387,7 +388,7 @@ export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
       if (status === 'cancelled') {
         const confirmed = await confirmDialog({
           title: 'Cancelar agendamento',
-          message: `Cancelar o horario de ${appointment.client_name} em ${formatDateBR(appointment.date)} as ${appointment.start_time}?`,
+          message: `Cancelar o horário de ${appointment.client_name} em ${formatDateBR(appointment.date)} às ${appointment.start_time}?`,
           confirmLabel: 'Cancelar agendamento',
           danger: true,
         });
@@ -404,7 +405,7 @@ export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
   });
 
   modal.setFooter([
-    button(`${'Editar'}`, () => {
+    button(`${icon('edit')} Editar`, () => {
       modal.close();
       openAppointmentForm({
         appointment,
@@ -414,17 +415,17 @@ export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
         },
       });
     }, 'btn'),
-    button('Excluir', async () => {
+    button(`${icon('trash')} Excluir`, async () => {
       const confirmed = await confirmDialog({
         title: 'Excluir agendamento',
-        message: 'Esta acao remove o agendamento definitivamente. Deseja continuar?',
+        message: 'Esta ação remove o agendamento definitivamente. Deseja continuar?',
         confirmLabel: 'Excluir',
         danger: true,
       });
       if (!confirmed) return;
       try {
         await api.del(`/api/appointments/${appointment.id}`);
-        toast('Agendamento excluido.');
+        toast('Agendamento excluído.');
         reload();
       } catch (error) {
         toast(error.message, 'error');

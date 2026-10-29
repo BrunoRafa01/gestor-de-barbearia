@@ -350,7 +350,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn svg { width: 15px; height: 15px; }
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--blue-accent), var(--blue-primary));
@@ -395,7 +395,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 }
 
 .icon-btn:hover { color: var(--blue-light); border-color: var(--blue-line); background: var(--surface-3); }
-.icon-btn svg { width: 15px; height: 15px; }
+.icon-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 .row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
@@ -1466,6 +1466,12 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .field.span-2 { grid-column: auto; }
   .bar-row { grid-template-columns: 74px minmax(40px, 1fr) auto; gap: 8px; font-size: 12px; }
   .notice { margin: 0 14px 12px; padding: 12px 14px; }
+  .modal-backdrop { padding: 10px; }
+  .modal { max-height: calc(100vh - 20px); border-radius: var(--radius-sm); }
+  .modal-header { padding: 14px 16px; }
+  .modal-body { padding: 16px; }
+  .modal-footer { padding: 12px 16px; justify-content: stretch; }
+  .modal-footer .btn { flex: 1 1 auto; }
 
   /* Prevencao de zoom indesejado no iOS Safari */
   input, select, textarea {
@@ -1475,6 +1481,14 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .btn, .icon-btn {
     min-height: 44px;
   }
+}
+
+@media (max-width: 400px) {
+  .content { padding: 14px 10px 40px; }
+  .topbar { padding: 10px 12px; }
+  .topbar-actions { gap: 6px; }
+  .hero-title { font-size: 17px; }
+  .card { padding: 14px; }
 }
 
 /* Acessibilidade de movimento reduzido */

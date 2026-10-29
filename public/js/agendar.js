@@ -1,5 +1,5 @@
-// Pagina publica de agendamento (mobile first) do Gestor de Barbearia.
-// O cliente escolhe servico, profissional, dia, horario e informa os dados.
+// Página pública de agendamento (mobile first) do Gestor de Barbearia.
+// O cliente escolhe serviço, profissional, dia, horário e informa os dados.
 
 import { api, query } from './api.js';
 import {
@@ -47,7 +47,7 @@ function currentStep() {
   return 4;
 }
 
-/** Mostra a proxima secao e, no celular, rola suavemente ate ela. */
+/** Mostra a próxima seção e, no celular, rola suavemente até ela. */
 function revealSection(id) {
   const element = document.getElementById(id);
   if (!element.classList.contains('hidden')) return;
@@ -64,7 +64,7 @@ function skeletonHtml() {
     <div class="card" id="sec-service">
       <div class="card-header">
         <div class="kpi-icon" style="position:static">${icon('tag')}</div>
-        <div><h3>1. Escolha o servico</h3><div class="card-sub">Duracao e valor de cada opcao</div></div>
+        <div><h3>1. Escolha o serviço</h3><div class="card-sub">Duração e valor de cada opção</div></div>
       </div>
       <div class="choice-grid" id="service-grid"></div>
     </div>
@@ -72,7 +72,7 @@ function skeletonHtml() {
     <div class="card hidden" id="sec-barber">
       <div class="card-header">
         <div class="kpi-icon" style="position:static">${icon('scissors')}</div>
-        <div><h3>2. Escolha o profissional</h3><div class="card-sub">Com quem voce quer cortar?</div></div>
+        <div><h3>2. Escolha o profissional</h3><div class="card-sub">Com quem você quer cortar?</div></div>
       </div>
       <div class="choice-grid" id="barber-grid"></div>
     </div>
@@ -80,7 +80,7 @@ function skeletonHtml() {
     <div class="card hidden" id="sec-date">
       <div class="card-header">
         <div class="kpi-icon" style="position:static">${icon('calendar')}</div>
-        <div><h3>3. Escolha o dia e o horario</h3><div class="card-sub">Horarios livres atualizados em tempo real</div></div>
+        <div><h3>3. Escolha o dia e o horário</h3><div class="card-sub">Horários livres atualizados em tempo real</div></div>
       </div>
       <div class="day-strip" id="day-strip"></div>
       <div id="slot-area" style="margin-top:16px"></div>
@@ -89,7 +89,7 @@ function skeletonHtml() {
     <div class="card hidden" id="sec-form">
       <div class="card-header">
         <div class="kpi-icon" style="position:static">${icon('check')}</div>
-        <div><h3>4. Seus dados</h3><div class="card-sub">Usamos o WhatsApp para confirmar</div></div>
+        <div><h3>4. Seus dados</h3><div class="card-sub">Usamos o WhatsApp para confirmação</div></div>
       </div>
       <div class="form-grid" style="grid-template-columns:1fr">
         <div class="field">
@@ -105,16 +105,16 @@ function skeletonHtml() {
           <input id="pk-email" name="email" type="email" placeholder="voce@email.com" autocomplete="email" />
         </div>
         <div class="field">
-          <label for="pk-notes">Observacoes (opcional)</label>
-          <textarea id="pk-notes" name="notes" placeholder="Alguma preferencia?"></textarea>
+          <label for="pk-notes">Observações (opcional)</label>
+          <textarea id="pk-notes" name="notes" placeholder="Alguma preferência?"></textarea>
         </div>
       </div>
       <div class="booking-summary" id="summary" style="margin-top:16px"></div>
       <button class="btn btn-primary btn-block" id="pk-confirm" type="button" style="margin-top:16px">
-        Confirmar agendamento
+        ${icon('check')} Confirmar agendamento
       </button>
       <p class="faint" style="margin-top:10px;font-size:11.5px;text-align:center">
-        Ao confirmar, seu horario fica reservado e aguarda a confirmacao da barbearia.
+        Ao confirmar, seu horário fica reservado e aguarda a confirmação da barbearia.
       </p>
     </div>`;
 }
@@ -136,7 +136,7 @@ async function loadDays() {
 async function loadSlots() {
   if (!state.date) {
     state.slots = [];
-    state.slotsReason = 'Nenhum dia disponivel no momento.';
+    state.slotsReason = 'Nenhum dia disponível no momento.';
     return;
   }
   const result = await api.get(
@@ -147,7 +147,7 @@ async function loadSlots() {
     })}`
   );
   state.slots = result.slots || [];
-  state.slotsReason = result.open ? 'Todos os horarios deste dia ja foram preenchidos.' : result.reason || '';
+  state.slotsReason = result.open ? 'Todos os horários deste dia já foram preenchidos.' : result.reason || '';
   if (!state.slots.includes(state.time)) state.time = null;
 }
 
@@ -204,7 +204,7 @@ function renderBarbers() {
 function renderDays() {
   const strip = document.getElementById('day-strip');
   if (!state.days.length) {
-    strip.innerHTML = '<span class="muted">Nenhum dia com horario livre nos proximos dias.</span>';
+    strip.innerHTML = '<span class="muted">Nenhum dia com horário livre nos próximos dias.</span>';
     return;
   }
   strip.innerHTML = state.days
@@ -232,11 +232,11 @@ function renderDays() {
 function renderSlots() {
   const area = document.getElementById('slot-area');
   if (!state.slots.length) {
-    area.innerHTML = `<div class="empty">${esc(state.slotsReason || 'Nenhum horario livre neste dia.')}</div>`;
+    area.innerHTML = `<div class="empty">${esc(state.slotsReason || 'Nenhum horário livre neste dia.')}</div>`;
     return;
   }
   area.innerHTML = `
-    <p class="section-title">Horarios livres</p>
+    <p class="section-title">Horários livres</p>
     <div class="slot-grid">
       ${state.slots
         .map(
@@ -261,16 +261,16 @@ function renderSummary() {
   const service = state.services.find((item) => Number(item.id) === Number(state.serviceId));
   const barber = state.barbers.find((item) => Number(item.id) === Number(state.barberId));
   document.getElementById('summary').innerHTML = `
-    <div><span>Servico</span><strong>${esc(service?.name || '-')}</strong></div>
+    <div><span>Serviço</span><strong>${esc(service?.name || '-')}</strong></div>
     <div><span>Profissional</span><strong>${esc(barber?.name || '-')}</strong></div>
     <div><span>Data</span><strong>${esc(state.date ? formatDateBR(state.date) : '-')}</strong></div>
-    <div><span>Horario</span><strong>${esc(state.time || '-')}</strong></div>
+    <div><span>Horário</span><strong>${esc(state.time || '-')}</strong></div>
     <div><span>Valor</span><strong>${esc(service ? money(service.price) : '-')}</strong></div>`;
 }
 
 async function refreshSlots() {
   const area = document.getElementById('slot-area');
-  area.innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Buscando horarios...</div>';
+  area.innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Buscando horários...</div>';
   try {
     await loadSlots();
     renderSlots();
@@ -285,7 +285,7 @@ async function refreshSlots() {
 async function bootstrapDateSection() {
   document.getElementById('sec-date').classList.remove('hidden');
   const area = document.getElementById('slot-area');
-  area.innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Buscando horarios...</div>';
+  area.innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Buscando horários...</div>';
   try {
     await loadDays();
     renderDays();
@@ -300,7 +300,7 @@ async function bootstrapDateSection() {
   renderSummary();
 }
 
-/* -------------------------------- Confirmacao ------------------------------ */
+/* -------------------------------- Confirmação ------------------------------ */
 
 function successHtml(result) {
   const appointment = result.appointment;
@@ -310,20 +310,20 @@ function successHtml(result) {
       <div class="success-check">${icon('check')}</div>
       <h3>Agendamento enviado!</h3>
       <p class="muted" style="text-align:center">
-        Seu horario foi reservado e aguarda a confirmacao da barbearia.
+        Seu horário foi reservado e aguarda a confirmação da barbearia.
       </p>
       <div class="booking-summary" style="width:100%;text-align:left">
         <div><span>Cliente</span><strong>${esc(appointment.client_name)}</strong></div>
-        <div><span>Servico</span><strong>${esc(appointment.service_name || service?.name || '-')}</strong></div>
+        <div><span>Serviço</span><strong>${esc(appointment.service_name || service?.name || '-')}</strong></div>
         <div><span>Profissional</span><strong>${esc(appointment.barber_name)}</strong></div>
         <div><span>Data</span><strong>${esc(formatDateBR(appointment.date))}</strong></div>
-        <div><span>Horario</span><strong>${esc(appointment.start_time)} as ${esc(appointment.end_time)}</strong></div>
+        <div><span>Horário</span><strong>${esc(appointment.start_time)} às ${esc(appointment.end_time)}</strong></div>
         <div><span>Valor</span><strong>${esc(money(appointment.price))}</strong></div>
       </div>
       ${
         result.confirmation?.link
           ? `<a class="btn btn-whats btn-block" href="${esc(result.confirmation.link)}" target="_blank" rel="noopener">
-               ${icon('whatsapp')} Enviar confirmacao no WhatsApp
+               ${icon('whatsapp')} Enviar confirmação no WhatsApp
              </a>`
           : ''
       }
@@ -340,7 +340,7 @@ async function submit() {
   if (!name) return toast('Informe seu nome.', 'error');
   if (phone.replace(/\D/g, '').length < 10) return toast('Informe um WhatsApp com DDD.', 'error');
   if (!state.serviceId || !state.barberId || !state.date || !state.time) {
-    return toast('Escolha servico, profissional, dia e horario.', 'error');
+    return toast('Escolha serviço, profissional, dia e horário.', 'error');
   }
 
   const submitButton = document.getElementById('pk-confirm');
@@ -403,12 +403,12 @@ function applyShop(config) {
   state.shop = config.shop;
   state.services = config.services;
   state.barbers = config.barbers;
-  document.title = `Agendar horario | ${config.shop.name}`;
+  document.title = `Agendar horário | ${config.shop.name}`;
   document.getElementById('shop-name').textContent = config.shop.name;
   document.getElementById('shop-company').textContent = config.shop.company || 'Nova Runtime';
   document.getElementById('shop-sub').textContent = config.shop.address
     ? config.shop.address
-    : 'Escolha o servico, o profissional e o melhor horario.';
+    : 'Escolha o serviço, o profissional e o melhor horário.';
 
   const links = [];
   const whatsapp = whatsappLink(config.shop.whatsapp || config.shop.phone);
@@ -441,16 +441,16 @@ async function boot() {
 
     if (!config.shop.public_booking) {
       content().innerHTML = unavailableHtml(
-        'O agendamento online esta temporariamente desativado',
-        'Fale diretamente com a barbearia para reservar seu horario.'
+        'O agendamento online está temporariamente desativado',
+        'Fale diretamente com a barbearia para reservar seu horário.'
       );
       document.getElementById('steps').classList.add('hidden');
       return;
     }
     if (!config.services.length || !config.barbers.length) {
       content().innerHTML = unavailableHtml(
-        'A agenda ainda esta sendo configurada',
-        'Assim que os servicos e profissionais forem cadastrados, o agendamento online ficara disponivel.'
+        'A agenda ainda está sendo configurada',
+        'Assim que os serviços e profissionais forem cadastrados, o agendamento online ficará disponível.'
       );
       document.getElementById('steps').classList.add('hidden');
       return;
@@ -464,7 +464,7 @@ async function boot() {
     });
     setStep(1);
   } catch (error) {
-    content().innerHTML = unavailableHtml('Nao foi possivel carregar a agenda', error.message);
+    content().innerHTML = unavailableHtml('Não foi possível carregar a agenda', error.message);
     document.getElementById('steps').classList.add('hidden');
   }
 }
