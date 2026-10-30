@@ -48,7 +48,7 @@ const NAV = [
   { key: 'barbers', label: 'Profissionais', icon: 'scissors', group: 'Cadastros' },
   { key: 'services', label: 'Serviços', icon: 'tag', group: 'Cadastros' },
   { key: 'settings', label: 'Configurações', icon: 'settings', group: 'Sistema' },
-  { key: 'backup', label: 'Backup', icon: 'grid', group: 'Sistema' },
+  { key: 'backup', label: 'Backup', icon: 'database', group: 'Sistema' },
 ];
 
 const ROW_MINUTES = 30; // altura de cada linha da agenda

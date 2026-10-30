@@ -11,6 +11,7 @@ import {
   icon,
   money,
   parseISO,
+  statusPill,
   toast,
   todayISO,
   WEEKDAYS_SHORT,
@@ -305,6 +306,10 @@ async function bootstrapDateSection() {
 function successHtml(result) {
   const appointment = result.appointment;
   const service = state.services.find((item) => Number(item.id) === Number(state.serviceId));
+  const fullManageUrl = result.manage_url
+    ? `${window.location.origin}${result.manage_url}`
+    : '';
+
   return `
     <div class="card success-box">
       <div class="success-check">${icon('check')}</div>
@@ -321,6 +326,23 @@ function successHtml(result) {
         <div><span>Valor</span><strong>${esc(money(appointment.price))}</strong></div>
       </div>
       ${
+        fullManageUrl
+          ? `
+          <div style="margin-top:16px;padding:12px;background:rgba(37,99,235,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;text-align:left;width:100%">
+            <div style="font-size:12.5px;color:var(--c-text);display:flex;align-items:center;gap:6px;font-weight:600">
+              ${icon('shield-check')} Link de autoatendimento
+            </div>
+            <p class="muted" style="margin-top:4px;font-size:12px">
+              Guarde este link para consultar ou cancelar seu agendamento a qualquer momento:
+            </p>
+            <div style="margin-top:8px;display:flex;gap:6px">
+              <input type="text" readonly value="${esc(fullManageUrl)}" id="pk-manage-link" style="font-size:11.5px;padding:6px 10px;flex:1;background:var(--c-bg);border:1px solid var(--c-border);color:var(--c-text);border-radius:6px" />
+              <button class="btn btn-sm" id="pk-copy-manage" type="button">${icon('clipboard')} Copiar</button>
+            </div>
+          </div>`
+          : ''
+      }
+      ${
         result.confirmation?.link
           ? `<a class="btn btn-whats btn-block" href="${esc(result.confirmation.link)}" target="_blank" rel="noopener">
                ${icon('whatsapp')} Enviar confirmação no WhatsApp
@@ -329,6 +351,104 @@ function successHtml(result) {
       }
       <button class="btn btn-ghost btn-block" id="pk-again" type="button">Fazer outro agendamento</button>
     </div>`;
+}
+
+function renderManageAppointment(token, appt) {
+  const canCancel = appt.status === 'pending' || appt.status === 'confirmed';
+
+  content().innerHTML = `
+    <div class="card" style="max-width:540px;margin:0 auto">
+      <div class="card-header" style="align-items:center;justify-content:space-between">
+        <div>
+          <h3>Detalhes do seu agendamento</h3>
+          <div class="card-sub">Código #${appt.id}</div>
+        </div>
+        <div>${statusPill(appt.status)}</div>
+      </div>
+
+      <div class="booking-summary" style="margin-top:16px;text-align:left">
+        <div><span>Cliente</span><strong>${esc(appt.client_name)}</strong></div>
+        <div><span>Serviço</span><strong>${esc(appt.service_name || '-')}</strong></div>
+        <div><span>Profissional</span><strong>${esc(appt.barber_name)}</strong></div>
+        <div><span>Data</span><strong>${esc(formatDateBR(appt.date))}</strong></div>
+        <div><span>Horário</span><strong>${esc(appt.start_time)} às ${esc(appt.end_time)}</strong></div>
+        <div><span>Valor</span><strong>${esc(money(appt.price))}</strong></div>
+        ${appt.notes ? `<div><span>Observações</span><span style="font-size:12.5px">${esc(appt.notes)}</span></div>` : ''}
+        ${appt.cancellation_reason ? `<div><span>Cancelamento</span><span class="danger" style="font-size:12.5px">${esc(appt.cancellation_reason)}</span></div>` : ''}
+      </div>
+
+      ${
+        canCancel
+          ? `
+        <div id="cancel-section" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--c-border)">
+          <h4 style="font-size:14px">Precisa cancelar este horário?</h4>
+          <p class="muted" style="font-size:12.5px;margin-top:4px">
+            Ao cancelar, o horário ficará livre para outro cliente.
+          </p>
+          <div class="field" style="margin-top:12px">
+            <label for="pk-cancel-reason">Motivo do cancelamento (opcional)</label>
+            <input id="pk-cancel-reason" placeholder="Ex.: Tive um imprevisto" maxlength="200" />
+          </div>
+          <button class="btn btn-danger btn-block" id="btn-do-cancel" type="button" style="margin-top:12px">
+            ${icon('ban')} Cancelar meu agendamento
+          </button>
+        </div>`
+          : ''
+      }
+
+      <div class="row-actions" style="margin-top:20px;justify-content:center">
+        <a class="btn btn-ghost btn-block" href="/agendar">Fazer novo agendamento</a>
+      </div>
+    </div>`;
+
+  if (canCancel) {
+    const cancelBtn = document.getElementById('btn-do-cancel');
+    cancelBtn?.addEventListener('click', async () => {
+      const reasonInput = document.getElementById('pk-cancel-reason');
+      const reason = reasonInput ? reasonInput.value.trim() : '';
+
+      if (!confirm('Deseja realmente cancelar este agendamento?')) {
+        return;
+      }
+
+      cancelBtn.disabled = true;
+      cancelBtn.textContent = 'Cancelando...';
+
+      try {
+        const updated = await api.post(`/api/public/appointments/${encodeURIComponent(token)}/cancel`, { reason });
+        toast('Agendamento cancelado com sucesso.', 'success');
+        renderManageAppointment(token, updated.appointment);
+      } catch (err) {
+        toast(err.message, 'error');
+        cancelBtn.disabled = false;
+        cancelBtn.innerHTML = `${icon('ban')} Cancelar meu agendamento`;
+      }
+    });
+  }
+}
+
+async function bootManage(token) {
+  const steps = document.getElementById('steps');
+  if (steps) steps.classList.add('hidden');
+  content().innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Buscando agendamento...</div>';
+
+  try {
+    const config = await api.get('/api/public/config');
+    applyShop(config);
+
+    const appt = await api.get(`/api/public/appointments/${encodeURIComponent(token)}`);
+    renderManageAppointment(token, appt);
+  } catch (error) {
+    content().innerHTML = `
+      <div class="card empty-state" style="margin:0 auto">
+        <div class="kpi-icon" style="position:static;margin:0 auto 16px;color:var(--c-danger)">${icon('ban')}</div>
+        <h3>Agendamento não encontrado</h3>
+        <p class="muted" style="margin-top:8px">${esc(error.message || 'O link pode ser inválido ou expirado.')}</p>
+        <div class="row-actions" style="justify-content:center;margin-top:20px">
+          <a class="btn btn-primary" href="/agendar">${icon('calendar')} Fazer um agendamento</a>
+        </div>
+      </div>`;
+  }
 }
 
 async function submit() {
@@ -360,6 +480,16 @@ async function submit() {
     });
     content().innerHTML = successHtml(result);
     setStep(4);
+
+    document.getElementById('pk-copy-manage')?.addEventListener('click', async () => {
+      const input = document.getElementById('pk-manage-link');
+      if (input) {
+        input.select();
+        await navigator.clipboard.writeText(input.value).catch(() => {});
+        toast('Link copiado para a área de transferência!', 'success');
+      }
+    });
+
     document.getElementById('pk-again')?.addEventListener('click', () => window.location.reload());
     if (result.confirmation?.link) window.open(result.confirmation.link, '_blank', 'noopener');
   } catch (error) {
@@ -436,6 +566,12 @@ function applyShop(config) {
 
 async function boot() {
   try {
+    const params = new URLSearchParams(window.location.search);
+    const manageToken = params.get('manage') || params.get('cancel') || params.get('token');
+    if (manageToken) {
+      return await bootManage(manageToken);
+    }
+
     const config = await api.get('/api/public/config');
     applyShop(config);
 
