@@ -45,7 +45,11 @@ export const DEFAULT_TEMPLATES = {
 };
 
 /** Monta as mensagens prontas para uma linha de agendamento. */
-export function buildMessages(appointment) {
+export function buildMessages(appointment, baseUrl = '') {
+  const cancelLink = appointment.cancel_token
+    ? `${baseUrl || ''}/agendar.html?cancel=${appointment.cancel_token}`
+    : '';
+
   const values = {
     cliente: appointment.client_name || 'cliente',
     loja: appointment.shop_name || getSetting('shop_name', 'Gestor de Barbearia'),
@@ -53,6 +57,7 @@ export function buildMessages(appointment) {
     hora: appointment.start_time,
     barbeiro: appointment.barber_name || 'nosso profissional',
     servico: appointment.service_name || 'atendimento',
+    link_cancelamento: cancelLink,
   };
 
   const custom = {

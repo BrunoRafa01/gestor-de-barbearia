@@ -10,6 +10,7 @@
 // Alem disso o indice unico parcial `uniq_appointment_slot` e a ultima linha
 // de defesa no proprio banco.
 
+import { randomBytes } from 'node:crypto';
 import { all, get, run } from './db.js';
 import { HttpError } from './http.js';
 import { assertSlotAvailable, endTimeFor } from './availability.js';
@@ -24,7 +25,7 @@ import { ACTIVE_STATUSES, isValidStatus } from './time.js';
 
 const APPOINTMENT_SELECT = `
   SELECT a.id, a.client_id, a.barber_id, a.service_id, a.date, a.start_time, a.end_time,
-         a.status, a.price, a.notes, a.source, a.created_at, a.updated_at,
+         a.status, a.price, a.notes, a.source, a.cancel_token, a.created_at, a.updated_at,
          c.name AS client_name, c.phone AS client_phone, c.email AS client_email,
          b.name AS barber_name, b.color AS barber_color,
          s.name AS service_name, s.duration_min AS service_duration
@@ -43,6 +44,12 @@ function mapRow(row) {
 
 export async function getAppointmentById(id) {
   const row = await get(`${APPOINTMENT_SELECT} WHERE a.id = ?`, [Number(id)]);
+  return mapRow(row);
+}
+
+export async function getAppointmentByCancelToken(token) {
+  if (!token || typeof token !== 'string' || token.length < 16) return null;
+  const row = await get(`${APPOINTMENT_SELECT} WHERE a.cancel_token = ?`, [token]);
   return mapRow(row);
 }
 
@@ -117,11 +124,12 @@ async function insertIfFree({
   price,
   notes,
   source,
+  cancelToken,
 }) {
   const info = await run(
     `INSERT INTO appointments
-       (client_id, barber_id, service_id, date, start_time, end_time, status, price, notes, source)
-     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+       (client_id, barber_id, service_id, date, start_time, end_time, status, price, notes, source, cancel_token)
+     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       WHERE NOT EXISTS (
         SELECT 1 FROM appointments a
          WHERE a.barber_id = ?
@@ -131,7 +139,7 @@ async function insertIfFree({
            AND a.end_time   > ?
       )`,
     [
-      clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, source,
+      clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, source, cancelToken,
       barberId, date, endTime, startTime,
     ]
   );
@@ -159,6 +167,8 @@ export async function createAppointment(input, now = new Date()) {
       ? availability.price
       : Number(input.price);
 
+  const cancelToken = input.cancel_token || randomBytes(16).toString('hex');
+
   const id = await insertIfFree({
     clientId,
     barberId,
@@ -170,6 +180,7 @@ export async function createAppointment(input, now = new Date()) {
     price,
     notes,
     source,
+    cancelToken,
   });
 
   if (id === null) {
@@ -222,13 +233,32 @@ export async function updateAppointment(id, input, now = new Date()) {
       ? Number(service.price)
       : Number(input.price);
 
-  await run(
+  const updateInfo = await run(
     `UPDATE appointments
         SET client_id = ?, barber_id = ?, service_id = ?, date = ?, start_time = ?, end_time = ?,
             status = ?, price = ?, notes = ?, updated_at = datetime('now','localtime')
-      WHERE id = ?`,
-    [clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, appointmentId]
+      WHERE id = ?
+        AND (
+          ? IN ('cancelled', 'no_show')
+          OR NOT EXISTS (
+            SELECT 1 FROM appointments a
+             WHERE a.id != ?
+               AND a.barber_id = ?
+               AND a.date = ?
+               AND a.status IN (${ACTIVE_SQL})
+               AND a.start_time < ?
+               AND a.end_time   > ?
+          )
+        )`,
+    [
+      clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, appointmentId,
+      status, appointmentId, barberId, date, endTime, startTime,
+    ]
   );
+
+  if (updateInfo.changes === 0) {
+    throw new HttpError(409, 'Este horário está em conflito com outro agendamento. Escolha outro horário livre.');
+  }
 
   return getAppointmentById(appointmentId);
 }

@@ -71,6 +71,7 @@ export interface Appointment {
   price: number;
   notes: string | null;
   source: AppointmentSource;
+  cancel_token?: string | null;
   created_at: string;
   updated_at: string | null;
   client_name?: string;

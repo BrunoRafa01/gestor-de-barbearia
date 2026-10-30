@@ -89,10 +89,11 @@ CREATE TABLE IF NOT EXISTS appointments (
   end_time   TEXT NOT NULL,
   status     TEXT NOT NULL DEFAULT 'pending',
   price      REAL NOT NULL DEFAULT 0,
-  notes      TEXT,
-  source     TEXT NOT NULL DEFAULT 'admin',
-  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  notes        TEXT,
+  source       TEXT NOT NULL DEFAULT 'admin',
+  cancel_token TEXT,
+  created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at   TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   CHECK (status IN ('pending','confirmed','completed','cancelled','no_show')),
   CHECK (source IN ('admin','public'))
 );
@@ -101,6 +102,9 @@ CREATE INDEX IF NOT EXISTS idx_appointments_date        ON appointments(date);
 CREATE INDEX IF NOT EXISTS idx_appointments_barber_date ON appointments(barber_id, date);
 CREATE INDEX IF NOT EXISTS idx_appointments_client      ON appointments(client_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_status      ON appointments(status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token
+  ON appointments(cancel_token)
+  WHERE cancel_token IS NOT NULL;
 
 -- Garante, no proprio banco, que nao existam dois agendamentos ativos
 -- para o mesmo barbeiro no mesmo dia e com o mesmo horario inicial.
@@ -343,6 +347,21 @@ export async function initDatabase(options = {}) {
   }
 
   await driver.exec(SCHEMA);
+
+  // Migracao segura de schema para bancos preexistentes
+  try {
+    const tableCols = await driver.all('PRAGMA table_info(appointments)', []);
+    const hasCancelToken = tableCols.some((col) => col.name === 'cancel_token');
+    if (!hasCancelToken) {
+      await driver.exec('ALTER TABLE appointments ADD COLUMN cancel_token TEXT');
+      await driver.exec(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token ON appointments(cancel_token) WHERE cancel_token IS NOT NULL'
+      );
+    }
+  } catch {
+    /* coluna ou indice ja existente */
+  }
+
   await seedDefaults();
   await loadSettings();
   initialized = true;

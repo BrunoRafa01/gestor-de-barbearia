@@ -1,6 +1,11 @@
 import { computeAvailability, computeAvailabilityRange } from '../availability.js';
-import { createAppointment, upsertClientByPhone } from '../appointments.js';
-import { all, getSetting } from '../db.js';
+import {
+  createAppointment,
+  getAppointmentByCancelToken,
+  setAppointmentStatus,
+  upsertClientByPhone,
+} from '../appointments.js';
+import { all, getSetting, run } from '../db.js';
 import { isDemoMode } from '../demo.js';
 import { HttpError } from '../http.js';
 import { clientIp, publicBookingLimiter, publicReadLimiter } from '../security.js';
@@ -173,12 +178,109 @@ export const publicRoutes = [
         status: 201,
         body: {
           appointment,
+          cancel_token: appointment.cancel_token || null,
+          manage_url: appointment.cancel_token
+            ? `/agendar?manage=${appointment.cancel_token}`
+            : null,
           confirmation: {
             phone: appointment.client_phone,
             message: messages.confirmation,
             link: waLink(appointment.client_phone, messages.confirmation),
           },
           shop: shopPayload(),
+        },
+      };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/public/appointments/:token',
+    auth: false,
+    handler: async ({ req, res, params }) => {
+      enforceLimit(req, res, publicReadLimiter, 'public-appointment-lookup');
+      const token = String(params.token || '').trim();
+      if (!/^[a-f0-9]{16,64}$/i.test(token)) {
+        throw new HttpError(400, 'Código de agendamento inválido.');
+      }
+
+      const appointment = await getAppointmentByCancelToken(token);
+      if (!appointment) {
+        throw new HttpError(404, 'Agendamento não encontrado ou link expirado.');
+      }
+
+      return {
+        status: 200,
+        body: {
+          id: appointment.id,
+          date: appointment.date,
+          start_time: appointment.start_time,
+          end_time: appointment.end_time,
+          status: appointment.status,
+          service_name: appointment.service_name,
+          service_duration: appointment.service_duration,
+          barber_name: appointment.barber_name,
+          barber_color: appointment.barber_color,
+          price: appointment.price,
+          client_name: appointment.client_name,
+          notes: appointment.notes,
+          shop: shopPayload(),
+        },
+      };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/public/appointments/:token/cancel',
+    auth: false,
+    handler: async ({ req, res, params, body }) => {
+      enforceLimit(req, res, publicBookingLimiter, 'public-appointment-cancel');
+      const token = String(params.token || '').trim();
+      if (!/^[a-f0-9]{16,64}$/i.test(token)) {
+        throw new HttpError(400, 'Código de agendamento inválido.');
+      }
+
+      const appointment = await getAppointmentByCancelToken(token);
+      if (!appointment) {
+        throw new HttpError(404, 'Agendamento não encontrado ou link expirado.');
+      }
+
+      if (appointment.status === 'cancelled') {
+        return {
+          status: 200,
+          body: {
+            cancelled: true,
+            message: 'Este agendamento já estava cancelado.',
+            appointment,
+          },
+        };
+      }
+
+      if (appointment.status === 'completed') {
+        throw new HttpError(400, 'Agendamentos já concluídos não podem ser cancelados.');
+      }
+
+      const reason = optionalString(body?.reason, 'motivo', 300);
+      const updated = await setAppointmentStatus(appointment.id, 'cancelled');
+      if (reason) {
+        const newNotes = appointment.notes
+          ? `${appointment.notes} | Motivo do cancelamento: ${reason}`
+          : `Motivo do cancelamento: ${reason}`;
+        await run('UPDATE appointments SET notes = ? WHERE id = ?', [newNotes, appointment.id]);
+      }
+
+      return {
+        status: 200,
+        body: {
+          cancelled: true,
+          message: 'Seu agendamento foi cancelado com sucesso.',
+          reason: reason || null,
+          appointment: {
+            id: updated.id,
+            date: updated.date,
+            start_time: updated.start_time,
+            status: 'cancelled',
+            cancellation_reason: reason || null,
+          },
         },
       };
     },
