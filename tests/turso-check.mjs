@@ -20,8 +20,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PORT = Number(process.env.TEST_TURSO_PORT || 3412);
-const BASE = `http://127.0.0.1:${PORT}`;
+let PORT = Number(process.env.TEST_TURSO_PORT || 3412);
+let BASE = `http://127.0.0.1:${PORT}`;
 const PASSWORD = 'turso-senha-123';
 
 let passed = 0;
@@ -44,8 +44,8 @@ let serverLog = [];
 
 /* ---------------------------------- Utils --------------------------------- */
 
-function boot() {
-  serverLog = [];
+function boot(port = PORT) {
+  serverLog.push(`\n--- BOOTING CHILD (PORT ${port}) ---\n`);
   const proc = spawn(
     process.execPath,
     ['--experimental-sqlite', join(ROOT, 'server', 'server.js')],
@@ -53,7 +53,7 @@ function boot() {
       cwd: ROOT,
       env: {
         ...process.env,
-        PORT: String(PORT),
+        PORT: String(port),
         HOST: '127.0.0.1',
         NODE_ENV: 'test',
         ADMIN_PASSWORD: PASSWORD,
@@ -70,12 +70,35 @@ function boot() {
 }
 
 async function stop(proc) {
-  if (!proc) return;
-  proc.kill('SIGTERM');
-  await new Promise((done) => setTimeout(done, 900));
-  if (!proc.killed) proc.kill('SIGKILL');
-  // pequena espera para o sistema operacional liberar a porta
-  await new Promise((done) => setTimeout(done, 400));
+  if (!proc || proc.exitCode !== null) return;
+  await new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      try {
+        proc.kill('SIGKILL');
+      } catch {}
+    }, 2000);
+    proc.once('exit', () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    try {
+      proc.kill('SIGTERM');
+    } catch {
+      resolve();
+    }
+  });
+
+  const net = await import('node:net');
+  for (let i = 0; i < 40; i++) {
+    const free = await new Promise((res) => {
+      const tester = net.createServer()
+        .once('error', () => res(false))
+        .once('listening', () => { tester.close(() => res(true)); })
+        .listen(PORT, '127.0.0.1');
+    });
+    if (free) return;
+    await new Promise((r) => setTimeout(r, 200));
+  }
 }
 
 async function waitForServer(timeoutMs = 40000) {
@@ -195,7 +218,9 @@ async function run() {
   /* --------------- 2. Reinicio: os dados precisam permanecer -------------- */
   await stop(child);
   cookie = '';
-  child = boot();
+  PORT = PORT + 1;
+  BASE = `http://127.0.0.1:${PORT}`;
+  child = boot(PORT);
 
   if (!(await waitForServer())) {
     console.error('O servidor nao voltou apos o reinicio.');

@@ -347,6 +347,15 @@ async function run() {
   check('detalhe do agendamento responde 200', detail.status === 200);
   check('detalhe traz o nome do cliente', detail.body?.client_name === 'Joao da Silva');
 
+  const updateNotes = await call(`/api/appointments/${appointmentId}`, {
+    method: 'PUT',
+    body: {
+      notes: 'Cliente prefere corte degradê na navalha',
+    },
+  });
+  check('atualizar notas do agendamento responde 200', updateNotes.status === 200);
+  check('notas atualizadas persistem', updateNotes.body?.notes === 'Cliente prefere corte degradê na navalha');
+
   const missingAppointment = await call('/api/appointments/999999');
   check('agendamento inexistente responde 404', missingAppointment.status === 404);
 
@@ -447,6 +456,10 @@ async function run() {
   check('agendamento publico responde 201', publicBooking.status === 201, `status ${publicBooking.status}`);
   check('agendamento publico nasce pendente', publicBooking.body?.appointment?.status === 'pending');
   check('agendamento publico gera link de confirmacao', String(publicBooking.body?.confirmation?.link || '').startsWith('https://wa.me/'));
+  check('agendamento publico gera cancel_token', typeof publicBooking.body?.cancel_token === 'string' && publicBooking.body.cancel_token.length >= 32);
+  check('agendamento publico gera manage_url', String(publicBooking.body?.manage_url || '').startsWith('/agendar?manage='));
+
+  const cancelToken = publicBooking.body?.cancel_token;
 
   const publicDuplicate = await call('/api/public/appointments', {
     method: 'POST',
@@ -461,6 +474,33 @@ async function run() {
     },
   });
   check('duplicidade publica responde 409', publicDuplicate.status === 409, `status ${publicDuplicate.status}`);
+
+  const publicLookup = await call(`/api/public/appointments/${cancelToken}`, { auth: false });
+  check('consulta publica por token responde 200', publicLookup.status === 200);
+  check('consulta publica traz dados do agendamento', publicLookup.body?.client_name === 'Maria Publica');
+  check('consulta publica nao expoe cancel_token', publicLookup.body?.cancel_token === undefined);
+
+  const publicLookupBadFormat = await call('/api/public/appointments/token-falso', { auth: false });
+  check('consulta publica com formato invalido responde 400', publicLookupBadFormat.status === 400);
+
+  const publicLookupNotFound = await call('/api/public/appointments/0123456789abcdef0123456789abcdef', { auth: false });
+  check('consulta publica com token inexistente responde 404', publicLookupNotFound.status === 404);
+
+  const publicCancel = await call(`/api/public/appointments/${cancelToken}/cancel`, {
+    method: 'POST',
+    auth: false,
+    body: { reason: 'Imprevisto no trabalho' },
+  });
+  check('cancelamento publico por token responde 200', publicCancel.status === 200);
+  check('cancelamento publico altera status para cancelled', publicCancel.body?.appointment?.status === 'cancelled');
+  check('cancelamento publico salva motivo', publicCancel.body?.appointment?.cancellation_reason === 'Imprevisto no trabalho');
+
+  const publicCancelAgain = await call(`/api/public/appointments/${cancelToken}/cancel`, {
+    method: 'POST',
+    auth: false,
+    body: { reason: 'Tentando de novo' },
+  });
+  check('cancelar agendamento ja cancelado e idempotente (200)', publicCancelAgain.status === 200 && publicCancelAgain.body?.cancelled === true);
 
   const publicBadPhone = await call('/api/public/appointments', {
     method: 'POST',
@@ -491,6 +531,21 @@ async function run() {
 
   const afterImport = await call('/api/appointments?limit=200');
   check('dados continuam acessiveis apos importar', Array.isArray(afterImport.body));
+
+  /* ---------------------- 14.1 Troca de senha e revogacao ------------------- */
+  const oldCookie = cookie;
+  const passChange = await call('/api/settings/password', {
+    method: 'POST',
+    body: { current_password: PASSWORD, new_password: 'NovaSenhaForte123' },
+  });
+  check('troca de senha responde 200', passChange.status === 200);
+  check('troca de senha devolve status updated', passChange.body?.updated === true);
+
+  const callWithOldCookie = await call('/api/settings', { auth: false, headers: { Cookie: oldCookie } });
+  check('cookie anterior e revogado apos troca de senha', callWithOldCookie.status === 401);
+
+  const callWithNewCookie = await call('/api/settings');
+  check('novo cookie autentica com sucesso', callWithNewCookie.status === 200);
 
   /* --------------------------- 15. Exit / logout -------------------------- */
   const logout = await call('/api/auth/logout', { method: 'POST' });

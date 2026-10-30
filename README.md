@@ -66,15 +66,17 @@ Todas as imagens abaixo são capturas reais da aplicação rodando em **modo dem
 - Relatórios por período, com totais, comissão por profissional e distribuição por dia
   da semana.
 
-**Página pública de agendamento**
+**Página pública de agendamento e autoatendimento**
 - Fluxo em 4 passos (serviço → profissional → horário → dados), pensado para o celular.
 - Só exibe horários realmente livres; respeita folgas e dias fechados.
+- **Link exclusivo de autoatendimento (`cancel_token`)**: cada agendamento gera um token criptográfico de 128 bits que permite ao cliente consultar o status ou cancelar o horário diretamente (`/agendar?manage=<token>`), liberando a vaga imediatamente sem risco de IDOR.
 - Botão de contato direto no **WhatsApp** e link para o telefone da barbearia.
 - Pode ser desativada a qualquer momento nas configurações.
 
 **WhatsApp**
 - Mensagens prontas de confirmação, lembrete e cancelamento, geradas a partir do
   agendamento e abertas no WhatsApp com um clique.
+- Suporte ao marcador `{link_cancelamento}` para enviar o link direto de autoatendimento ao cliente.
 
 **Operação**
 - Backup exportável/importável em JSON (modos *mesclar* e *substituir*).
@@ -147,7 +149,7 @@ clientes e agendamentos são gerados automaticamente e **não representam pessoa
 
 ```bash
 npm run typecheck       # Verificação estrita de tipos com TypeScript (tsc --noEmit)
-npm test                # 121 verificações end-to-end (API, regras de negócio e segurança)
+npm test                # 138 verificações end-to-end (API, regras de negócio, cancelamento seguro e segurança)
 npm run test:turso      # 21 verificações de persistência com libSQL (sobrevive a reinício)
 npm run test:responsive # 10 verificações de conformidade mobile (touch targets >= 44px, safe area)
 npm run test:all        # Executa todas as suites de testes e validação de tipos
