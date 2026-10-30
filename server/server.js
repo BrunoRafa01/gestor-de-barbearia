@@ -270,12 +270,17 @@ async function bootstrap() {
 
 function shutdown(signal) {
   console.log(`\n${signal} recebido. Encerrando o Gestor de Barbearia...`);
+  if (typeof server.closeAllConnections === 'function') {
+    server.closeAllConnections();
+  } else if (typeof server.closeIdleConnections === 'function') {
+    server.closeIdleConnections();
+  }
   server.close(async () => {
     await closeDatabase().catch(() => {});
     process.exit(0);
   });
   // Garante o encerramento mesmo se alguma conexao ficar pendurada.
-  setTimeout(() => process.exit(0), 8000).unref();
+  setTimeout(() => process.exit(0), 4000).unref();
 }
 
 process.on('SIGINT', () => shutdown('SIGINT'));

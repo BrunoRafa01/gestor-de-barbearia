@@ -1,7 +1,15 @@
 import { DEFAULT_SETTINGS, all, batch, get, getSettingsMap, run, setSetting } from '../db.js';
 import { invalidateBusinessHours, invalidateClosures } from '../availability.js';
 import { HttpError } from '../http.js';
-import { hashPassword, isAuthenticated, passwordIssue, verifyPassword } from '../auth.js';
+import {
+  hashPassword,
+  isAuthenticated,
+  passwordIssue,
+  rotateSessionSecret,
+  startSession,
+  verifyPassword,
+} from '../auth.js';
+import { isSecureRequest } from '../security.js';
 import {
   digitsOnly,
   optionalString,
@@ -99,7 +107,7 @@ export const settingsRoutes = [
   {
     method: 'POST',
     path: '/api/settings/password',
-    handler: async ({ req, body }) => {
+    handler: async ({ req, res, body }) => {
       const current = requiredString(body.current_password, 'senha atual', { max: 128 });
       const next = requiredString(body.new_password, 'nova senha', { max: 128 });
 
@@ -114,6 +122,14 @@ export const settingsRoutes = [
 
       await setSetting('admin_password_hash', hashPassword(next));
       await setSetting('admin_password_default', '0');
+
+      // Rotaciona o secret de sessão para invalidar outras sessões ativas
+      if (!process.env.SESSION_SECRET) {
+        await rotateSessionSecret();
+        if (res) {
+          startSession(res, { secure: isSecureRequest(req) });
+        }
+      }
 
       return { status: 200, body: { updated: true, authenticated: isAuthenticated(req) } };
     },

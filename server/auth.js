@@ -78,6 +78,12 @@ export function createSessionToken() {
   return `${payload}.${sign(payload, secret)}`;
 }
 
+export async function rotateSessionSecret() {
+  const secret = randomBytes(32).toString('hex');
+  await setSetting('session_secret', secret);
+  return secret;
+}
+
 export function verifySessionToken(token) {
   if (!token || typeof token !== 'string') return false;
   const separator = token.lastIndexOf('.');
