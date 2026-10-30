@@ -2324,7 +2324,8 @@ const VIEWS = {
 };
 
 function currentViewFromHash() {
-  const key = (location.hash || '').replace(/^#\/?/, '');
+  const params = new URLSearchParams(window.location.search);
+  const key = (location.hash || '').replace(/^#\/?/, '') || params.get('view');
   return NAV.some((item) => item.key === key) ? key : 'dashboard';
 }
 
@@ -2357,7 +2358,7 @@ function boot() {
     .get('/api/auth/me')
     .then((me) => {
       state.me = me;
-      if (!me.authenticated) {
+      if (!me.authenticated || currentViewFromHash() === 'login') {
         renderLogin();
         return;
       }

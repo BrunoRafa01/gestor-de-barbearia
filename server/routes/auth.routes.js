@@ -66,4 +66,16 @@ export const authRoutes = [
       body: statusPayload(req, isAuthenticated(req)),
     }),
   },
+  {
+    method: 'GET',
+    path: '/api/auth/demo-session',
+    auth: false,
+    handler: ({ req, res, query }) => {
+      if (!isDemoMode()) throw new HttpError(403, 'Apenas em modo demonstracao.');
+      startSession(res, { secure: isSecureRequest(req) });
+      const view = query.view || 'dashboard';
+      res.writeHead(302, { Location: `/#${view}` });
+      res.end();
+    },
+  },
 ];

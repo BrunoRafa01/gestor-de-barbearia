@@ -102,9 +102,6 @@ CREATE INDEX IF NOT EXISTS idx_appointments_date        ON appointments(date);
 CREATE INDEX IF NOT EXISTS idx_appointments_barber_date ON appointments(barber_id, date);
 CREATE INDEX IF NOT EXISTS idx_appointments_client      ON appointments(client_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_status      ON appointments(status);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token
-  ON appointments(cancel_token)
-  WHERE cancel_token IS NOT NULL;
 
 -- Garante, no proprio banco, que nao existam dois agendamentos ativos
 -- para o mesmo barbeiro no mesmo dia e com o mesmo horario inicial.
@@ -354,10 +351,10 @@ export async function initDatabase(options = {}) {
     const hasCancelToken = tableCols.some((col) => col.name === 'cancel_token');
     if (!hasCancelToken) {
       await driver.exec('ALTER TABLE appointments ADD COLUMN cancel_token TEXT');
-      await driver.exec(
-        'CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token ON appointments(cancel_token) WHERE cancel_token IS NOT NULL'
-      );
     }
+    await driver.exec(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token ON appointments(cancel_token) WHERE cancel_token IS NOT NULL'
+    );
   } catch {
     /* coluna ou indice ja existente */
   }
