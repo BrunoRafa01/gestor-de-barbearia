@@ -32,6 +32,9 @@ services:
       # Veja em: Dashboard do servico > Environment > ADMIN_PASSWORD.
       - key: ADMIN_PASSWORD
         generateValue: true
+      # Chave de assinatura HMAC das sessoes gerada automaticamente
+      - key: SESSION_SECRET
+        generateValue: true
       # Banco persistente na nuvem (Turso/libSQL). Preencha no dashboard.
       - key: TURSO_DATABASE_URL
         sync: false
