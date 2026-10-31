@@ -14,6 +14,7 @@ import { isDemoMode, seedDemoData } from './demo.js';
 import { HttpError, readJsonBody, sendError, sendJson, serveStatic } from './http.js';
 import { applySecurityHeaders, isSecureRequest, newRequestId } from './security.js';
 import { apiRoutes } from './routes/index.js';
+import { startWhatsAppWorker, stopWhatsAppWorker } from './whatsapp-cloud.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = resolve(__dirname, '..');
@@ -264,11 +265,13 @@ async function bootstrap() {
     console.log('[demo] MODO DEMONSTRACAO ativo: nenhum dado real e exibido ou gravado.');
   }
 
+  startWhatsAppWorker();
   server.listen(PORT, HOST, printBanner);
 }
 
 function shutdown(signal) {
   console.log(`\n${signal} recebido. Encerrando o Gestor de Barbearia...`);
+  stopWhatsAppWorker();
   if (typeof server.closeAllConnections === 'function') {
     server.closeAllConnections();
   } else if (typeof server.closeIdleConnections === 'function') {

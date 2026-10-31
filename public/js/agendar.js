@@ -355,9 +355,13 @@ function successHtml(result) {
           : ''
       }
       ${
-        result.confirmation?.link
-          ? `<a class="btn btn-whats btn-block" href="${esc(result.confirmation.link)}" target="_blank" rel="noopener">
-               ${icon('whatsapp')} Enviar confirmação no WhatsApp
+        result.confirmation?.whatsapp_automated
+          ? `<div style="margin-top:14px;padding:12px;background:rgba(16, 185, 129, 0.12);border:1px solid rgba(16, 185, 129, 0.3);border-radius:10px;color:#34d399;font-size:13px;display:flex;align-items:center;gap:8px;text-align:left;width:100%">
+               ${icon('check')} <span><strong>WhatsApp Oficial Enviado:</strong> A confirmação foi enviada automaticamente para o seu número.</span>
+             </div>`
+          : (state.shop?.whatsapp || state.shop?.phone)
+          ? `<a class="btn btn-whats btn-block" href="https://wa.me/55${esc(String(state.shop.whatsapp || state.shop.phone).replace(/\D/g, ''))}?text=${encodeURIComponent('Olá! Acabei de fazer um agendamento pelo site.')}" target="_blank" rel="noopener">
+               ${icon('whatsapp')} Falar com a barbearia no WhatsApp
              </a>`
           : ''
       }
@@ -503,7 +507,6 @@ async function submit() {
     });
 
     document.getElementById('pk-again')?.addEventListener('click', () => window.location.reload());
-    if (result.confirmation?.link) window.open(result.confirmation.link, '_blank', 'noopener');
   } catch (error) {
     toast(error.message, 'error');
     submitButton.disabled = false;

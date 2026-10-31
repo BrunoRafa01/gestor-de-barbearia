@@ -10,6 +10,11 @@ import {
 import { getSetting } from '../db.js';
 import { HttpError } from '../http.js';
 import { buildMessages, waLink } from '../whatsapp.js';
+import {
+  notifyAppointmentCancelled,
+  notifyAppointmentCreatedOrConfirmed,
+  notifyAppointmentRescheduled,
+} from '../whatsapp-cloud.js';
 import { optionalId, requiredId } from '../validate.js';
 import { addDays, isValidDate, todayISO } from '../time.js';
 
@@ -78,34 +83,92 @@ export const appointmentRoutes = [
   {
     method: 'POST',
     path: '/api/appointments',
-    handler: async ({ body }) => ({
-      status: 201,
-      body: await createAppointment({ ...body, source: 'admin' }),
-    }),
+    handler: async ({ body }) => {
+      const created = await createAppointment({ ...body, source: 'admin' });
+      try {
+        await notifyAppointmentCreatedOrConfirmed(created);
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao notificar criacao pelo painel:', err);
+      }
+      return {
+        status: 201,
+        body: created,
+      };
+    },
   },
   {
     method: 'PUT',
     path: '/api/appointments/:id',
-    handler: async ({ params, body }) => ({
-      status: 200,
-      body: await updateAppointment(requiredId(params.id, 'agendamento'), body),
-    }),
+    handler: async ({ params, body }) => {
+      const id = requiredId(params.id, 'agendamento');
+      const existing = await getAppointmentById(id);
+      const updated = await updateAppointment(id, body);
+
+      try {
+        if (existing && (existing.date !== updated.date || existing.start_time !== updated.start_time)) {
+          await notifyAppointmentRescheduled(updated, existing);
+        } else if (existing && existing.status !== updated.status) {
+          if (updated.status === 'cancelled') {
+            await notifyAppointmentCancelled(updated, 'Status alterado para cancelado');
+          } else if (updated.status === 'confirmed') {
+            await notifyAppointmentCreatedOrConfirmed(updated);
+          }
+        }
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao notificar alteracao de agendamento:', err);
+      }
+
+      return {
+        status: 200,
+        body: updated,
+      };
+    },
   },
   {
     method: 'PATCH',
     path: '/api/appointments/:id/status',
-    handler: async ({ params, body }) => ({
-      status: 200,
-      body: await setAppointmentStatus(requiredId(params.id, 'agendamento'), body.status),
-    }),
+    handler: async ({ params, body }) => {
+      const id = requiredId(params.id, 'agendamento');
+      const existing = await getAppointmentById(id);
+      const updated = await setAppointmentStatus(id, body.status);
+
+      try {
+        if (body.status === 'cancelled') {
+          await notifyAppointmentCancelled(updated, 'Status atualizado para cancelado');
+        } else if (body.status === 'confirmed') {
+          await notifyAppointmentCreatedOrConfirmed(updated);
+        }
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao notificar status de agendamento:', err);
+      }
+
+      return {
+        status: 200,
+        body: updated,
+      };
+    },
   },
   {
     method: 'DELETE',
     path: '/api/appointments/:id',
-    handler: async ({ params }) => ({
-      status: 200,
-      body: await deleteAppointment(requiredId(params.id, 'agendamento')),
-    }),
+    handler: async ({ params }) => {
+      const id = requiredId(params.id, 'agendamento');
+      const existing = await getAppointmentById(id);
+      const result = await deleteAppointment(id);
+
+      try {
+        if (existing && existing.status !== 'cancelled') {
+          await notifyAppointmentCancelled(existing, 'Agendamento removido pelo administrador');
+        }
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao notificar remocao de agendamento:', err);
+      }
+
+      return {
+        status: 200,
+        body: result,
+      };
+    },
   },
   {
     method: 'GET',

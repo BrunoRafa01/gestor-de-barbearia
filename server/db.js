@@ -108,6 +108,27 @@ CREATE INDEX IF NOT EXISTS idx_appointments_status      ON appointments(status);
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_appointment_slot
   ON appointments(barber_id, date, start_time)
   WHERE status IN ('pending','confirmed','completed');
+
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  appointment_id  INTEGER REFERENCES appointments(id) ON DELETE SET NULL,
+  recipient_type  TEXT NOT NULL DEFAULT 'client',
+  recipient_phone TEXT NOT NULL,
+  message_type    TEXT NOT NULL,
+  idempotency_key TEXT UNIQUE,
+  content         TEXT,
+  meta_message_id TEXT,
+  status          TEXT NOT NULL DEFAULT 'pending',
+  error_message   TEXT,
+  attempts        INTEGER NOT NULL DEFAULT 0,
+  created_at      TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  sent_at         TEXT,
+  updated_at      TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_appt   ON whatsapp_messages(appointment_id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_phone  ON whatsapp_messages(recipient_phone);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_status ON whatsapp_messages(status);
 `;
 
 export const DEFAULT_SETTINGS = {
@@ -122,6 +143,21 @@ export const DEFAULT_SETTINGS = {
   max_advance_days: '60',
   public_booking: '1',
   whatsapp_country_code: '55',
+  whatsapp_cloud_enabled: '0',
+  whatsapp_phone_number_id: '',
+  whatsapp_business_account_id: '',
+  whatsapp_access_token: '',
+  whatsapp_admin_phone: '',
+  whatsapp_notify_admin: '1',
+  whatsapp_notify_barber: '1',
+  whatsapp_reminder_enabled: '1',
+  whatsapp_reminder_hours: '24',
+  whatsapp_api_version: 'v21.0',
+  whatsapp_use_templates: '0',
+  whatsapp_template_confirmation: 'confirmacao_agendamento',
+  whatsapp_template_reminder: 'lembrete_agendamento',
+  whatsapp_template_cancellation: 'cancelamento_agendamento',
+  whatsapp_webhook_verify_token: '',
 };
 
 export const DEFAULT_BUSINESS_HOURS = [

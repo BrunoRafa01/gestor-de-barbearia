@@ -1632,11 +1632,94 @@ function openServiceForm(service) {
 
 /* ------------------------------ Configuracoes ----------------------------- */
 
+function formatDateTimeBR(iso) {
+  if (!iso) return '-';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+  } catch {
+    return String(iso);
+  }
+}
+
+function renderWhatsAppHistoryTable(messages) {
+  if (!messages || !messages.length) {
+    return `<div class="empty-block" style="padding:24px; text-align:center; color:var(--text-dim)">Nenhuma mensagem registrada até o momento.</div>`;
+  }
+  const typeLabels = {
+    confirmation: 'Confirmação',
+    reminder: 'Lembrete 24h',
+    cancellation: 'Cancelamento',
+    reschedule: 'Reagendamento',
+    team_alert: 'Alerta Equipe',
+    test: 'Teste Manual',
+  };
+  const statusBadges = {
+    sent: '<span class="pill pill-confirmed">Enviado</span>',
+    delivered: '<span class="pill pill-completed">Entregue</span>',
+    read: '<span class="pill pill-confirmed" style="background:rgba(52,211,153,0.22)">Lido</span>',
+    pending: '<span class="pill pill-pending">Pendente</span>',
+    failed: '<span class="pill pill-cancelled">Falhou</span>',
+  };
+  return `
+    <table class="table" style="width:100%; border-collapse:collapse">
+      <thead>
+        <tr>
+          <th>Data / Hora</th>
+          <th>Tipo</th>
+          <th>Destinatário</th>
+          <th>Agendamento</th>
+          <th>Status</th>
+          <th>Ações / Detalhes</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${messages.map((msg) => `
+          <tr>
+            <td class="mono" style="font-size:12px; white-space:nowrap">${formatDateTimeBR(msg.created_at)}</td>
+            <td><strong>${esc(typeLabels[msg.message_type] || msg.message_type)}</strong></td>
+            <td>
+              <div>${esc(msg.recipient_name || 'Destinatário')}</div>
+              <div class="mono muted" style="font-size:11px">${formatPhone(msg.recipient_phone)}</div>
+            </td>
+            <td>
+              ${msg.appointment_id ? `
+                <div style="font-size:12px">#${msg.appointment_id} - ${esc(msg.client_name || '')}</div>
+                <div class="muted" style="font-size:11px">${msg.appointment_date ? formatDateBR(msg.appointment_date) : ''} ${msg.appointment_time || ''}</div>
+              ` : '<span class="muted">-</span>'}
+            </td>
+            <td>${statusBadges[msg.status] || `<span class="pill pill-neutral">${esc(msg.status)}</span>`}</td>
+            <td>
+              ${msg.error_message ? `
+                <div style="color:#f87171; font-size:11px; max-width:260px; word-break:break-word" title="${esc(msg.error_message)}">
+                  ${esc(msg.error_message.slice(0, 95))}
+                </div>
+              ` : ''}
+              ${msg.meta_message_id ? `
+                <div class="mono muted" style="font-size:10px" title="ID da Meta: ${esc(msg.meta_message_id)}">
+                  ID: ${esc(msg.meta_message_id.slice(0, 16))}...
+                </div>
+              ` : ''}
+              ${msg.status === 'failed' ? `
+                <button class="btn btn-sm btn-ghost resend-wa-btn" data-id="${msg.id}" type="button" style="margin-top:4px; font-size:11px; padding:2px 8px">
+                  Reenviar
+                </button>
+              ` : ''}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
 async function viewSettings() {
-  const [settings, businessHours, closures] = await Promise.all([
+  const [settings, businessHours, closures, waConfig, waMessages] = await Promise.all([
     api.get('/api/settings'),
     api.get('/api/business-hours'),
     api.get('/api/closures'),
+    api.get('/api/whatsapp/config').catch(() => null),
+    api.get('/api/whatsapp/messages?limit=25').catch(() => []),
   ]);
   state.settings = settings;
 
@@ -1822,6 +1905,158 @@ async function viewSettings() {
           <textarea id="tpl_cancellation" placeholder="Olá {cliente}, seu horário na {loja} em {data} às {hora} foi cancelado. Se quiser, podemos reagendar.">${esc(settings.whatsapp_message_cancellation || '')}</textarea>
         </div>
       </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">
+        <div>
+          <h2>WhatsApp Business Cloud API (Oficial da Meta)</h2>
+          <div class="card-sub">Envio 100% automático e oficial de confirmações, lembretes de 24h e cancelamentos</div>
+        </div>
+        <span class="spacer"></span>
+        <span class="pill ${waConfig?.configured ? 'pill-confirmed' : 'pill-pending'}">
+          ${waConfig?.configured ? (waConfig?.enabled ? 'Ativo e Operacional' : 'Configurado (Pausado)') : 'Não Configurado'}
+        </span>
+        <button class="btn btn-ghost btn-sm" id="test-whatsapp-cloud" type="button" style="margin-left:8px">
+          ${icon('whatsapp')} Testar Envio
+        </button>
+        <button class="btn btn-ghost btn-sm" id="trigger-reminders-now" type="button">
+          ${icon('clock')} Disparar Lembretes 24h
+        </button>
+        <button class="btn btn-primary btn-sm" id="save-whatsapp-cloud" type="button">
+          ${icon('check')} Salvar WhatsApp
+        </button>
+      </div>
+
+      <div style="margin-top:12px; margin-bottom:16px; padding:12px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid var(--border-soft)">
+        <label class="field-check">
+          <input type="checkbox" id="whatsapp_cloud_enabled" ${waConfig?.enabled ? 'checked' : ''} />
+          <strong>Ativar envio automático oficial via WhatsApp Business Cloud API</strong>
+        </label>
+        <div class="muted" style="margin-top:4px; font-size:12px">
+          Ao ativar, o sistema enviará as mensagens diretamente pelos servidores oficiais da Meta sem abrir o WhatsApp Web ou o app do celular.
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="gap:16px">
+        <div>
+          <h3 style="font-size:14px; margin-bottom:12px; color:var(--text-main)">Credenciais da Meta</h3>
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="field">
+              <label>Phone Number ID (ID do número na Meta)</label>
+              <input class="control mono" id="whatsapp_phone_number_id" value="${esc(waConfig?.phone_number_id || '')}" placeholder="Ex: 104829384910293" />
+            </div>
+            <div class="field">
+              <label>WhatsApp Business Account ID (WABA ID)</label>
+              <input class="control mono" id="whatsapp_business_account_id" value="${esc(waConfig?.business_account_id || '')}" placeholder="Ex: 109283746192837" />
+            </div>
+            <div class="field">
+              <label>Token de Acesso Permanente (System User Token)</label>
+              <input class="control mono" type="password" id="whatsapp_access_token" placeholder="${waConfig?.has_access_token ? '•••••••••••• (já configurado — deixe em branco para manter)' : 'Cole o token de acesso Bearer da Meta'}" />
+              <div class="muted" style="font-size:11px; margin-top:2px">
+                ${waConfig?.has_access_token ? '<span style="color:#34d399">✔ Token armazenado com segurança no servidor</span>' : 'Nunca exposto no frontend ou navegador'}
+              </div>
+            </div>
+            <div class="field">
+              <label>Versão da Graph API</label>
+              <input class="control mono" id="whatsapp_api_version" value="${esc(waConfig?.api_version || 'v21.0')}" placeholder="v21.0" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-size:14px; margin-bottom:12px; color:var(--text-main)">Notificações e Lembretes</h3>
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="field">
+              <label>WhatsApp do Administrador (para alertas de equipe)</label>
+              <input class="control" id="whatsapp_admin_phone" value="${esc(waConfig?.admin_phone || '')}" placeholder="Ex: 11999999999" />
+            </div>
+            <label class="field-check">
+              <input type="checkbox" id="whatsapp_notify_admin" ${waConfig?.notify_admin ? 'checked' : ''} />
+              <span>Notificar administrador em novos agendamentos</span>
+            </label>
+            <label class="field-check">
+              <input type="checkbox" id="whatsapp_notify_barber" ${waConfig?.notify_barber ? 'checked' : ''} />
+              <span>Notificar barbeiro responsável em novos agendamentos</span>
+            </label>
+            <div style="display:flex; gap:10px; align-items:center; margin-top:8px">
+              <label class="field-check" style="flex:1">
+                <input type="checkbox" id="whatsapp_reminder_enabled" ${waConfig?.reminder_enabled ? 'checked' : ''} />
+                <span>Enviar lembrete automático</span>
+              </label>
+              <div style="display:flex; align-items:center; gap:6px">
+                <input class="control mono" style="width:70px" type="number" min="1" max="72" id="whatsapp_reminder_hours" value="${esc(waConfig?.reminder_hours || 24)}" />
+                <span class="muted" style="font-size:12px">horas antes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-soft)">
+        <h3 style="font-size:14px; margin-bottom:8px">Modelos de Mensagem (Templates) da Meta</h3>
+        <p class="muted" style="margin-bottom:12px; font-size:12px">
+          Para mensagens de lembrete iniciadas pela barbearia fora da janela de 24 horas, a Meta exige templates pré-aprovados.
+        </p>
+        <div style="margin-bottom:12px">
+          <label class="field-check">
+            <input type="checkbox" id="whatsapp_use_templates" ${waConfig?.use_templates ? 'checked' : ''} />
+            <span>Utilizar templates da Meta (se desmarcado, envia mensagens de texto padrão)</span>
+          </label>
+        </div>
+        <div class="grid grid-2" style="gap:12px">
+          <div class="field">
+            <label>Template Confirmação</label>
+            <input class="control mono" id="whatsapp_template_confirmation" value="${esc(waConfig?.templates?.confirmation || 'confirmacao_agendamento')}" />
+          </div>
+          <div class="field">
+            <label>Template Lembrete 24h</label>
+            <input class="control mono" id="whatsapp_template_reminder" value="${esc(waConfig?.templates?.reminder || 'lembrete_agendamento')}" />
+          </div>
+          <div class="field">
+            <label>Template Cancelamento</label>
+            <input class="control mono" id="whatsapp_template_cancellation" value="${esc(waConfig?.templates?.cancellation || 'cancelamento_agendamento')}" />
+          </div>
+          <div class="field">
+            <label>Template Reagendamento</label>
+            <input class="control mono" id="whatsapp_template_reschedule" value="${esc(waConfig?.templates?.reschedule || 'reagendamento_agendamento')}" />
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-soft)">
+        <h3 style="font-size:14px; margin-bottom:6px">Webhook da Meta (Recibos de Entrega e Leitura)</h3>
+        <p class="muted" style="margin-bottom:10px; font-size:12px">
+          Configure este endereço no painel do Meta for Developers para receber status em tempo real de entrega (enviado, entregue, lido):
+        </p>
+        <div class="grid grid-2" style="gap:12px">
+          <div class="field">
+            <label>URL de Retorno (Callback URL)</label>
+            <input class="control mono" readonly value="${esc(waConfig?.webhook_callback_url || `${location.origin}/api/whatsapp/webhook`)}" />
+          </div>
+          <div class="field">
+            <label>Token de Verificação (Verify Token)</label>
+            <input class="control mono" type="password" id="whatsapp_webhook_verify_token" placeholder="${waConfig?.has_webhook_token ? '•••••••••••• (configurado)' : 'Defina um segredo alfanumérico'}" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">
+        <div>
+          <h2>Histórico e Auditoria de Mensagens do WhatsApp</h2>
+          <div class="card-sub">Registro de envios, confirmações de entrega, leituras e tratamento de falhas</div>
+        </div>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost btn-sm" id="refresh-whatsapp-history" type="button">
+          ${icon('clock')} Atualizar Histórico
+        </button>
+      </div>
+
+      <div class="table-wrap" id="whatsapp-history-wrap" style="margin-top:12px">
+        ${renderWhatsAppHistoryTable(waMessages)}
+      </div>
     </div>`;
 
   const field = (name) => content().querySelector(`[name="${name}"]`);
@@ -1954,6 +2189,148 @@ async function viewSettings() {
       toast('Link copiado.');
     } catch {
       toast('Não foi possível copiar automaticamente.', 'error');
+    }
+  });
+
+  plain('save-whatsapp-cloud')?.addEventListener('click', async (event) => {
+    setBusy(event.currentTarget, true);
+    try {
+      const payload = {
+        whatsapp_cloud_enabled: plain('whatsapp_cloud_enabled').checked ? '1' : '0',
+        whatsapp_phone_number_id: plain('whatsapp_phone_number_id').value.trim(),
+        whatsapp_business_account_id: plain('whatsapp_business_account_id').value.trim(),
+        whatsapp_api_version: plain('whatsapp_api_version').value.trim(),
+        whatsapp_admin_phone: plain('whatsapp_admin_phone').value.trim(),
+        whatsapp_notify_admin: plain('whatsapp_notify_admin').checked ? '1' : '0',
+        whatsapp_notify_barber: plain('whatsapp_notify_barber').checked ? '1' : '0',
+        whatsapp_reminder_enabled: plain('whatsapp_reminder_enabled').checked ? '1' : '0',
+        whatsapp_reminder_hours: plain('whatsapp_reminder_hours').value.trim() || '24',
+        whatsapp_use_templates: plain('whatsapp_use_templates').checked ? '1' : '0',
+        whatsapp_template_confirmation: plain('whatsapp_template_confirmation').value.trim(),
+        whatsapp_template_reminder: plain('whatsapp_template_reminder').value.trim(),
+        whatsapp_template_cancellation: plain('whatsapp_template_cancellation').value.trim(),
+        whatsapp_template_reschedule: plain('whatsapp_template_reschedule').value.trim(),
+      };
+      const token = plain('whatsapp_access_token').value.trim();
+      if (token) payload.whatsapp_access_token = token;
+      const webhookToken = plain('whatsapp_webhook_verify_token').value.trim();
+      if (webhookToken) payload.whatsapp_webhook_verify_token = webhookToken;
+
+      await api.put('/api/settings', payload);
+      saved('Configurações do WhatsApp Cloud salvas com sucesso.');
+      refresh();
+    } catch (error) {
+      toast(error.message, 'error');
+    } finally {
+      setBusy(event.currentTarget, false);
+    }
+  });
+
+  plain('trigger-reminders-now')?.addEventListener('click', async (event) => {
+    setBusy(event.currentTarget, true);
+    try {
+      const res = await api.post('/api/whatsapp/trigger-reminders', {});
+      toast(`Verificação concluída: ${res.sent} enviados, ${res.scanned} agendamentos analisados.`);
+      const updatedMessages = await api.get('/api/whatsapp/messages?limit=25');
+      const wrap = plain('whatsapp-history-wrap');
+      if (wrap) wrap.innerHTML = renderWhatsAppHistoryTable(updatedMessages);
+    } catch (error) {
+      toast(error.message, 'error');
+    } finally {
+      setBusy(event.currentTarget, false);
+    }
+  });
+
+  plain('refresh-whatsapp-history')?.addEventListener('click', async (event) => {
+    setBusy(event.currentTarget, true);
+    try {
+      const updatedMessages = await api.get('/api/whatsapp/messages?limit=25');
+      const wrap = plain('whatsapp-history-wrap');
+      if (wrap) wrap.innerHTML = renderWhatsAppHistoryTable(updatedMessages);
+      toast('Histórico atualizado.');
+    } catch (error) {
+      toast(error.message, 'error');
+    } finally {
+      setBusy(event.currentTarget, false);
+    }
+  });
+
+  plain('test-whatsapp-cloud')?.addEventListener('click', () => {
+    const defaultPhone = plain('whatsapp_admin_phone')?.value || plain('whatsapp_phone_number_id')?.value || '';
+    const modalContent = document.createElement('div');
+    modalContent.innerHTML = `
+      <p class="muted" style="margin-bottom:12px; font-size:13px">
+        O sistema enviará uma mensagem direta através da Meta WhatsApp Business Cloud API para o número especificado.
+      </p>
+      <div class="field" style="margin-bottom:12px">
+        <label>Telefone do Destinatário (com DDD)</label>
+        <input class="control" id="modal-test-phone" value="${esc(defaultPhone)}" placeholder="Ex: 11999998888" />
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Texto da Mensagem</label>
+        <textarea class="control" id="modal-test-message" rows="3">Mensagem de teste oficial enviada via Meta WhatsApp Business Cloud API - Gestor de Barbearia.</textarea>
+      </div>
+      <div id="test-result-box" style="display:none; margin-bottom:14px; padding:10px; border-radius:6px; font-size:12px; font-family:monospace; white-space:pre-wrap; max-height:160px; overflow-y:auto"></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px">
+        <button class="btn btn-ghost" id="modal-test-cancel" type="button">Cancelar</button>
+        <button class="btn btn-primary" id="modal-test-send" type="button">${icon('whatsapp')} Enviar Teste</button>
+      </div>
+    `;
+
+    const modal = openModal({
+      title: 'Testar Conexão com WhatsApp Meta',
+      body: modalContent,
+    });
+
+    modalContent.querySelector('#modal-test-cancel').addEventListener('click', () => modal.close());
+    modalContent.querySelector('#modal-test-send').addEventListener('click', async (evt) => {
+      const phone = modalContent.querySelector('#modal-test-phone').value.trim();
+      const message = modalContent.querySelector('#modal-test-message').value.trim();
+      const resultBox = modalContent.querySelector('#test-result-box');
+      if (!phone) return toast('Informe o telefone de destino.', 'error');
+
+      setBusy(evt.currentTarget, true);
+      resultBox.style.display = 'none';
+      try {
+        const res = await api.post('/api/whatsapp/test', { phone, message });
+        resultBox.style.display = 'block';
+        resultBox.style.background = 'rgba(16, 185, 129, 0.1)';
+        resultBox.style.color = '#34d399';
+        resultBox.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+        resultBox.textContent = `SUCESSO!\nID da Mensagem Meta: ${res.meta_message_id || 'OK'}\nResposta: ${JSON.stringify(res, null, 2)}`;
+        toast('Mensagem de teste enviada com sucesso!');
+        const updatedMessages = await api.get('/api/whatsapp/messages?limit=25');
+        const wrap = plain('whatsapp-history-wrap');
+        if (wrap) wrap.innerHTML = renderWhatsAppHistoryTable(updatedMessages);
+      } catch (err) {
+        resultBox.style.display = 'block';
+        resultBox.style.background = 'rgba(239, 68, 68, 0.1)';
+        resultBox.style.color = '#f87171';
+        resultBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        resultBox.textContent = `FALHA NO ENVIO:\n${err.message}\n${err.details ? JSON.stringify(err.details, null, 2) : ''}`;
+        toast(err.message, 'error');
+      } finally {
+        setBusy(evt.currentTarget, false);
+      }
+    });
+  });
+
+  content().addEventListener('click', async (e) => {
+    const resendBtn = e.target.closest('.resend-wa-btn');
+    if (!resendBtn) return;
+    const msgId = resendBtn.dataset.id;
+    if (!msgId) return;
+    setBusy(resendBtn, true);
+    try {
+      await api.post(`/api/whatsapp/resend/${msgId}`, {});
+      toast('Tentativa de reenvio realizada.');
+      const updatedMessages = await api.get('/api/whatsapp/messages?limit=25');
+      const wrap = plain('whatsapp-history-wrap');
+      if (wrap) wrap.innerHTML = renderWhatsAppHistoryTable(updatedMessages);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(resendBtn, false);
     }
   });
 }

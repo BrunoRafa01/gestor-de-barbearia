@@ -8,9 +8,9 @@ import { formatDateBR } from './time.js';
 
 export function normalizePhone(raw, countryCode = null) {
   const digits = String(raw || '').replace(/\D/g, '');
-  if (!digits) return '';
+  if (!digits || digits.length < 10) return '';
   const cc = String(countryCode || getSetting('whatsapp_country_code', '55') || '55');
-  if (digits.startsWith(cc) && digits.length > 11) return digits;
+  if (digits.startsWith(cc) && digits.length >= 12) return digits;
   if (digits.length <= 11) return `${cc}${digits}`;
   return digits;
 }

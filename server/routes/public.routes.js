@@ -10,6 +10,10 @@ import { isDemoMode } from '../demo.js';
 import { HttpError } from '../http.js';
 import { clientIp, publicBookingLimiter, publicReadLimiter } from '../security.js';
 import { buildMessages, waLink } from '../whatsapp.js';
+import {
+  notifyAppointmentCancelled,
+  notifyAppointmentCreatedOrConfirmed,
+} from '../whatsapp-cloud.js';
 import { addDays, isValidDate, todayISO } from '../time.js';
 import {
   digitsOnly,
@@ -174,6 +178,13 @@ export const publicRoutes = [
         shop_name: getSetting('shop_name', 'Gestor de Barbearia'),
       });
 
+      let whatsappDelivery = null;
+      try {
+        whatsappDelivery = await notifyAppointmentCreatedOrConfirmed(appointment);
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao disparar notificação pública:', err);
+      }
+
       return {
         status: 201,
         body: {
@@ -186,7 +197,9 @@ export const publicRoutes = [
             phone: appointment.client_phone,
             message: messages.confirmation,
             link: waLink(appointment.client_phone, messages.confirmation),
+            whatsapp_automated: Boolean(whatsappDelivery?.clientResult?.success),
           },
+          whatsapp: whatsappDelivery,
           shop: shopPayload(),
         },
       };
@@ -266,6 +279,12 @@ export const publicRoutes = [
           ? `${appointment.notes} | Motivo do cancelamento: ${reason}`
           : `Motivo do cancelamento: ${reason}`;
         await run('UPDATE appointments SET notes = ? WHERE id = ?', [newNotes, appointment.id]);
+      }
+
+      try {
+        await notifyAppointmentCancelled(appointment, reason);
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao disparar cancelamento público:', err);
       }
 
       return {

@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, all, batch, get, getSettingsMap, run, setSetting } from '../db.js';
+import { DEFAULT_SETTINGS, all, batch, get, getSetting, getSettingsMap, run, setSetting } from '../db.js';
 import { invalidateBusinessHours, invalidateClosures } from '../availability.js';
 import { HttpError } from '../http.js';
 import {
@@ -20,7 +20,13 @@ import {
 } from '../validate.js';
 import { WEEKDAYS } from '../time.js';
 
-const SECRET_KEYS = ['session_secret', 'admin_password_hash', 'admin_password_default'];
+const SECRET_KEYS = [
+  'session_secret',
+  'admin_password_hash',
+  'admin_password_default',
+  'whatsapp_access_token',
+  'whatsapp_webhook_verify_token',
+];
 
 const EDITABLE_KEYS = Object.keys(DEFAULT_SETTINGS).concat([
   'whatsapp_message_confirmation',
@@ -58,6 +64,30 @@ function normalizeSetting(key, value) {
       }
       return code;
     }
+    case 'whatsapp_cloud_enabled':
+    case 'whatsapp_notify_admin':
+    case 'whatsapp_notify_barber':
+    case 'whatsapp_reminder_enabled':
+    case 'whatsapp_use_templates':
+      return String(value) === '1' || value === true || value === 'true' ? '1' : '0';
+    case 'whatsapp_reminder_hours':
+      return String(Math.round(requiredNumber(value, 'horas de antecedência do lembrete', { min: 1, max: 168 })));
+    case 'whatsapp_access_token': {
+      const trimmed = String(value || '').trim();
+      if (!trimmed || trimmed === '***') {
+        return getSetting('whatsapp_access_token', '');
+      }
+      return trimmed;
+    }
+    case 'whatsapp_phone_number_id':
+    case 'whatsapp_business_account_id':
+    case 'whatsapp_admin_phone':
+    case 'whatsapp_api_version':
+    case 'whatsapp_template_confirmation':
+    case 'whatsapp_template_reminder':
+    case 'whatsapp_template_cancellation':
+    case 'whatsapp_webhook_verify_token':
+      return optionalString(value, key, 200) || '';
     case 'whatsapp_message_confirmation':
     case 'whatsapp_message_reminder':
     case 'whatsapp_message_cancellation':
@@ -69,7 +99,11 @@ function normalizeSetting(key, value) {
 
 function publicSettings() {
   const map = getSettingsMap();
+  const hasToken = Boolean(map.whatsapp_access_token || process.env.WHATSAPP_ACCESS_TOKEN);
+  const hasWebhookToken = Boolean(map.whatsapp_webhook_verify_token || process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN);
   for (const key of SECRET_KEYS) delete map[key];
+  map.whatsapp_access_token_configured = hasToken;
+  map.whatsapp_webhook_verify_token_configured = hasWebhookToken;
   return map;
 }
 
