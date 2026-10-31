@@ -18,34 +18,34 @@ export function isDemoMode() {
 }
 
 const DEMO_SETTINGS = {
-  shop_name: 'Barbearia Nova Runtime (Demo)',
-  shop_company: 'Nova Runtime',
-  shop_phone: '(11) 90000-0000',
-  shop_whatsapp: '5511900000000',
-  shop_address: 'Rua Exemplo, 123 - Centro - Cidade Demo',
-  shop_instagram: '@barbearia.demo',
+  shop_name: 'Barbearia Dom Navalha (Demo)',
+  shop_company: 'Cortes & Barba Tradicional',
+  shop_phone: '(11) 98765-4321',
+  shop_whatsapp: '5511987654321',
+  shop_address: 'Rua Augusta, 1420 - Consolação - São Paulo',
+  shop_instagram: '@domnavalha.barber',
   public_booking: '1',
 };
 
 const DEMO_SERVICES = [
-  { name: 'Corte Classico', description: 'Tesoura e maquina com acabamento na navalha.', duration_min: 30, price: 45 },
-  { name: 'Corte + Barba', description: 'Corte completo com barba na navalha e toalha quente.', duration_min: 60, price: 75 },
-  { name: 'Barba Terapia', description: 'Modelagem de barba com hidratacao e oleo.', duration_min: 30, price: 40 },
-  { name: 'Degrade Navalhado', description: 'Degrade preciso com acabamento na navalha.', duration_min: 45, price: 60 },
-  { name: 'Pigmentacao', description: 'Correcao de falhas e realce do desenho.', duration_min: 30, price: 55 },
-  { name: 'Corte Infantil', description: 'Atendimento com paciencia para os pequenos.', duration_min: 30, price: 35 },
+  { name: 'Corte Clássico', description: 'Tesoura e máquina com acabamento na navalha.', duration_min: 30, price: 45 },
+  { name: 'Corte + Barboterapia', description: 'Corte completo com barba na navalha e toalha quente.', duration_min: 60, price: 80 },
+  { name: 'Barboterapia Tradicional', description: 'Modelagem de barba com hidratação, toalha quente e óleo.', duration_min: 30, price: 45 },
+  { name: 'Degradê / Fade Navalhado', description: 'Degradê na régua com acabamento na navalha.', duration_min: 45, price: 60 },
+  { name: 'Pigmentação de Barba/Cabelo', description: 'Correção de falhas e realce do desenho.', duration_min: 30, price: 55 },
+  { name: 'Corte Kids', description: 'Atendimento com calma e paciência para os pequenos.', duration_min: 30, price: 40 },
 ];
 
 const DEMO_BARBERS = [
-  { name: 'Rafael Alves', phone: '(11) 90000-0001', email: 'rafael.demo@exemplo.com', color: '#c8a24a', commission: 40 },
-  { name: 'Bruno Martins', phone: '(11) 90000-0002', email: 'bruno.demo@exemplo.com', color: '#5b8def', commission: 50 },
-  { name: 'Diego Souza', phone: '(11) 90000-0003', email: 'diego.demo@exemplo.com', color: '#43b581', commission: 35 },
+  { name: 'Rafael Alves', phone: '(11) 98000-0001', email: 'rafael.alves@barbearia.com', color: '#c8a24a', commission: 40 },
+  { name: 'Bruno Martins', phone: '(11) 98000-0002', email: 'bruno.martins@barbearia.com', color: '#5b8def', commission: 50 },
+  { name: 'Diego Souza', phone: '(11) 98000-0003', email: 'diego.souza@barbearia.com', color: '#43b581', commission: 35 },
 ];
 
 const DEMO_CLIENTS = [
-  'Ana Demonstracao', 'Bruno Demonstracao', 'Carlos Demonstracao', 'Daniela Demonstracao',
-  'Eduardo Demonstracao', 'Fernanda Demonstracao', 'Gustavo Demonstracao', 'Helena Demonstracao',
-  'Igor Demonstracao', 'Juliana Demonstracao', 'Leandro Demonstracao', 'Mariana Demonstracao',
+  'Lucas Oliveira', 'Rodrigo Santos', 'Gabriel Silva', 'Matheus Costa',
+  'Felipe Almeida', 'Guilherme Ferreira', 'Thiago Lima', 'Fábio Souza',
+  'Leonardo Ribeiro', 'Gustavo Barbosa', 'Marcelo Rocha', 'André Carvalho',
 ];
 
 /**

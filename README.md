@@ -10,7 +10,7 @@ para computador e celular. Arquitetura em **Node.js** com tipagem estrita **Type
 (`tsconfig.json` e `server/types.ts`), sem dependências pesadas, com persistência em
 **SQLite** (local) ou **Turso/libSQL** (produção na nuvem).
 
-Desenvolvido por **Nova Runtime**.
+Desenvolvido por **Bruno**.
 
 ---
 
@@ -273,5 +273,5 @@ Todos os serviços usados têm plano gratuito. Nenhum recurso pago é necessári
 
 ## Licença
 
-Projeto de uso pessoal e de portfólio, desenvolvido por **Nova Runtime**.
+Projeto de uso pessoal e de portfólio, desenvolvido por **Bruno**.
 Consulte o autor antes de reutilizar comercialmente.

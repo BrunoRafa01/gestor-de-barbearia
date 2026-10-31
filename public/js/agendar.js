@@ -9,6 +9,7 @@ import {
   formatPhone,
   hhmmToMinutes,
   icon,
+  initials,
   money,
   parseISO,
   statusPill,
@@ -159,9 +160,15 @@ function renderServices() {
   grid.innerHTML = state.services
     .map(
       (service) => `
-      <button type="button" class="choice${String(state.serviceId) === String(service.id) ? ' selected' : ''}" data-service="${service.id}">
-        <strong>${esc(service.name)}</strong>
-        <span>${Number(service.duration_min)} min - ${esc(money(service.price))}</span>
+      <button type="button" class="choice service-choice${String(state.serviceId) === String(service.id) ? ' selected' : ''}" data-service="${service.id}">
+        <div class="choice-head">
+          <strong>${esc(service.name)}</strong>
+          <span class="choice-price">${esc(money(service.price))}</span>
+        </div>
+        <div class="choice-meta">
+          <span class="choice-duration">${icon('clock')} ${Number(service.duration_min)} min</span>
+        </div>
+        ${service.description ? `<p class="choice-desc">${esc(service.description)}</p>` : ''}
       </button>`
     )
     .join('');
@@ -184,9 +191,14 @@ function renderBarbers() {
   grid.innerHTML = state.barbers
     .map(
       (barber) => `
-      <button type="button" class="choice${String(state.barberId) === String(barber.id) ? ' selected' : ''}" data-barber="${barber.id}">
-        <strong>${esc(barber.name)}</strong>
-        <span>Profissional</span>
+      <button type="button" class="choice barber-choice${String(state.barberId) === String(barber.id) ? ' selected' : ''}" data-barber="${barber.id}">
+        <div class="barber-avatar" style="border-color:${esc(barber.color || 'var(--gold)')};color:${esc(barber.color || 'var(--gold)')}">
+          ${esc(initials(barber.name))}
+        </div>
+        <div class="barber-meta">
+          <strong>${esc(barber.name)}</strong>
+          <span class="barber-spec">Barbeiro Especialista</span>
+        </div>
       </button>`
     )
     .join('');
@@ -313,9 +325,9 @@ function successHtml(result) {
   return `
     <div class="card success-box">
       <div class="success-check">${icon('check')}</div>
-      <h3>Agendamento enviado!</h3>
+      <h3>Horário reservado com sucesso!</h3>
       <p class="muted" style="text-align:center">
-        Seu horário foi reservado e aguarda a confirmação da barbearia.
+        Seu horário está confirmado na barbearia. Chegue 5 minutinhos antes para tomar um café e relaxar.
       </p>
       <div class="booking-summary" style="width:100%;text-align:left">
         <div><span>Cliente</span><strong>${esc(appointment.client_name)}</strong></div>
@@ -328,15 +340,15 @@ function successHtml(result) {
       ${
         fullManageUrl
           ? `
-          <div style="margin-top:16px;padding:12px;background:rgba(37,99,235,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;text-align:left;width:100%">
-            <div style="font-size:12.5px;color:var(--c-text);display:flex;align-items:center;gap:6px;font-weight:600">
+          <div style="margin-top:16px;padding:12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:10px;text-align:left;width:100%">
+            <div style="font-size:12.5px;color:var(--text);display:flex;align-items:center;gap:6px;font-weight:600">
               ${icon('shield-check')} Link de autoatendimento
             </div>
             <p class="muted" style="margin-top:4px;font-size:12px">
               Guarde este link para consultar ou cancelar seu agendamento a qualquer momento:
             </p>
             <div style="margin-top:8px;display:flex;gap:6px">
-              <input type="text" readonly value="${esc(fullManageUrl)}" id="pk-manage-link" style="font-size:11.5px;padding:6px 10px;flex:1;background:var(--c-bg);border:1px solid var(--c-border);color:var(--c-text);border-radius:6px" />
+              <input type="text" readonly value="${esc(fullManageUrl)}" id="pk-manage-link" style="font-size:11.5px;padding:6px 10px;flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px" />
               <button class="btn btn-sm" id="pk-copy-manage" type="button">${icon('clipboard')} Copiar</button>
             </div>
           </div>`
@@ -535,7 +547,10 @@ function applyShop(config) {
   state.barbers = config.barbers;
   document.title = `Agendar horário | ${config.shop.name}`;
   document.getElementById('shop-name').textContent = config.shop.name;
-  document.getElementById('shop-company').textContent = config.shop.company || 'Nova Runtime';
+  const company = (config.shop.company && config.shop.company !== 'Nova Runtime')
+    ? config.shop.company
+    : 'Cortes & Barba Tradicional';
+  document.getElementById('shop-company').textContent = company;
   document.getElementById('shop-sub').textContent = config.shop.address
     ? config.shop.address
     : 'Escolha o serviço, o profissional e o melhor horário.';

@@ -176,24 +176,32 @@ function renderLogin() {
     <div class="page-centered">
       <form class="auth-card" id="login-form">
         <div class="brand">
-          <div class="brand-mark">GB</div>
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="8" r="3"/>
+              <circle cx="8" cy="24" r="3"/>
+              <line x1="26" y1="6" x2="10.5" y2="21.5"/>
+              <line x1="18.5" y1="18.5" x2="26" y2="26"/>
+              <line x1="10.5" y1="10.5" x2="15" y2="15"/>
+              <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
           <div class="brand-text">
             <strong>Gestor de Barbearia</strong>
-            <span>Nova Runtime</span>
+            <span>Painel Administrativo</span>
           </div>
         </div>
         <h1>Acesso ao painel</h1>
-        <p class="auth-sub">Entre com a senha de administrador para gerenciar agenda, clientes e faturamento.</p>
+        <p class="auth-sub">Entre com sua senha para gerenciar a agenda, clientes e atendimentos da barbearia.</p>
         <div class="field">
           <label for="login-password">Senha do painel</label>
           <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="Digite sua senha" />
         </div>
         <div style="margin-top:16px">
-          <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+          <button class="btn btn-primary btn-block" type="submit">Entrar no Sistema</button>
         </div>
         <div class="auth-hint">
-          Primeiro acesso: a senha inicial vem da variável <b>ADMIN_PASSWORD</b> no arquivo <b>.env</b>
-          (padrão <b>admin123</b>). Após entrar, troque a senha em <b>Configurações</b>.
+          Acesso restrito à equipe da barbearia. Senha padrão inicial: <b>admin123</b>.
         </div>
       </form>
     </div>`;
@@ -237,17 +245,26 @@ function shellHtml() {
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand">
-          <div class="brand-mark">GB</div>
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="8" r="3"/>
+              <circle cx="8" cy="24" r="3"/>
+              <line x1="26" y1="6" x2="10.5" y2="21.5"/>
+              <line x1="18.5" y1="18.5" x2="26" y2="26"/>
+              <line x1="10.5" y1="10.5" x2="15" y2="15"/>
+              <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
           <div class="brand-text">
             <strong>Gestor de Barbearia</strong>
-            <span>Nova Runtime</span>
+            <span>Painel da Equipe</span>
           </div>
         </div>
         <nav class="nav">${navHtml}</nav>
         <div class="sidebar-footer">
           <a class="nav-item" href="/agendar" target="_blank" rel="noopener">${icon('external')}<span>Página de agendamento</span></a>
           <button class="nav-item" type="button" id="logout">${icon('logout')}<span>Sair do painel</span></button>
-          <div class="company">Desenvolvido por Nova Runtime</div>
+          <div class="company">Sistema de Gestão para Barbearias</div>
         </div>
       </aside>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
@@ -1676,8 +1693,8 @@ async function viewSettings() {
             <input class="control" name="shop_name" value="${esc(settings.shop_name || 'Gestor de Barbearia')}" />
           </div>
           <div class="field">
-            <label>Empresa desenvolvedora</label>
-            <input class="control" name="shop_company" value="${esc(settings.shop_company || 'Nova Runtime')}" />
+            <label>Nome da empresa ou rede</label>
+            <input class="control" name="shop_company" value="${esc(settings.shop_company || 'Barbearia & Barber Shop')}" />
           </div>
           <div class="field">
             <label>Telefone</label>

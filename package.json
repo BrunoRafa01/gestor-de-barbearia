@@ -2,8 +2,8 @@
   "name": "gestor-de-barbearia",
   "version": "1.0.0",
   "private": true,
-  "description": "Gestor de Barbearia - sistema de gestao de agendamentos, clientes e faturamento",
-  "author": "Nova Runtime",
+  "description": "Gestor de Barbearia - sistema profissional de gestão de agendamentos, clientes e faturamento",
+  "author": "Bruno",
   "license": "UNLICENSED",
   "type": "module",
   "engines": {

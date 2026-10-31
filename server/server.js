@@ -1,5 +1,4 @@
 // Gestor de Barbearia - servidor HTTP
-// Desenvolvido por Nova Runtime.
 //
 // Executa com:  npm start   (ou)   node server/server.js
 
@@ -224,7 +223,7 @@ function isLocalSqlite() {
 function printBanner() {
   const usingTurso = driverKind() === 'turso';
   console.log('');
-  console.log('  Gestor de Barbearia  |  Nova Runtime');
+  console.log('  Gestor de Barbearia  |  Sistema de Gestão');
   console.log('  ---------------------------------------------');
   console.log(`  Painel:      http://localhost:${PORT}/`);
   console.log(`  Agendamento: http://localhost:${PORT}/agendar`);
