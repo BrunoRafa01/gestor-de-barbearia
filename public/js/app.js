@@ -134,9 +134,9 @@ function onboardingNotice() {
         criar agendamentos, ver o faturamento e liberar a página pública de agendamento.
       </p>
       <div class="row-actions" style="margin-top:14px">
-        ${!state.catalog.services.length ? button(`${icon('tag')} Cadastrar serviço`, () => { location.hash = '#/services'; }, 'btn') : ''}
-        ${!state.catalog.barbers.length ? button(`${icon('scissors')} Cadastrar profissional`, () => { location.hash = '#/barbers'; }, 'btn') : ''}
-        ${button(`${icon('settings')} Configurar funcionamento`, () => { location.hash = '#/settings'; }, 'btn btn-ghost')}
+        ${!state.catalog.services.length ? `<a class="btn" href="#/services">${icon('tag')} Cadastrar serviço</a>` : ''}
+        ${!state.catalog.barbers.length ? `<a class="btn" href="#/barbers">${icon('scissors')} Cadastrar profissional</a>` : ''}
+        <a class="btn btn-ghost" href="#/settings">${icon('settings')} Configurar funcionamento</a>
       </div>
     </div>`;
 }
@@ -151,7 +151,7 @@ function securityNotice() {
         <strong>Troque a senha do painel</strong>
         <span>O sistema ainda está com a senha inicial. Defina uma senha sua em Configurações > Segurança.</span>
       </div>
-      ${button(`${icon('settings')} Trocar agora`, () => { location.hash = '#/settings'; }, 'btn btn-sm')}
+      <a class="btn btn-sm" href="#/settings">${icon('settings')} Trocar agora</a>
     </div>`;
 }
 
