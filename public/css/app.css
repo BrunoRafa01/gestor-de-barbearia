@@ -5,6 +5,8 @@
    --------------------------------------------------------------------------- */
 
 :root {
+  color-scheme: dark;
+
   /* Paleta Base - Barbearia Craft & Dark Charcoal */
   --bg: #0F1014;
   --bg-soft: #15171E;

@@ -21,27 +21,27 @@ Todas as imagens abaixo são capturas reais da aplicação rodando em **modo dem
 
 ### Painel — Dashboard
 
-![Dashboard com indicadores do dia, ocupação e próximos agendamentos](docs/screenshots/dashboard.png)
+![Dashboard com indicadores do dia, ocupação e próximos agendamentos](https://raw.githubusercontent.com/BrunoRafa01/gestor-de-barbearia/main/docs/screenshots/dashboard.png)
 
 ### Agenda
 
-![Agenda diária por profissional](docs/screenshots/agenda.png)
+![Agenda diária por profissional](https://raw.githubusercontent.com/BrunoRafa01/gestor-de-barbearia/main/docs/screenshots/agenda.png)
 
 ### Relatórios
 
-![Relatórios de faturamento, comissão por profissional e serviços mais vendidos](docs/screenshots/relatorios.png)
+![Relatórios de faturamento, comissão por profissional e serviços mais vendidos](https://raw.githubusercontent.com/BrunoRafa01/gestor-de-barbearia/main/docs/screenshots/relatorios.png)
 
 ### Clientes
 
-![Lista de clientes cadastrados](docs/screenshots/clientes.png)
+![Lista de clientes cadastrados](https://raw.githubusercontent.com/BrunoRafa01/gestor-de-barbearia/main/docs/screenshots/clientes.png)
 
 ### Página pública de agendamento (celular)
 
-![Página pública de agendamento em um celular](docs/screenshots/agendamento-mobile.png)
+![Página pública de agendamento em um celular](https://raw.githubusercontent.com/BrunoRafa01/gestor-de-barbearia/main/docs/screenshots/agendamento-mobile.png)
 
 ### Acesso ao painel
 
-![Tela de login do painel](docs/screenshots/login.png)
+![Tela de login do painel](https://raw.githubusercontent.com/BrunoRafa01/gestor-de-barbearia/main/docs/screenshots/login.png)
 
 ---
 
