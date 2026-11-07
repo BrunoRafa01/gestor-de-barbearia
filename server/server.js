@@ -96,7 +96,8 @@ function validateOrigin(request) {
   if (!origin) return true;
   try {
     const originUrl = new URL(origin);
-    const hostHeader = request.headers.host;
+    const rawHost = request.headers['x-forwarded-host'] || request.headers.host;
+    const hostHeader = typeof rawHost === 'string' ? rawHost.split(',')[0].trim() : '';
     if (hostHeader) {
       const expectedHost = hostHeader.toLowerCase().split(':')[0];
       const actualHost = originUrl.hostname.toLowerCase();
