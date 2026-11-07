@@ -80,7 +80,7 @@ export function createRateLimiter({ windowMs, max, message }) {
   }
 
   return {
-    /** @returns {{ allowed: boolean, retryAfterSeconds: number, remaining: number }} */
+    /** @returns {{ allowed: boolean, retryAfterSeconds: number, remaining: number, message?: string }} */
     check(key) {
       const now = Date.now();
       if (hits.size > 5000) prune(now);

@@ -83,23 +83,25 @@ export const whatsappRoutes = [
   {
     method: 'GET',
     path: '/api/whatsapp/messages',
+    /** @param {{ query?: Record<string, any> }} ctx */
     handler: async ({ query = {} }) => {
-      const limit = Math.min(Math.max(Number(query.limit || 50), 1), 100);
-      const offset = Math.max(Number(query.offset || 0), 0);
+      const q = query || {};
+      const limit = Math.min(Math.max(Number(q.limit || 50), 1), 100);
+      const offset = Math.max(Number(q.offset || 0), 0);
       const where = [];
       const params = [];
 
-      if (query.status) {
+      if (q.status) {
         where.push('status = ?');
-        params.push(String(query.status));
+        params.push(String(q.status));
       }
-      if (query.recipient_type) {
+      if (q.recipient_type) {
         where.push('recipient_type = ?');
-        params.push(String(query.recipient_type));
+        params.push(String(q.recipient_type));
       }
-      if (query.appointment_id) {
+      if (q.appointment_id) {
         where.push('appointment_id = ?');
-        params.push(Number(query.appointment_id));
+        params.push(Number(q.appointment_id));
       }
 
       const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';

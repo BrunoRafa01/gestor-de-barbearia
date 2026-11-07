@@ -5,7 +5,7 @@
     "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM"],
     "types": ["node"],
-    "strict": false,
+    "strict": true,
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
@@ -13,5 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["server/**/*", "scripts/**/*", "tests/**/*"]
+  "include": ["server/types.ts"]
 }

@@ -167,7 +167,8 @@ const server = createServer(async (request, response) => {
         : {};
       const query = Object.fromEntries(url.searchParams.entries());
 
-      const result = await match.route.handler({
+      const handler = /** @type {(ctx: any) => Promise<any>} */ (match.route.handler);
+      const result = await handler({
         req: request,
         res: response,
         params: match.params,
@@ -175,7 +176,7 @@ const server = createServer(async (request, response) => {
         body,
       });
 
-      sendJson(response, result?.status || 200, result?.body);
+      sendJson(response, result && typeof result === 'object' && 'status' in result ? result.status : 200, result && typeof result === 'object' && 'body' in result ? result.body : result);
       return;
     }
 

@@ -121,7 +121,7 @@ function onboardingNotice() {
   if (!state.catalog.barbers.length) missing.push('profissionais');
   if (!missing.length) return '';
   return `
-    <div class="card" style="border-color:var(--gold-line);background:linear-gradient(150deg, var(--gold-soft), transparent 60%)">
+    <div class="card" style="border-color:var(--gold-line);background:var(--surface)">
       <div class="card-header">
         <div class="kpi-icon" style="position:static">${icon('sparkles')}</div>
         <div>

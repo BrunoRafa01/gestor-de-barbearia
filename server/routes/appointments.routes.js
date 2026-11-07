@@ -218,13 +218,13 @@ export const appointmentRoutes = [
       return {
         status: 200,
         body: dates.map((date) => {
-          const day = map.get(date) || { open: false, slots: [], reason: null };
+          const day = map.get(date) || { open: false, slots: [], reason: null, duration: 0, price: 0 };
           return {
             date,
             open: day.open,
             reason: day.reason,
-            duration: day.duration,
-            price: day.price,
+            duration: 'duration' in day ? day.duration : 0,
+            price: 'price' in day ? day.price : 0,
             slots: day.slots,
             slots_count: day.slots.length,
             barber_id: barberId,

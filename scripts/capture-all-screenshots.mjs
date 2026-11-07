@@ -8,12 +8,13 @@ const ROOT = resolve(__dirname, '..');
 const SCREENSHOTS_DIR = resolve(ROOT, 'docs', 'screenshots');
 mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
-// 1. Inicia o servidor em modo demonstracao com auto-auth para capturas
+// 1. Inicia o servidor em modo demonstracao com auto-auth para capturas na porta 3498
+const PORT = '3498';
 const server = spawn(process.execPath, ['--experimental-sqlite', 'server/server.js'], {
   cwd: ROOT,
   env: {
     ...process.env,
-    PORT: '3000',
+    PORT,
     HOST: '127.0.0.1',
     DEMO_MODE: '1',
     DEMO_AUTO_AUTH: '1',
@@ -25,7 +26,7 @@ const server = spawn(process.execPath, ['--experimental-sqlite', 'server/server.
 // Aguarda o servidor subir
 for (let i = 0; i < 30; i++) {
   try {
-    const res = await fetch('http://127.0.0.1:3000/health');
+    const res = await fetch(`http://127.0.0.1:${PORT}/health`);
     if (res.status === 200) break;
   } catch {}
   await new Promise((r) => setTimeout(r, 200));
@@ -73,45 +74,45 @@ try {
   const targets = [
     {
       name: 'dashboard.png',
-      url: 'http://127.0.0.1:3000/?view=dashboard',
+      url: `http://127.0.0.1:${PORT}/?view=dashboard`,
       viewport: { width: 1440, height: 1000 },
       dpr: 1,
-      waitMs: 1500,
+      waitMs: 1800,
     },
     {
       name: 'agenda.png',
-      url: 'http://127.0.0.1:3000/?view=agenda',
+      url: `http://127.0.0.1:${PORT}/?view=agenda`,
       viewport: { width: 1440, height: 1000 },
       dpr: 1,
-      waitMs: 1500,
+      waitMs: 1800,
     },
     {
       name: 'relatorios.png',
-      url: 'http://127.0.0.1:3000/?view=reports',
+      url: `http://127.0.0.1:${PORT}/?view=reports`,
       viewport: { width: 1440, height: 1000 },
       dpr: 1,
-      waitMs: 1500,
+      waitMs: 1800,
     },
     {
       name: 'clientes.png',
-      url: 'http://127.0.0.1:3000/?view=clients',
+      url: `http://127.0.0.1:${PORT}/?view=clients`,
       viewport: { width: 1440, height: 1000 },
       dpr: 1,
-      waitMs: 1500,
+      waitMs: 1800,
     },
     {
       name: 'login.png',
-      url: 'http://127.0.0.1:3000/?view=login',
+      url: `http://127.0.0.1:${PORT}/?view=login`,
       viewport: { width: 1440, height: 900 },
       dpr: 1,
-      waitMs: 1000,
+      waitMs: 1200,
     },
     {
       name: 'agendamento-mobile.png',
-      url: 'http://127.0.0.1:3000/agendar',
+      url: `http://127.0.0.1:${PORT}/agendar`,
       viewport: { width: 390, height: 844 },
       dpr: 2,
-      waitMs: 1500,
+      waitMs: 2000,
     },
   ];
 

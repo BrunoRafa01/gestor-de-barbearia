@@ -3,73 +3,154 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0F1014" />
-    <title>Agendar horário | Gestor de Barbearia</title>
+    <meta name="theme-color" content="#060709" />
+    <title>Agendar horário | Barbearia</title>
     <meta
       name="description"
       content="Agende seu horário online na barbearia. Escolha serviço, profissional e horário em poucos toques."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F1014' stroke='%23D4AF37' stroke-width='2'/%3E%3Ccircle cx='10' cy='10' r='3' fill='none' stroke='%23F59E0B' stroke-width='1.8'/%3E%3Ccircle cx='10' cy='22' r='3' fill='none' stroke='%23F59E0B' stroke-width='1.8'/%3E%3Cline x1='24' y1='8' x2='12' y2='20' stroke='%23F59E0B' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='18' y1='18' x2='24' y2='24' stroke='%23F59E0B' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='12' y1='12' x2='15.5' y2='15.5' stroke='%23F59E0B' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230A0B0E' stroke='%23FFFFFF' stroke-width='1.5' stroke-opacity='0.2'/%3E%3Ccircle cx='10' cy='10' r='3' fill='none' stroke='%23FFFFFF' stroke-width='1.8'/%3E%3Ccircle cx='10' cy='22' r='3' fill='none' stroke='%23FFFFFF' stroke-width='1.8'/%3E%3Cline x1='24' y1='8' x2='12' y2='20' stroke='%23FFFFFF' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='18' y1='18' x2='24' y2='24' stroke='%23FFFFFF' stroke-width='1.8' stroke-linecap='round'/%3E%3Cline x1='12' y1='12' x2='15.5' y2='15.5' stroke='%23FFFFFF' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E"
     />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Barbearia" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="stylesheet" href="/css/app.css" />
   </head>
-  <body>
-    <div class="barber-pole-strip"></div>
+  <body class="booking-body">
     <div class="booking-page">
       <header class="booking-header">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 32 32" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="8" cy="8" r="3"/>
-              <circle cx="8" cy="24" r="3"/>
-              <line x1="26" y1="6" x2="10.5" y2="21.5"/>
-              <line x1="18.5" y1="18.5" x2="26" y2="26"/>
-              <line x1="10.5" y1="10.5" x2="15" y2="15"/>
-              <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
+        <div class="booking-top-nav">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="8" r="3"/>
+                <circle cx="8" cy="24" r="3"/>
+                <line x1="26" y1="6" x2="10.5" y2="21.5"/>
+                <line x1="18.5" y1="18.5" x2="26" y2="26"/>
+                <line x1="10.5" y1="10.5" x2="15" y2="15"/>
+                <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="brand-text">
+              <strong id="shop-name">Gestor de Barbearia</strong>
+              <span id="shop-company">Cortes &amp; Barba Tradicional</span>
+            </div>
+          </div>
+          <button type="button" class="btn-app-install" id="pwa-install-btn" title="Instalar aplicativo na tela inicial">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="3" ry="3"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
             </svg>
-          </div>
-          <div class="brand-text">
-            <strong id="shop-name">Gestor de Barbearia</strong>
-            <span id="shop-company">Cortes &amp; Barba Tradicional</span>
-          </div>
+            <span>Baixar App</span>
+          </button>
         </div>
-        <h1 id="shop-title">Agende seu horário</h1>
-        <p id="shop-sub">Escolha o serviço, o profissional e o melhor horário.</p>
 
-        <div class="barber-features">
-          <span class="barber-badge">✂ Atendimento Pontual</span>
-          <span class="barber-badge">♨ Toalha Quente</span>
-          <span class="barber-badge">☕ Café Cortesia</span>
+        <div class="booking-hero">
+          <h1 id="shop-title">Agende seu horário</h1>
+          <p id="shop-sub" class="booking-subtitle">Escolha o serviço, o profissional e o melhor horário.</p>
+        </div>
+
+        <!-- Indicador de progresso minimalista em 4 segmentos -->
+        <div class="progress-wrap" id="progress-container">
+          <div class="progress-segments">
+            <div class="progress-bar-seg active" data-step="1"></div>
+            <div class="progress-bar-seg" data-step="2"></div>
+            <div class="progress-bar-seg" data-step="3"></div>
+            <div class="progress-bar-seg" data-step="4"></div>
+          </div>
+          <div class="progress-info">
+            <span id="current-step-label">Passo 1 de 4 — Escolha o serviço</span>
+            <span class="progress-percent" id="step-indicator">1 / 4</span>
+          </div>
         </div>
 
         <div class="demo-badge hidden" id="demo-badge">Modo demonstração — dados fictícios</div>
-        <div class="booking-contact" id="shop-contact"></div>
       </header>
 
       <main class="booking-main">
-        <div class="steps" id="steps">
-          <span class="active" data-step="1"><b>1</b> Serviço</span>
-          <span data-step="2"><b>2</b> Profissional</span>
-          <span data-step="3"><b>3</b> Horário</span>
-          <span data-step="4"><b>4</b> Seus dados</span>
-        </div>
         <div id="booking-content">
           <div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Carregando...</div>
         </div>
       </main>
+
+      <footer class="booking-footer">
+        <div class="footer-contacts" id="shop-contact"></div>
+        <p class="footer-copy">© 2026 Gestor de Barbearia • Agendamento rápido e seguro</p>
+      </footer>
+    </div>
+
+    <!-- Modal elegante para instalar app no iOS / Safari -->
+    <div class="modal-backdrop hidden" id="ios-install-modal">
+      <div class="ios-install-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div class="sheet-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="8" cy="8" r="3"/>
+              <circle cx="8" cy="24" r="3"/>
+              <line x1="26" y1="6" x2="10.5" y2="21.5"/>
+              <line x1="18.5" y1="18.5" x2="26" y2="26"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Instalar App no iPhone</h4>
+            <p class="sheet-sub">Acesso direto da sua tela inicial, sem barra de navegação</p>
+          </div>
+          <button type="button" class="btn-close-modal" id="close-ios-modal" aria-label="Fechar modal">&times;</button>
+        </div>
+        <div class="ios-steps-list">
+          <div class="ios-step-item">
+            <div class="ios-step-num">1</div>
+            <div class="ios-step-text">
+              Toque no botão <strong>Compartilhar</strong> na barra inferior do Safari (o ícone de quadrado com a seta para cima <span class="share-icon-pill">⎙</span>).
+            </div>
+          </div>
+          <div class="ios-step-item">
+            <div class="ios-step-num">2</div>
+            <div class="ios-step-text">
+              Role a lista de opções para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>.
+            </div>
+          </div>
+          <div class="ios-step-item">
+            <div class="ios-step-num">3</div>
+            <div class="ios-step-text">
+              Toque em <strong>"Adicionar"</strong> no canto superior direito. O ícone da barbearia ficará salvo como app nativo no seu iPhone!
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="dismiss-ios-modal" style="margin-top:18px">
+          Entendi, vou instalar
+        </button>
+      </div>
     </div>
 
     <noscript>
       <div class="page-centered">
         <div class="auth-card">
-          <h1 class="gold">Gestor de Barbearia</h1>
+          <h1>Gestor de Barbearia</h1>
           <p class="muted" style="margin-top:10px">Ative o JavaScript para agendar pelo celular.</p>
         </div>
       </div>
     </noscript>
 
     <script type="module" src="/js/agendar.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

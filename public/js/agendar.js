@@ -34,12 +34,33 @@ const state = {
 const content = () => document.getElementById('booking-content');
 const daysLimit = () => Math.min(Number(state.shop?.max_advance_days) || 30, 30);
 
+function haptic(ms = 12) {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    try { navigator.vibrate(ms); } catch {}
+  }
+}
+
 /* --------------------------------- Passos --------------------------------- */
 
+const STEP_LABELS = {
+  1: 'Passo 1 de 4 — Escolha o serviço',
+  2: 'Passo 2 de 4 — Escolha o profissional',
+  3: 'Passo 3 de 4 — Escolha o dia e horário',
+  4: 'Passo 4 de 4 — Confirme seus dados',
+};
+
 function setStep(active) {
-  document.querySelectorAll('#steps span').forEach((element) => {
+  document.querySelectorAll('#steps span, .progress-bar-seg').forEach((element) => {
     element.classList.toggle('active', Number(element.dataset.step) <= active);
   });
+  const label = document.getElementById('current-step-label');
+  if (label && STEP_LABELS[active]) {
+    label.textContent = STEP_LABELS[active];
+  }
+  const indicator = document.getElementById('step-indicator');
+  if (indicator) {
+    indicator.textContent = `${active} / 4`;
+  }
 }
 
 function currentStep() {
@@ -63,40 +84,48 @@ function revealSection(id) {
 
 function skeletonHtml() {
   return `
-    <div class="card" id="sec-service">
-      <div class="card-header">
-        <div class="kpi-icon" style="position:static">${icon('tag')}</div>
-        <div><h3>1. Escolha o serviço</h3><div class="card-sub">Duração e valor de cada opção</div></div>
+    <div class="card booking-card" id="sec-service">
+      <div class="card-section-head">
+        <div>
+          <h3>Serviços disponíveis</h3>
+          <p class="section-sub">Selecione o corte ou procedimento desejado</p>
+        </div>
       </div>
-      <div class="choice-grid" id="service-grid"></div>
+      <div class="choice-list" id="service-grid"></div>
     </div>
 
-    <div class="card hidden" id="sec-barber">
-      <div class="card-header">
-        <div class="kpi-icon" style="position:static">${icon('scissors')}</div>
-        <div><h3>2. Escolha o profissional</h3><div class="card-sub">Com quem você quer cortar?</div></div>
+    <div class="card booking-card hidden" id="sec-barber">
+      <div class="card-section-head">
+        <div>
+          <h3>Profissional</h3>
+          <p class="section-sub">Com qual barbeiro você deseja agendar?</p>
+        </div>
       </div>
-      <div class="choice-grid" id="barber-grid"></div>
+      <div class="choice-list" id="barber-grid"></div>
     </div>
 
-    <div class="card hidden" id="sec-date">
-      <div class="card-header">
-        <div class="kpi-icon" style="position:static">${icon('calendar')}</div>
-        <div><h3>3. Escolha o dia e o horário</h3><div class="card-sub">Horários livres atualizados em tempo real</div></div>
+    <div class="card booking-card hidden" id="sec-date">
+      <div class="card-section-head">
+        <div>
+          <h3>Dia e horário</h3>
+          <p class="section-sub">Horários livres atualizados em tempo real</p>
+        </div>
       </div>
       <div class="day-strip" id="day-strip"></div>
-      <div id="slot-area" style="margin-top:16px"></div>
+      <div id="slot-area" style="margin-top:20px"></div>
     </div>
 
-    <div class="card hidden" id="sec-form">
-      <div class="card-header">
-        <div class="kpi-icon" style="position:static">${icon('check')}</div>
-        <div><h3>4. Seus dados</h3><div class="card-sub">Usamos o WhatsApp para confirmação</div></div>
+    <div class="card booking-card hidden" id="sec-form">
+      <div class="card-section-head">
+        <div>
+          <h3>Seus dados</h3>
+          <p class="section-sub">Enviaremos a confirmação direta no seu WhatsApp</p>
+        </div>
       </div>
-      <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="form-grid" style="grid-template-columns:1fr;gap:14px">
         <div class="field">
-          <label for="pk-name">Seu nome</label>
-          <input id="pk-name" name="name" placeholder="Nome completo" autocomplete="name" />
+          <label for="pk-name">Seu nome completo</label>
+          <input id="pk-name" name="name" placeholder="Ex: João Silva" autocomplete="name" />
         </div>
         <div class="field">
           <label for="pk-phone">WhatsApp</label>
@@ -108,15 +137,15 @@ function skeletonHtml() {
         </div>
         <div class="field">
           <label for="pk-notes">Observações (opcional)</label>
-          <textarea id="pk-notes" name="notes" placeholder="Alguma preferência?"></textarea>
+          <textarea id="pk-notes" name="notes" placeholder="Alguma preferência ou detalhe para o barbeiro?"></textarea>
         </div>
       </div>
-      <div class="booking-summary" id="summary" style="margin-top:16px"></div>
-      <button class="btn btn-primary btn-block" id="pk-confirm" type="button" style="margin-top:16px">
+      <div class="booking-summary" id="summary" style="margin-top:20px"></div>
+      <button class="btn btn-primary btn-block" id="pk-confirm" type="button" style="margin-top:20px">
         ${icon('check')} Confirmar agendamento
       </button>
-      <p class="faint" style="margin-top:10px;font-size:11.5px;text-align:center">
-        Ao confirmar, seu horário fica reservado e aguarda a confirmação da barbearia.
+      <p class="faint" style="margin-top:12px;font-size:12px;text-align:center">
+        🔒 Reserva pontual e segura. Sem cobrança antecipada.
       </p>
     </div>`;
 }
@@ -161,20 +190,26 @@ function renderServices() {
     .map(
       (service) => `
       <button type="button" class="choice service-choice${String(state.serviceId) === String(service.id) ? ' selected' : ''}" data-service="${service.id}">
-        <div class="choice-head">
-          <strong>${esc(service.name)}</strong>
-          <span class="choice-price">${esc(money(service.price))}</span>
+        <div class="service-left">
+          <div class="service-title-row">
+            <strong class="service-name">${esc(service.name)}</strong>
+            <span class="service-duration-badge">${icon('clock')} ${Number(service.duration_min)} min</span>
+          </div>
+          ${service.description ? `<p class="service-desc">${esc(service.description)}</p>` : ''}
         </div>
-        <div class="choice-meta">
-          <span class="choice-duration">${icon('clock')} ${Number(service.duration_min)} min</span>
+        <div class="service-right">
+          <span class="service-price">${esc(money(service.price))}</span>
+          <div class="selection-pill" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
+          </div>
         </div>
-        ${service.description ? `<p class="choice-desc">${esc(service.description)}</p>` : ''}
       </button>`
     )
     .join('');
 
   grid.querySelectorAll('[data-service]').forEach((element) =>
     element.addEventListener('click', async () => {
+      haptic();
       state.serviceId = Number(element.dataset.service);
       state.time = null;
       renderServices();
@@ -192,12 +227,15 @@ function renderBarbers() {
     .map(
       (barber) => `
       <button type="button" class="choice barber-choice${String(state.barberId) === String(barber.id) ? ' selected' : ''}" data-barber="${barber.id}">
-        <div class="barber-avatar" style="border-color:${esc(barber.color || 'var(--gold)')};color:${esc(barber.color || 'var(--gold)')}">
+        <div class="barber-avatar-box">
           ${esc(initials(barber.name))}
         </div>
         <div class="barber-meta">
-          <strong>${esc(barber.name)}</strong>
+          <strong class="barber-name">${esc(barber.name)}</strong>
           <span class="barber-spec">Barbeiro Especialista</span>
+        </div>
+        <div class="selection-pill" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
         </div>
       </button>`
     )
@@ -205,6 +243,7 @@ function renderBarbers() {
 
   grid.querySelectorAll('[data-barber]').forEach((element) =>
     element.addEventListener('click', async () => {
+      haptic();
       state.barberId = Number(element.dataset.barber);
       state.time = null;
       renderBarbers();
@@ -233,6 +272,7 @@ function renderDays() {
 
   strip.querySelectorAll('[data-day]').forEach((element) =>
     element.addEventListener('click', async () => {
+      haptic();
       state.date = element.dataset.day;
       state.time = null;
       renderDays();
@@ -261,6 +301,7 @@ function renderSlots() {
 
   area.querySelectorAll('[data-slot]').forEach((element) =>
     element.addEventListener('click', () => {
+      haptic();
       state.time = element.dataset.slot;
       renderSlots();
       revealSection('sec-form');
@@ -562,24 +603,75 @@ function applyShop(config) {
   const whatsapp = whatsappLink(config.shop.whatsapp || config.shop.phone);
   if (whatsapp) {
     links.push(
-      `<a class="btn btn-sm btn-whats" href="${esc(whatsapp)}" target="_blank" rel="noopener">${icon('whatsapp')} Falar no WhatsApp</a>`
+      `<a class="footer-contact-link whats" href="${esc(whatsapp)}" target="_blank" rel="noopener">${icon('whatsapp')} <span>WhatsApp</span></a>`
     );
   }
   if (config.shop.phone) {
     links.push(
-      `<a class="btn btn-sm" href="tel:${esc(String(config.shop.phone).replace(/[^\d+]/g, ''))}">${icon('phone')} Ligar</a>`
+      `<a class="footer-contact-link" href="tel:${esc(String(config.shop.phone).replace(/[^\d+]/g, ''))}">${icon('phone')} <span>${esc(config.shop.phone)}</span></a>`
     );
   }
   if (config.shop.instagram) {
     const handle = String(config.shop.instagram).replace(/^@/, '');
     links.push(
-      `<a class="btn btn-sm" href="https://instagram.com/${esc(encodeURIComponent(handle))}" target="_blank" rel="noopener">${icon('link')} @${esc(handle)}</a>`
+      `<a class="footer-contact-link insta" href="https://instagram.com/${esc(encodeURIComponent(handle))}" target="_blank" rel="noopener">${icon('link')} <span>@${esc(handle)}</span></a>`
     );
   }
-  document.getElementById('shop-contact').innerHTML = links.join('');
+  const contactEl = document.getElementById('shop-contact');
+  if (contactEl) contactEl.innerHTML = links.join('');
 
   const demoBadge = document.getElementById('demo-badge');
   if (demoBadge) demoBadge.classList.toggle('hidden', !config.shop.demo);
+}
+
+function setupAppInstallation() {
+  const installBtn = document.getElementById('pwa-install-btn');
+  const iosModal = document.getElementById('ios-install-modal');
+  const closeBtn = document.getElementById('close-ios-modal');
+  const dismissBtn = document.getElementById('dismiss-ios-modal');
+
+  // Se já estiver rodando como app standalone instalado
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone && installBtn) {
+    installBtn.classList.add('hidden');
+    return;
+  }
+
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      haptic();
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          installBtn.classList.add('hidden');
+        }
+        deferredPrompt = null;
+        return;
+      }
+      // Se estiver no iOS Safari ou navegador mobile sem prompt nativo
+      if (iosModal) {
+        iosModal.classList.remove('hidden');
+      }
+    });
+  }
+
+  const closeModal = () => {
+    if (iosModal) iosModal.classList.add('hidden');
+  };
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
+  if (iosModal) {
+    iosModal.addEventListener('click', (e) => {
+      if (e.target === iosModal) closeModal();
+    });
+  }
 }
 
 async function boot() {
@@ -598,7 +690,8 @@ async function boot() {
         'O agendamento online está temporariamente desativado',
         'Fale diretamente com a barbearia para reservar seu horário.'
       );
-      document.getElementById('steps').classList.add('hidden');
+      document.getElementById('progress-container')?.classList.add('hidden');
+      document.getElementById('steps')?.classList.add('hidden');
       return;
     }
     if (!config.services.length || !config.barbers.length) {
@@ -606,7 +699,8 @@ async function boot() {
         'A agenda ainda está sendo configurada',
         'Assim que os serviços e profissionais forem cadastrados, o agendamento online ficará disponível.'
       );
-      document.getElementById('steps').classList.add('hidden');
+      document.getElementById('progress-container')?.classList.add('hidden');
+      document.getElementById('steps')?.classList.add('hidden');
       return;
     }
 
@@ -617,9 +711,11 @@ async function boot() {
       event.target.value = formatPhone(event.target.value);
     });
     setStep(1);
+    setupAppInstallation();
   } catch (error) {
     content().innerHTML = unavailableHtml('Não foi possível carregar a agenda', error.message);
-    document.getElementById('steps').classList.add('hidden');
+    document.getElementById('progress-container')?.classList.add('hidden');
+    document.getElementById('steps')?.classList.add('hidden');
   }
 }
 

@@ -18,7 +18,8 @@
     "test:turso": "node tests/turso-check.mjs",
     "test:whatsapp": "node tests/whatsapp-cloud.test.mjs",
     "test:responsive": "node tests/responsive-check.mjs",
-    "test:all": "npm run typecheck && node tests/smoke.mjs && node tests/whatsapp-cloud.test.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs",
+    "test:stress": "node scripts/stress-test.mjs",
+    "test:all": "npm run typecheck && node tests/smoke.mjs && node tests/whatsapp-cloud.test.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs && node scripts/stress-test.mjs",
     "screenshots": "node scripts/capture-all-screenshots.mjs"
   },
   "dependencies": {
