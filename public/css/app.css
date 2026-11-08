@@ -1,60 +1,75 @@
 /* ---------------------------------------------------------------------------
-   Gestor de Barbearia - Barber Craft & Heritage
-   Tema escuro sofisticado: Carvão Profundo (#0F1014) e Dourado Âmbar Nobre (#D4AF37).
-   Design System autêntico, artesanal, acessível e profissional.
+   Gestor de Barbearia — Nova Runtime Design System
+   Paleta Oficial:
+   - Fundo principal: #080B12
+   - Fundo secundário: #101622
+   - Superfícies: #141C2D
+   - Bordas: #1E293B
+   - Azul principal: #3B82F6
+   - Azul secundário: #60A5FA
+   - Texto principal: #F8FAFC
+   - Texto secundário: #94A3B8
+   - Sucesso: #10B981 | Alerta: #F59E0B | Erro: #EF4444
    --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: dark;
 
-  /* Paleta Base - Minimalista Obsidian & Noir (Visual de Software High-End) */
-  --bg: #07080A;
-  --bg-soft: #0E1015;
-  --surface: #12151B;
-  --surface-2: #181C24;
-  --surface-3: #212733;
+  /* Paleta Base Oficial Nova Runtime */
+  --bg: #080B12;
+  --bg-secondary: #101622;
+  --bg-soft: #101622;
+  --surface: #141C2D;
+  --surface-2: #1A2438;
+  --surface-3: #222F49;
 
-  /* Linhas e Contornos Sutis de Alta Precisão */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --border-subtle: rgba(255, 255, 255, 0.04);
+  /* Linhas e Contornos Padronizados */
+  --border: #1E293B;
+  --border-strong: #334155;
+  --border-subtle: rgba(30, 41, 59, 0.7);
 
   /* Tipografia Refinada com Alto Contraste */
-  --text: #F8F9FA;
+  --text: #F8FAFC;
   --text-dim: #94A3B8;
   --text-faint: #64748B;
 
-  /* Acento Minimalista Monocromático / Titanium White (Adeus douradão e cara de IA) */
-  --gold: #FFFFFF;
-  --gold-primary: #F1F3F5;
-  --gold-bright: #E2E8F0;
-  --gold-light: #FFFFFF;
-  --gold-soft: rgba(255, 255, 255, 0.07);
-  --gold-line: rgba(255, 255, 255, 0.18);
-  --gold-glow: rgba(255, 255, 255, 0.06);
+  /* Acento Azul Tecnológico Oficial */
+  --primary: #3B82F6;
+  --primary-hover: #60A5FA;
+  --primary-soft: rgba(59, 130, 246, 0.12);
+  --primary-glow: rgba(59, 130, 246, 0.20);
+  --primary-line: #3B82F6;
 
-  /* Aliases para compatibilidade total com as views existentes */
-  --blue-primary: var(--gold-primary);
-  --blue-accent: var(--gold);
-  --blue-light: var(--gold-light);
-  --blue-soft: var(--gold-soft);
-  --blue-line: var(--gold-line);
-  --blue-glow: var(--gold-glow);
+  /* Aliases para compatibilidade total com estilos anteriores */
+  --gold: #3B82F6;
+  --gold-primary: #3B82F6;
+  --gold-bright: #60A5FA;
+  --gold-light: #93C5FD;
+  --gold-soft: rgba(59, 130, 246, 0.12);
+  --gold-line: #1E293B;
+  --gold-glow: rgba(59, 130, 246, 0.20);
 
-  /* Elementos Barber Tradicionais em Tom Sóbrio */
+  --blue-primary: #3B82F6;
+  --blue-accent: #60A5FA;
+  --blue-light: #93C5FD;
+  --blue-soft: rgba(59, 130, 246, 0.12);
+  --blue-line: #1E293B;
+  --blue-glow: rgba(59, 130, 246, 0.20);
+
+  /* Elementos Barber Tradicionais */
   --barber-red: #EF4444;
   --barber-blue: #3B82F6;
-  --barber-cream: #F8F9FA;
+  --barber-cream: #F8FAFC;
 
-  /* Cores Semânticas Modernas e Dessaturadas */
-  --ok: #22C55E;
-  --ok-soft: rgba(34, 197, 94, 0.10);
+  /* Cores Semânticas Oficiais */
+  --ok: #10B981;
+  --ok-soft: rgba(16, 185, 129, 0.12);
   --warn: #F59E0B;
-  --warn-soft: rgba(245, 158, 11, 0.10);
+  --warn-soft: rgba(245, 158, 11, 0.12);
   --danger: #EF4444;
-  --danger-soft: rgba(239, 68, 68, 0.10);
-  --info: #38BDF8;
-  --info-soft: rgba(56, 189, 248, 0.10);
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --info: #60A5FA;
+  --info-soft: rgba(96, 165, 250, 0.12);
 
   /* Geometria e Efeitos de Produto de Alto Padrão */
   --radius: 12px;
@@ -65,7 +80,7 @@
   --slot-h: 44px;
   --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  --ring: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  --ring: 0 0 0 2px rgba(59, 130, 246, 0.4);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1233,6 +1248,389 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   font-family: var(--font-mono);
   font-size: 11px;
   color: #64748B;
+}
+
+/* ---------------------------------------------------------------------------
+   Apresentacao da Barbearia & Componentes Comerciais de Alta Conversao
+   --------------------------------------------------------------------------- */
+
+.shop-presentation-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 22px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+}
+
+.shop-cover-banner {
+  height: 120px;
+  background: linear-gradient(135deg, #101622 0%, #1A2438 50%, #141C2D 100%);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px 20px;
+}
+
+.shop-cover-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  background-image: radial-gradient(#3B82F6 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.shop-profile-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  position: relative;
+  margin-top: -36px;
+  padding: 0 20px 14px;
+}
+
+.shop-avatar-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: #080B12;
+  border: 3px solid var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.shop-profile-info {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 4px;
+}
+
+.shop-profile-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  color: #FFFFFF;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+.shop-profile-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.shop-bio-text {
+  padding: 0 20px 16px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.shop-quick-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 20px 18px;
+  flex-wrap: wrap;
+}
+
+.shop-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  min-height: 38px;
+}
+
+.shop-action-btn.whats {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.shop-action-btn.whats:hover {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+.shop-action-btn.insta {
+  background: rgba(225, 48, 108, 0.15);
+  color: #F472B6;
+  border: 1px solid rgba(225, 48, 108, 0.25);
+}
+
+.shop-action-btn.insta:hover {
+  background: rgba(225, 48, 108, 0.25);
+}
+
+.shop-action-btn.address {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Abas de Navegação Pública */
+.shop-view-tabs {
+  display: flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.shop-tab-btn {
+  flex: 1;
+  min-width: 100px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.shop-tab-btn.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+/* Galeria de Cortes */
+.cuts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.cut-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.cut-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.cut-thumb-placeholder {
+  height: 120px;
+  background: linear-gradient(135deg, #101622 0%, #1A2438 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  position: relative;
+}
+
+.cut-thumb-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(8, 11, 18, 0.85);
+  color: var(--text-dim);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.cut-card-body {
+  padding: 10px 12px;
+}
+
+.cut-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.cut-card-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Cards Enriquecidos de Profissionais */
+.barber-rich-card {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  align-items: center;
+  text-align: left;
+}
+
+.barber-rich-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.barber-rich-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.barber-rich-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.barber-rich-spec {
+  font-size: 11.5px;
+  color: var(--primary-hover);
+  font-weight: 600;
+  display: block;
+}
+
+.barber-rich-bio {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+/* Lista de Avaliações */
+.reviews-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-item-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.review-client {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-verified-pill {
+  font-size: 10px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.review-stars {
+  color: #F59E0B;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.review-comment {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Botoes de acao de confirmacao */
+.btn-calendar-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-calendar-add:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary-hover);
+  color: #FFFFFF;
 }
 
 /* Fallback de passos */

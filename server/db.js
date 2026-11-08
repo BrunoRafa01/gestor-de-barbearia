@@ -129,6 +129,43 @@ CREATE TABLE IF NOT EXISTS whatsapp_messages (
 CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_appt   ON whatsapp_messages(appointment_id);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_phone  ON whatsapp_messages(recipient_phone);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_status ON whatsapp_messages(status);
+
+-- Suporte Multi-tenant e Customizacao por Barbearia (/b/:slug)
+CREATE TABLE IF NOT EXISTS barbershops (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug          TEXT NOT NULL UNIQUE,
+  name          TEXT NOT NULL,
+  company       TEXT DEFAULT 'Nova Runtime',
+  description   TEXT,
+  logo_url      TEXT,
+  cover_url     TEXT,
+  phone         TEXT,
+  whatsapp      TEXT,
+  address       TEXT,
+  instagram     TEXT,
+  primary_color TEXT DEFAULT '#3B82F6',
+  accent_color  TEXT DEFAULT '#60A5FA',
+  cuts_gallery  TEXT DEFAULT '[]',
+  active        INTEGER NOT NULL DEFAULT 1,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_barbershops_slug ON barbershops(slug);
+
+-- Avaliacoes Verificadas e Politica de Reputacao Autentica
+CREATE TABLE IF NOT EXISTS reviews (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_slug      TEXT DEFAULT 'nova-barbearia',
+  appointment_id INTEGER REFERENCES appointments(id),
+  barber_id      INTEGER REFERENCES barbers(id),
+  client_name    TEXT NOT NULL,
+  rating         INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+  comment        TEXT,
+  verified       INTEGER NOT NULL DEFAULT 1,
+  created_at     TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(shop_slug);
 `;
 
 export const DEFAULT_SETTINGS = {
@@ -384,15 +421,50 @@ export async function initDatabase(options = {}) {
   // Migracao segura de schema para bancos preexistentes
   try {
     const tableCols = await driver.all('PRAGMA table_info(appointments)', []);
-    const hasCancelToken = tableCols.some((col) => col.name === 'cancel_token');
-    if (!hasCancelToken) {
+    const colNames = tableCols.map((col) => col.name);
+    if (!colNames.includes('cancel_token')) {
       await driver.exec('ALTER TABLE appointments ADD COLUMN cancel_token TEXT');
+    }
+    if (!colNames.includes('payment_method')) {
+      await driver.exec("ALTER TABLE appointments ADD COLUMN payment_method TEXT DEFAULT 'presencial'");
+    }
+    if (!colNames.includes('paid_at')) {
+      await driver.exec('ALTER TABLE appointments ADD COLUMN paid_at TEXT');
     }
     await driver.exec(
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_cancel_token ON appointments(cancel_token) WHERE cancel_token IS NOT NULL'
     );
   } catch {
     /* coluna ou indice ja existente */
+  }
+
+  try {
+    const barberCols = await driver.all('PRAGMA table_info(barbers)', []);
+    const bNames = barberCols.map((col) => col.name);
+    if (!bNames.includes('specialties')) {
+      await driver.exec("ALTER TABLE barbers ADD COLUMN specialties TEXT DEFAULT 'Degradê, Barba, Tesoura'");
+    }
+    if (!bNames.includes('bio')) {
+      await driver.exec("ALTER TABLE barbers ADD COLUMN bio TEXT DEFAULT 'Mestre barbeiro com foco em visagismo e pontualidade.'");
+    }
+    if (!bNames.includes('rating')) {
+      await driver.exec('ALTER TABLE barbers ADD COLUMN rating REAL DEFAULT 4.9');
+    }
+    if (!bNames.includes('avatar_url')) {
+      await driver.exec("ALTER TABLE barbers ADD COLUMN avatar_url TEXT DEFAULT ''");
+    }
+  } catch {
+    /* colunas ja existentes */
+  }
+
+  try {
+    const serviceCols = await driver.all('PRAGMA table_info(services)', []);
+    const sNames = serviceCols.map((col) => col.name);
+    if (!sNames.includes('category')) {
+      await driver.exec("ALTER TABLE services ADD COLUMN category TEXT DEFAULT 'Cabelo'");
+    }
+  } catch {
+    /* coluna ja existente */
   }
 
   await seedDefaults();
@@ -424,6 +496,73 @@ async function seedDefaults() {
         params: [row.weekday, row.is_open, row.open_time, row.close_time],
       }))
     );
+  }
+
+  // Semeia barbearias multi-tenant caso a tabela esteja vazia
+  const totalShops = await driver.get('SELECT COUNT(*) AS total FROM barbershops', []);
+  if (Number(totalShops?.total || 0) === 0) {
+    const defaultCuts = JSON.stringify([
+      { title: 'Degradê Navalhado', desc: 'Acabamento milimétrico na navalha e contorno alinhado', tag: 'Cabelo' },
+      { title: 'Barboterapia & Toalha Quente', desc: 'Aroma suave, hidratação profunda e lâmina afiada', tag: 'Barba' },
+      { title: 'Corte Social Moderno', desc: 'Tesoura e acabamento executivo impecável', tag: 'Clássico' },
+      { title: 'Platinado & Texturizado', desc: 'Descoloração segura e pomada matte', tag: 'Estilo' },
+    ]);
+
+    await driver.batch([
+      {
+        sql: `INSERT INTO barbershops (slug, name, company, description, phone, whatsapp, address, instagram, primary_color, cuts_gallery, active)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+              ON CONFLICT(slug) DO NOTHING`,
+        params: [
+          'nova-barbearia',
+          'Nova Barbearia',
+          'Nova Runtime',
+          'Ambiente sofisticado, pontualidade e mestres barbeiros especializados em degradê, corte clássico e barboterapia.',
+          '(11) 98765-4321',
+          '11987654321',
+          'Av. Paulista, 1106 - Bela Vista, São Paulo - SP',
+          '@novabarbearia.oficial',
+          '#3B82F6',
+          defaultCuts,
+        ],
+      },
+      {
+        sql: `INSERT INTO barbershops (slug, name, company, description, phone, whatsapp, address, instagram, primary_color, cuts_gallery, active)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+              ON CONFLICT(slug) DO NOTHING`,
+        params: [
+          'barbearia-premium',
+          'Barbearia Premium Club',
+          'Nova Runtime',
+          'Espaço exclusivo para cavalheiros exigentes com café espresso, cerveja artesanal e atendimento personalizado.',
+          '(11) 91234-5678',
+          '11912345678',
+          'Rua Oscar Freire, 800 - Jardins, São Paulo - SP',
+          '@barbeariapremium.sp',
+          '#3B82F6',
+          defaultCuts,
+        ],
+      },
+    ]);
+  }
+
+  // Semeia reviews verificadas de demonstração
+  const totalReviews = await driver.get('SELECT COUNT(*) AS total FROM reviews', []);
+  if (Number(totalReviews?.total || 0) === 0) {
+    await driver.batch([
+      {
+        sql: `INSERT INTO reviews (shop_slug, client_name, rating, comment, verified) VALUES (?, ?, ?, ?, 1)`,
+        params: ['nova-barbearia', 'Lucas Mendes', 5, 'Melhor atendimento de SP. Pontualidade britânica e o degradê ficou impecável!'],
+      },
+      {
+        sql: `INSERT INTO reviews (shop_slug, client_name, rating, comment, verified) VALUES (?, ?, ?, ?, 1)`,
+        params: ['nova-barbearia', 'Rafael Silveira', 5, 'A barboterapia com toalha quente relaxa demais. Ambiente de altíssimo padrão.'],
+      },
+      {
+        sql: `INSERT INTO reviews (shop_slug, client_name, rating, comment, verified) VALUES (?, ?, ?, ?, 1)`,
+        params: ['nova-barbearia', 'Guilherme Castro', 5, 'Agendamento super fácil pelo Instagram, sem precisar baixar nada. Recomendo muito!'],
+      },
+    ]);
   }
 }
 
@@ -528,4 +667,31 @@ export async function closeDatabase() {
   await driver.close();
   driver = null;
   initialized = false;
+}
+
+/* --------------------------------------------------------------------------
+ * Multi-barbearia & Reputacao
+ * ------------------------------------------------------------------------ */
+
+export async function getShopBySlug(slug = 'nova-barbearia') {
+  const shop = await get('SELECT * FROM barbershops WHERE slug = ? AND active = 1', [slug]);
+  if (!shop) {
+    return await get('SELECT * FROM barbershops WHERE active = 1 ORDER BY id ASC LIMIT 1', []);
+  }
+  return shop;
+}
+
+export async function listShops() {
+  return await all('SELECT id, slug, name, company, description, logo_url, address, instagram, whatsapp FROM barbershops WHERE active = 1 ORDER BY name ASC', []);
+}
+
+export async function getShopReviews(slug = 'nova-barbearia') {
+  return await all('SELECT id, client_name, rating, comment, verified, created_at FROM reviews WHERE shop_slug = ? ORDER BY id DESC LIMIT 20', [slug]);
+}
+
+export async function addReview({ shopSlug = 'nova-barbearia', clientName, rating, comment, appointmentId, barberId }) {
+  return await run(
+    'INSERT INTO reviews (shop_slug, client_name, rating, comment, appointment_id, barber_id, verified) VALUES (?, ?, ?, ?, ?, ?, 1)',
+    [shopSlug, clientName, Number(rating), comment || '', appointmentId || null, barberId || null]
+  );
 }

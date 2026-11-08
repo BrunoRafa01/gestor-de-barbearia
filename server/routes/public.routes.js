@@ -5,7 +5,7 @@ import {
   setAppointmentStatus,
   upsertClientByPhone,
 } from '../appointments.js';
-import { all, getSetting, run } from '../db.js';
+import { all, get, getSetting, getShopBySlug, getShopReviews, addReview, run } from '../db.js';
 import { isDemoMode } from '../demo.js';
 import { HttpError } from '../http.js';
 import { clientIp, publicBookingLimiter, publicReadLimiter } from '../security.js';
@@ -40,14 +40,40 @@ function enforceLimit(req, res, limiter, scope) {
   }
 }
 
-function shopPayload() {
+async function shopPayload(slug) {
+  let shopRow = null;
+  if (slug) {
+    shopRow = await getShopBySlug(slug);
+  }
+  const defaultCuts = [
+    { title: 'Degradê Navalhado', desc: 'Acabamento milimétrico na lâmina e contorno alinhado', tag: 'Cabelo' },
+    { title: 'Barboterapia & Toalha Quente', desc: 'Aroma suave, hidratação profunda e lâmina afiada', tag: 'Barba' },
+    { title: 'Corte Social Moderno', desc: 'Tesoura e acabamento executivo impecável', tag: 'Clássico' },
+    { title: 'Platinado & Texturizado', desc: 'Descoloração segura e pomada matte', tag: 'Estilo' },
+  ];
+
+  let cuts = defaultCuts;
+  if (shopRow?.cuts_gallery) {
+    try {
+      cuts = typeof shopRow.cuts_gallery === 'string' ? JSON.parse(shopRow.cuts_gallery) : shopRow.cuts_gallery;
+    } catch {
+      cuts = defaultCuts;
+    }
+  }
+
   return {
-    name: getSetting('shop_name', 'Gestor de Barbearia'),
-    company: getSetting('shop_company', 'Nova Runtime'),
-    phone: getSetting('shop_phone', ''),
-    whatsapp: getSetting('shop_whatsapp', ''),
-    address: getSetting('shop_address', ''),
-    instagram: getSetting('shop_instagram', ''),
+    slug: shopRow?.slug || 'nova-barbearia',
+    name: shopRow?.name || getSetting('shop_name', 'Gestor de Barbearia'),
+    company: shopRow?.company || getSetting('shop_company', 'Nova Runtime'),
+    description: shopRow?.description || 'Cortes clássicos, barboterapia e visual contemporâneo com atendimento exclusivo e pontualidade britânica.',
+    phone: shopRow?.phone || getSetting('shop_phone', ''),
+    whatsapp: shopRow?.whatsapp || getSetting('shop_whatsapp', ''),
+    address: shopRow?.address || getSetting('shop_address', ''),
+    instagram: shopRow?.instagram || getSetting('shop_instagram', ''),
+    logo_url: shopRow?.logo_url || null,
+    cover_url: shopRow?.cover_url || null,
+    primary_color: shopRow?.primary_color || '#3B82F6',
+    cuts_gallery: cuts,
     public_booking: String(getSetting('public_booking', '1')) === '1',
     min_advance_minutes: Number(getSetting('min_advance_minutes', '0')) || 0,
     max_advance_days: Number(getSetting('max_advance_days', '60')) || 60,
@@ -57,7 +83,7 @@ function shopPayload() {
 
 async function activeServices() {
   const rows = await all(
-    'SELECT id, name, description, duration_min, price FROM services WHERE active = 1 ORDER BY name COLLATE NOCASE',
+    'SELECT id, name, description, duration_min, price, category FROM services WHERE active = 1 ORDER BY category ASC, name COLLATE NOCASE',
     []
   );
   return rows.map((row) => ({
@@ -65,15 +91,24 @@ async function activeServices() {
     id: Number(row.id),
     duration_min: Number(row.duration_min),
     price: Number(row.price),
+    category: row.category || 'Cabelo',
   }));
 }
 
 async function activeBarbers() {
   const rows = await all(
-    'SELECT id, name, color FROM barbers WHERE active = 1 ORDER BY name COLLATE NOCASE',
+    'SELECT id, name, color, specialties, bio, rating, avatar_url FROM barbers WHERE active = 1 ORDER BY name COLLATE NOCASE',
     []
   );
-  return rows.map((row) => ({ id: Number(row.id), name: row.name, color: row.color }));
+  return rows.map((row) => ({
+    id: Number(row.id),
+    name: row.name,
+    color: row.color,
+    specialties: row.specialties || 'Degradê, Barba, Tesoura',
+    bio: row.bio || 'Mestre barbeiro com foco em visagismo e pontualidade.',
+    rating: Number(row.rating || 4.9),
+    avatar_url: row.avatar_url || '',
+  }));
 }
 
 export const publicRoutes = [
@@ -81,9 +116,15 @@ export const publicRoutes = [
     method: 'GET',
     path: '/api/public/config',
     auth: false,
-    handler: async () => {
-      const [services, barbers] = await Promise.all([activeServices(), activeBarbers()]);
-      return { status: 200, body: { shop: shopPayload(), services, barbers } };
+    handler: async ({ query }) => {
+      const shopSlug = query?.shop || 'nova-barbearia';
+      const [shop, services, barbers, reviews] = await Promise.all([
+        shopPayload(shopSlug),
+        activeServices(),
+        activeBarbers(),
+        getShopReviews(shopSlug),
+      ]);
+      return { status: 200, body: { shop, services, barbers, reviews } };
     },
   },
   {
@@ -302,6 +343,99 @@ export const publicRoutes = [
           },
         },
       };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/public/shops',
+    auth: false,
+    handler: async () => {
+      const rows = await all(
+        'SELECT id, slug, name, company, description, logo_url, phone, whatsapp, address, instagram, primary_color FROM barbershops WHERE active = 1 ORDER BY name ASC',
+        []
+      );
+      return { status: 200, body: rows };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/public/reviews',
+    auth: false,
+    handler: async ({ query }) => {
+      const shopSlug = query?.shop || 'nova-barbearia';
+      const reviews = await getShopReviews(shopSlug);
+      return { status: 200, body: reviews };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/public/reviews',
+    auth: false,
+    handler: async ({ req, res, body }) => {
+      enforceLimit(req, res, publicBookingLimiter, 'public-review-create');
+      const shopSlug = body?.shop_slug || 'nova-barbearia';
+      const clientName = requiredString(body?.client_name, 'seu nome', { max: 100 });
+      const rating = Number(body?.rating);
+      if (!rating || rating < 1 || rating > 5) {
+        throw new HttpError(400, 'A nota da avaliação deve ser entre 1 e 5 estrelas.');
+      }
+      const comment = optionalString(body?.comment, 'comentário', 500);
+      const appointmentId = body?.appointment_id ? Number(body.appointment_id) : null;
+      const barberId = body?.barber_id ? Number(body.barber_id) : null;
+
+      await addReview({ shopSlug, clientName, rating, comment, appointmentId, barberId });
+      return {
+        status: 201,
+        body: { success: true, message: 'Obrigado por avaliar nosso atendimento!' },
+      };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/public/ics/:token',
+    auth: false,
+    handler: async ({ req, res, params }) => {
+      const token = String(params.token || '').trim();
+      if (!/^[a-f0-9]{16,64}$/i.test(token)) {
+        throw new HttpError(400, 'Código inválido.');
+      }
+      const appt = await getAppointmentByCancelToken(token);
+      if (!appt) {
+        throw new HttpError(404, 'Agendamento não localizado.');
+      }
+
+      const shopName = getSetting('shop_name', 'Nova Barbearia');
+      const shopAddress = getSetting('shop_address', 'Av. Paulista, 1106 - São Paulo - SP');
+      const dClean = appt.date.replace(/-/g, '');
+      const sClean = appt.start_time.replace(/:/g, '') + '00';
+      const eClean = (appt.end_time || appt.start_time).replace(/:/g, '') + '00';
+      const nowClean = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Nova Runtime//Gestor de Barbearia//PT',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:appt-${appt.id}-${Date.now()}@novaruntime.com.br`,
+        `DTSTAMP:${nowClean}`,
+        `DTSTART:${dClean}T${sClean}`,
+        `DTEND:${dClean}T${eClean}`,
+        `SUMMARY:${appt.service_name} com ${appt.barber_name} | ${shopName}`,
+        `DESCRIPTION:Agendamento confirmado de ${appt.service_name} na ${shopName}.`,
+        `LOCATION:${shopAddress}`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\r\n');
+
+      res.writeHead(200, {
+        'Content-Type': 'text/calendar; charset=utf-8',
+        'Content-Disposition': `attachment; filename="agendamento-${appt.date}.ics"`,
+        'Content-Length': Buffer.byteLength(ics, 'utf-8'),
+      });
+      res.end(ics);
     },
   },
 ];

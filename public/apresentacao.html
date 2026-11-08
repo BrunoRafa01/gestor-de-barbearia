@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor de Barbearia SaaS | Nova Runtime Tecnologia</title>
+  <meta name="description" content="Plataforma comercial de agendamento online e gestão completa para barbearias modernas. Desenvolvido pela Nova Runtime.">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <style>
+    .lp-body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .lp-header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(8, 11, 18, 0.85);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 16px 24px;
+    }
+    .lp-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .lp-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .lp-hero {
+      max-width: 900px;
+      margin: 60px auto 40px;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .lp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--primary-hover);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .lp-title {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: #FFFFFF;
+      margin: 0 0 20px;
+    }
+    .lp-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 720px;
+      margin: 0 auto 36px;
+    }
+    .lp-cta-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .lp-section {
+      max-width: 1100px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+    .lp-section-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .lp-section-title h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin: 0 0 8px;
+    }
+    .lp-section-title p {
+      color: var(--text-dim);
+      margin: 0;
+    }
+    .lp-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .lp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .lp-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .lp-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      margin-bottom: 18px;
+    }
+    .lp-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 10px;
+    }
+    .lp-card p {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .lp-footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+      padding: 48px 24px 32px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body class="lp-body">
+  <header class="lp-header">
+    <div class="lp-header-inner">
+      <a href="/" class="lp-brand">
+        <div class="brand-mark" style="background:var(--primary);color:#FFFFFF">NR</div>
+        <div>
+          <strong style="color:var(--text);font-size:15px">Nova Runtime</strong>
+          <span style="display:block;font-size:11px;color:var(--text-dim)">Gestor de Barbearia SaaS</span>
+        </div>
+      </a>
+      <div style="display:flex;gap:12px;align-items:center">
+        <a href="/agendar" class="btn btn-ghost btn-sm">Ver Agendamento</a>
+        <a href="/" class="btn btn-primary btn-sm">Painel Administrativo</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="lp-hero">
+      <div class="lp-badge">
+        <span>⚡ Tecnologia Nova Runtime</span> &bull; <span>Pronto para Barbearias Reais</span>
+      </div>
+      <h1 class="lp-title">
+        Transforme o Instagram da sua barbearia em uma <span style="color:var(--primary)">máquina de agendamentos</span>
+      </h1>
+      <p class="lp-subtitle">
+        Sem obrigar seu cliente a baixar aplicativos ou criar senhas. Agendamento em 4 etapas pelo celular, controle financeiro em tempo real e reputação autêntica.
+      </p>
+      <div class="lp-cta-row">
+        <a href="/agendar" class="btn btn-primary btn-lg" style="padding:14px 28px;font-size:15px">
+          Experimentar Agendamento ao Vivo &rarr;
+        </a>
+        <a href="/" class="btn btn-ghost btn-lg" style="padding:14px 28px;font-size:15px">
+          Acessar Painel do Barbeiro
+        </a>
+      </div>
+    </section>
+
+    <section class="lp-section">
+      <div class="lp-section-title">
+        <h2>Por que o barbeiro moderno escolhe este sistema?</h2>
+        <p>Desenvolvido para eliminar faltas, organizar o caixa e encantar o cliente desde o primeiro toque.</p>
+      </div>
+
+      <div class="lp-grid-3">
+        <div class="lp-card">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <h3>Agendamento Mobile Sem Barreiras</h3>
+          <p>O cliente acessa pelo link da Bio do Instagram e marca em menos de 1 minuto. Sem logins complexos, direto para o serviço e barbeiro preferido.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Integração WhatsApp &amp; Calendário</h3>
+          <p>Confirmação automática de presença, botão de conversa direta e download de compromisso (.ics) para sincronizar com Google Calendar e Apple Calendar.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+          </div>
+          <h3>Controle Financeiro &amp; Comissões</h3>
+          <p>Separação clara entre receita prevista e realizada. Cálculo transparente de comissões por barbeiro, fechamento de caixa e ticket médio real.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Proteção Atômica contra Duplicidade</h3>
+          <p>Trava rigorosa no banco de dados que impede agendamentos simultâneos ou horários conflitantes para o mesmo profissional.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <h3>Galeria de Cortes &amp; Reviews</h3>
+          <p>Apresentação dos estilos da casa (Degradê, Barboterapia, Social) e avaliações autênticas de clientes verificados que trazem credibilidade ao negócio.</p>
+        </div>
+
+        <div class="lp-card">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>40 Requisitos de Segurança &amp; LGPD</h3>
+          <p>Portal DSR para portabilidade de dados, cookie banner de consentimento, termos de uso em conformidade com o CDC e trilha de auditoria para administradores.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lp-section" style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 32px;text-align:center">
+      <h2 style="font-size:2rem;font-weight:800;color:#FFFFFF;margin:0 0 12px">Pronto para elevar o nível da sua barbearia?</h2>
+      <p style="color:var(--text-dim);max-width:600px;margin:0 auto 28px">
+        Entre em contato com os especialistas de engenharia da Nova Runtime e solicite uma demonstração exclusiva com a identidade da sua marca.
+      </p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="mailto:contato@novaruntime.com.br" class="btn btn-primary btn-lg">Falar com a Nova Runtime</a>
+        <a href="/agendar" class="btn btn-ghost btn-lg">Testar Agendamento</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lp-footer">
+    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+      <a href="/termos.html" style="color:var(--text-dim)">Termos de Uso</a>
+      <span>&bull;</span>
+      <a href="/privacidade.html" style="color:var(--text-dim)">Privacidade (LGPD)</a>
+      <span>&bull;</span>
+      <a href="/transparencia.html" style="color:var(--text-dim)">Transparência CDC</a>
+      <span>&bull;</span>
+      <a href="/compliance.html" style="color:var(--text-dim)">Conformidade</a>
+    </div>
+    <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90 &bull; Av. Paulista, 1106, São Paulo - SP</div>
+  </footer>
+</body>
+</html>

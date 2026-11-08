@@ -187,6 +187,8 @@ const server = createServer(async (request, response) => {
         body,
       });
 
+      if (response.writableEnded) return;
+
       sendJson(response, result && typeof result === 'object' && 'status' in result ? result.status : 200, result && typeof result === 'object' && 'body' in result ? result.body : result);
       return;
     }
@@ -194,6 +196,19 @@ const server = createServer(async (request, response) => {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       sendError(response, 405, 'Metodo nao permitido.');
       return;
+    }
+
+    // Rotas de barbearias multi-tenant (/b/:slug)
+    if (pathname.startsWith('/b/')) {
+      if (serveStatic(request, response, PUBLIC_DIR, 'agendar.html')) return;
+    }
+
+    // Modo demonstracao e Apresentacao Comercial Nova Runtime
+    if (pathname === '/demo' || pathname === '/demo/') {
+      if (serveStatic(request, response, PUBLIC_DIR, 'index.html')) return;
+    }
+    if (pathname === '/apresentacao' || pathname === '/apresentacao/') {
+      if (serveStatic(request, response, PUBLIC_DIR, 'apresentacao.html')) return;
     }
 
     const alias = PAGE_ALIASES[pathname.replace(/\/$/, '') || '/'];

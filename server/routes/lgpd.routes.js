@@ -22,35 +22,40 @@ export const lgpdRoutes = [
     method: 'GET',
     path: '/api/lgpd/export',
     auth: false,
-    handler: async (request) => {
-      const ip = clientIp(request);
+    handler: async ({ req, query }) => {
+      const ip = clientIp(req);
       const limitCheck = dsrLimiter.check(ip);
       if (!limitCheck.allowed) {
         throw new HttpError(429, limitCheck.message);
       }
 
-      const url = new URL(request.url, 'http://localhost');
-      const rawPhone = url.searchParams.get('phone');
+      const rawPhone = query?.phone;
       if (!rawPhone) {
         throw new HttpError(400, 'Informe o numero de telefone para localizar seus dados.');
       }
 
-      const cleanPhone = rawPhone.replace(/\D/g, '');
+      const cleanPhone = String(rawPhone).replace(/\D/g, '');
       if (cleanPhone.length < 10) {
         throw new HttpError(400, 'Telefone invalido.');
       }
 
       const client = await get(
-        'SELECT id, name, phone, email, notes, created_at FROM clients WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, "-", ""), "(", ""), ")", ""), " ", "") = ?',
+        "SELECT id, name, phone, email, notes, created_at FROM clients WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?",
         [cleanPhone]
       );
 
       const appointments = await all(
-        'SELECT id, client_name, client_phone, service_name, price, date, time, status, created_at FROM appointments WHERE REPLACE(REPLACE(REPLACE(REPLACE(client_phone, "-", ""), "(", ""), ")", ""), " ", "") = ? ORDER BY date DESC',
+        `SELECT a.id, c.name AS client_name, c.phone AS client_phone, s.name AS service_name, b.name AS barber_name, a.price, a.date, a.start_time, a.end_time, a.status, a.created_at
+         FROM appointments a
+         JOIN clients c ON c.id = a.client_id
+         LEFT JOIN services s ON s.id = a.service_id
+         LEFT JOIN barbers b ON b.id = a.barber_id
+         WHERE REPLACE(REPLACE(REPLACE(REPLACE(c.phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?
+         ORDER BY a.date DESC`,
         [cleanPhone]
       );
 
-      logSecurityEvent('DSR_DATA_EXPORT', { phone_anonymized: cleanPhone.slice(0, 4) + '****' + cleanPhone.slice(-2), total_records: appointments.length }, request);
+      logSecurityEvent('DSR_DATA_EXPORT', { phone_anonymized: cleanPhone.slice(0, 4) + '****' + cleanPhone.slice(-2), total_records: appointments.length }, req);
 
       return {
         status: 200,
@@ -74,21 +79,21 @@ export const lgpdRoutes = [
     method: 'POST',
     path: '/api/lgpd/request',
     auth: false,
-    handler: async (request) => {
-      const ip = clientIp(request);
+    handler: async ({ req, body }) => {
+      const ip = clientIp(req);
       const limitCheck = dsrLimiter.check(ip);
       if (!limitCheck.allowed) {
         throw new HttpError(429, limitCheck.message);
       }
 
-      const body = await readJsonBody(request);
-      const { name, phone, email, requestType, message } = body;
+      const payload = body || {};
+      const { name, phone, email, requestType, message } = payload;
 
       if (!phone || !requestType) {
         throw new HttpError(400, 'Telefone e Tipo de Requisicao sao obrigatorios.');
       }
 
-      const cleanPhone = phone.replace(/\D/g, '');
+      const cleanPhone = String(phone).replace(/\D/g, '');
       const validTypes = ['confirmacao', 'acesso', 'correcao', 'anonimizacao', 'exclusao', 'revogacao'];
       if (!validTypes.includes(requestType)) {
         throw new HttpError(400, `Tipo de solicitacao invalido. Opcoes validas: ${validTypes.join(', ')}`);
@@ -101,7 +106,7 @@ export const lgpdRoutes = [
         protocolNumber,
         requestType,
         phone_anonymized: cleanPhone.slice(0, 4) + '****' + cleanPhone.slice(-2),
-      }, request);
+      }, req);
 
       return {
         status: 201,
@@ -124,16 +129,16 @@ export const lgpdRoutes = [
     method: 'POST',
     path: '/api/lgpd/consent',
     auth: false,
-    handler: async (request) => {
-      const body = await readJsonBody(request);
-      const { necessary, analytics, marketing, userToken } = body;
+    handler: async ({ req, body }) => {
+      const payload = body || {};
+      const { necessary, analytics, marketing, userToken } = payload;
 
       logSecurityEvent('CONSENT_PREFERENCES_UPDATED', {
         necessary: Boolean(necessary),
         analytics: Boolean(analytics),
         marketing: Boolean(marketing),
         tokenHash: userToken ? userToken.slice(0, 8) + '...' : 'anon',
-      }, request);
+      }, req);
 
       return {
         status: 200,

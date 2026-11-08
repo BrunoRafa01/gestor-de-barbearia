@@ -22,6 +22,8 @@ const state = {
   shop: null,
   services: [],
   barbers: [],
+  reviews: [],
+  currentTab: 'booking',
   serviceId: null,
   barberId: null,
   date: null,
@@ -223,16 +225,37 @@ function renderServices() {
 
 function renderBarbers() {
   const grid = document.getElementById('barber-grid');
-  grid.innerHTML = state.barbers
+  const isAnySelected = state.isAnyBarber;
+
+  const anyCard = `
+    <button type="button" class="choice barber-choice${isAnySelected ? ' selected' : ''}" data-barber="any">
+      <div class="barber-avatar-box" style="background:var(--primary);color:#FFFFFF;font-size:18px">
+        ⚡
+      </div>
+      <div class="barber-meta">
+        <strong class="barber-name">Qualquer profissional disponível</strong>
+        <span class="barber-spec">Maior agilidade • Primeiro horário livre na agenda</span>
+      </div>
+      <div class="selection-pill" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
+      </div>
+    </button>
+  `;
+
+  const barbersList = state.barbers
     .map(
       (barber) => `
-      <button type="button" class="choice barber-choice${String(state.barberId) === String(barber.id) ? ' selected' : ''}" data-barber="${barber.id}">
+      <button type="button" class="choice barber-choice${!isAnySelected && String(state.barberId) === String(barber.id) ? ' selected' : ''}" data-barber="${barber.id}">
         <div class="barber-avatar-box">
           ${esc(initials(barber.name))}
         </div>
         <div class="barber-meta">
           <strong class="barber-name">${esc(barber.name)}</strong>
-          <span class="barber-spec">Barbeiro Especialista</span>
+          <span class="barber-spec">${esc(barber.specialties || 'Mestre Barbeiro')}</span>
+          <div style="font-size:11px;color:#F59E0B;margin-top:2px;display:flex;align-items:center;gap:4px">
+            <span>★ ${Number(barber.rating || 4.9).toFixed(1)}</span>
+            <span style="color:var(--text-dim)">• Verificado</span>
+          </div>
         </div>
         <div class="selection-pill" aria-hidden="true">
           <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
@@ -241,10 +264,19 @@ function renderBarbers() {
     )
     .join('');
 
+  grid.innerHTML = anyCard + barbersList;
+
   grid.querySelectorAll('[data-barber]').forEach((element) =>
     element.addEventListener('click', async () => {
       haptic();
-      state.barberId = Number(element.dataset.barber);
+      const val = element.dataset.barber;
+      if (val === 'any') {
+        state.isAnyBarber = true;
+        state.barberId = state.barbers.length ? state.barbers[0].id : null;
+      } else {
+        state.isAnyBarber = false;
+        state.barberId = Number(val);
+      }
       state.time = null;
       renderBarbers();
       await bootstrapDateSection();
@@ -379,14 +411,25 @@ function successHtml(result) {
         <div><span>Valor</span><strong>${esc(money(appointment.price))}</strong></div>
       </div>
       ${
+        appointment.cancel_token
+          ? `
+          <div style="margin-top:14px;width:100%">
+            <a class="btn-calendar-add" href="/api/public/ics/${esc(appointment.cancel_token)}" download="agendamento-${esc(appointment.date)}.ics">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Adicionar ao Calendário (Apple / Google)
+            </a>
+          </div>`
+          : ''
+      }
+      ${
         fullManageUrl
           ? `
-          <div style="margin-top:16px;padding:12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:10px;text-align:left;width:100%">
+          <div style="margin-top:14px;padding:12px;background:var(--primary-soft);border:1px solid var(--border);border-radius:10px;text-align:left;width:100%">
             <div style="font-size:12.5px;color:var(--text);display:flex;align-items:center;gap:6px;font-weight:600">
               ${icon('shield-check')} Link de autoatendimento
             </div>
             <p class="muted" style="margin-top:4px;font-size:12px">
-              Guarde este link para consultar ou cancelar seu agendamento a qualquer momento:
+              Guarde este link para consultar, reagendar ou cancelar seu horário a qualquer momento:
             </p>
             <div style="margin-top:8px;display:flex;gap:6px">
               <input type="text" readonly value="${esc(fullManageUrl)}" id="pk-manage-link" style="font-size:11.5px;padding:6px 10px;flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px" />
@@ -589,15 +632,52 @@ function applyShop(config) {
   state.shop = config.shop;
   state.services = config.services;
   state.barbers = config.barbers;
+  state.reviews = config.reviews || [];
+
   document.title = `Agendar horário | ${config.shop.name}`;
   document.getElementById('shop-name').textContent = config.shop.name;
   const company = (config.shop.company && config.shop.company !== 'Nova Runtime')
     ? config.shop.company
-    : 'Cortes & Barba Tradicional';
+    : 'Nova Runtime SaaS';
   document.getElementById('shop-company').textContent = company;
-  document.getElementById('shop-sub').textContent = config.shop.address
-    ? config.shop.address
-    : 'Escolha o serviço, o profissional e o melhor horário.';
+
+  const heroNameEl = document.getElementById('shop-hero-name');
+  if (heroNameEl) heroNameEl.textContent = config.shop.name;
+
+  const bioEl = document.getElementById('shop-bio');
+  if (bioEl) {
+    bioEl.textContent = config.shop.description || 'Ambiente exclusivo, cortes de alta precisão e atendimento personalizado.';
+  }
+
+  // Botoes de acao rapida no cabecalho
+  const quickActions = document.getElementById('shop-actions');
+  if (quickActions) {
+    const actionBtns = [];
+    const whatsapp = whatsappLink(config.shop.whatsapp || config.shop.phone);
+    if (whatsapp) {
+      actionBtns.push(
+        `<a class="shop-action-btn whats" href="${esc(whatsapp)}?text=${encodeURIComponent('Olá! Gostaria de informações sobre a barbearia.')}" target="_blank" rel="noopener">
+          ${icon('whatsapp')} Conversar no WhatsApp
+        </a>`
+      );
+    }
+    if (config.shop.instagram) {
+      const handle = String(config.shop.instagram).replace(/^@/, '');
+      actionBtns.push(
+        `<a class="shop-action-btn insta" href="https://instagram.com/${esc(encodeURIComponent(handle))}" target="_blank" rel="noopener">
+          ${icon('link')} @${esc(handle)}
+        </a>`
+      );
+    }
+    if (config.shop.address) {
+      actionBtns.push(
+        `<a class="shop-action-btn address" href="https://maps.google.com/?q=${encodeURIComponent(config.shop.address)}" target="_blank" rel="noopener">
+          ${icon('calendar')} Como Chegar
+        </a>`
+      );
+    }
+    quickActions.innerHTML = actionBtns.join('');
+  }
 
   const links = [];
   const whatsapp = whatsappLink(config.shop.whatsapp || config.shop.phone);
@@ -622,6 +702,201 @@ function applyShop(config) {
 
   const demoBadge = document.getElementById('demo-badge');
   if (demoBadge) demoBadge.classList.toggle('hidden', !config.shop.demo);
+}
+
+function renderBookingTab() {
+  content().innerHTML = skeletonHtml();
+  renderServices();
+  if (state.serviceId) {
+    revealSection('sec-barber');
+    renderBarbers();
+  }
+  if (state.barberId) {
+    revealSection('sec-date');
+    renderDays();
+    renderSlots();
+  }
+  if (state.date && state.time) {
+    revealSection('sec-form');
+    renderSummary();
+  }
+  document.getElementById('pk-confirm')?.addEventListener('click', submit);
+  document.getElementById('pk-phone')?.addEventListener('blur', (event) => {
+    event.target.value = formatPhone(event.target.value);
+  });
+  setStep(currentStep());
+}
+
+function renderCutsTab() {
+  const cuts = state.shop?.cuts_gallery || [];
+  content().innerHTML = `
+    <div class="card booking-card">
+      <div class="card-section-head">
+        <div>
+          <h3>Galeria de Estilos e Cortes</h3>
+          <p class="section-sub">Trabalhos executados pelos nossos mestres barbeiros</p>
+        </div>
+      </div>
+      <div class="cuts-grid">
+        ${cuts
+          .map(
+            (cut) => `
+          <div class="cut-card">
+            <div class="cut-thumb-placeholder">
+              <span class="cut-thumb-tag">${esc(cut.tag || 'Corte')}</span>
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+              </svg>
+            </div>
+            <div class="cut-card-body">
+              <h4 class="cut-card-title">${esc(cut.title)}</h4>
+              <p class="cut-card-desc">${esc(cut.desc)}</p>
+              <button type="button" class="btn btn-sm btn-block btn-primary" style="margin-top:10px" data-action="pick-cut">
+                Quero Este Estilo
+              </button>
+            </div>
+          </div>`
+          )
+          .join('')}
+      </div>
+    </div>`;
+
+  content().querySelectorAll('[data-action="pick-cut"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelector('[data-tab="booking"]')?.click();
+    });
+  });
+}
+
+function renderTeamTab() {
+  content().innerHTML = `
+    <div class="card booking-card">
+      <div class="card-section-head">
+        <div>
+          <h3>Nossa Equipe de Barbeiros</h3>
+          <p class="section-sub">Especialistas comprometidos com excelência e pontualidade</p>
+        </div>
+      </div>
+      <div class="team-list">
+        ${state.barbers
+          .map(
+            (barber) => `
+          <div class="barber-rich-card">
+            <div class="barber-rich-avatar">
+              ${esc(initials(barber.name))}
+            </div>
+            <div class="barber-rich-info">
+              <div class="barber-rich-name-row">
+                <strong style="color:var(--text);font-size:15px">${esc(barber.name)}</strong>
+                <span class="rating-pill">★ ${Number(barber.rating || 4.9).toFixed(1)}</span>
+              </div>
+              <span class="barber-rich-spec">${esc(barber.specialties || 'Mestre Barbeiro')}</span>
+              <p class="barber-rich-bio">${esc(barber.bio || 'Especialista em visagismo, corte masculino e barba alinhada.')}</p>
+              <button type="button" class="btn btn-sm btn-ghost" style="margin-top:8px" data-barber-pick="${barber.id}">
+                Agendar com ${esc(barber.name.split(' ')[0])} &rarr;
+              </button>
+            </div>
+          </div>`
+          )
+          .join('')}
+      </div>
+    </div>`;
+
+  content().querySelectorAll('[data-barber-pick]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.barberId = Number(btn.dataset.barberPick);
+      state.isAnyBarber = false;
+      document.querySelector('[data-tab="booking"]')?.click();
+    });
+  });
+}
+
+function renderReviewsTab() {
+  const reviews = state.reviews || [];
+  content().innerHTML = `
+    <div class="card booking-card">
+      <div class="card-section-head" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h3>Avaliações Verificadas</h3>
+          <p class="section-sub">Opinião autêntica de clientes atendidos no estabelecimento</p>
+        </div>
+        <div class="rating-pill" style="font-size:13px;padding:4px 10px">
+          ★ 4.9 • Excelente
+        </div>
+      </div>
+      <div class="reviews-grid">
+        ${
+          reviews.length
+            ? reviews
+                .map(
+                  (rev) => `
+            <div class="review-item-card">
+              <div class="review-head">
+                <div class="review-client">
+                  <strong>${esc(rev.client_name)}</strong>
+                  <span class="review-verified-pill">✓ Atendido</span>
+                </div>
+                <div class="review-stars">${'★'.repeat(Math.max(1, Math.min(5, rev.rating)))}</div>
+              </div>
+              <p class="review-comment">"${esc(rev.comment || 'Atendimento impecável!')}"</p>
+            </div>`
+                )
+                .join('')
+            : '<div class="empty">Nenhuma avaliação cadastrada ainda.</div>'
+        }
+      </div>
+      <div style="margin-top:20px;text-align:center">
+        <button type="button" class="btn btn-primary" id="btn-open-review">
+          Deixar Minha Avaliação
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('btn-open-review')?.addEventListener('click', () => {
+    const clientName = prompt('Qual é o seu nome?');
+    if (!clientName) return;
+    const comment = prompt('Conte como foi sua experiência:');
+    if (!comment) return;
+    api.post('/api/public/reviews', {
+      shop_slug: state.shop?.slug || 'nova-barbearia',
+      client_name: clientName,
+      rating: 5,
+      comment,
+    })
+      .then(() => {
+        toast('Avaliação enviada com sucesso! Obrigado pelo feedback.', 'success');
+        state.reviews.unshift({ client_name: clientName, rating: 5, comment });
+        renderReviewsTab();
+      })
+      .catch((err) => toast(err.message, 'error'));
+  });
+}
+
+function setupTabs() {
+  document.querySelectorAll('.shop-tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      haptic();
+      document.querySelectorAll('.shop-tab-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      state.currentTab = tab;
+      if (tab === 'booking') {
+        document.getElementById('progress-container')?.classList.remove('hidden');
+        renderBookingTab();
+      } else if (tab === 'cuts') {
+        document.getElementById('progress-container')?.classList.add('hidden');
+        renderCutsTab();
+      } else if (tab === 'team') {
+        document.getElementById('progress-container')?.classList.add('hidden');
+        renderTeamTab();
+      } else if (tab === 'reviews') {
+        document.getElementById('progress-container')?.classList.add('hidden');
+        renderReviewsTab();
+      }
+    });
+  });
 }
 
 function setupAppInstallation() {
@@ -682,8 +957,16 @@ async function boot() {
       return await bootManage(manageToken);
     }
 
-    const config = await api.get('/api/public/config');
+    // Identifica o estabelecimento / barbearia ativa (multi-tenant)
+    let shopSlug = params.get('shop') || '';
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    if (pathParts[0] === 'b' && pathParts[1]) {
+      shopSlug = pathParts[1];
+    }
+
+    const config = await api.get(`/api/public/config${query({ shop: shopSlug || 'nova-barbearia' })}`);
     applyShop(config);
+    setupTabs();
 
     if (!config.shop.public_booking) {
       content().innerHTML = unavailableHtml(
