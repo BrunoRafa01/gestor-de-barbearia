@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Nova Barba — Slush Style Reference</title>
+  <link rel="stylesheet" href="/css/slush.css" />
+  <link rel="icon" type="image/png" href="/icon-192.png" />
+  <style>
+    /* Ajustes pontuais da pagina Slush */
+    .slush-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .slush-grid-services {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 32px;
+    }
+    .slush-service-card {
+      background: var(--color-paper-white);
+      border: 1px solid var(--color-carbon);
+      border-radius: var(--radius-cards);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .slush-service-card h3 {
+      font-family: var(--font-aeonik-pro);
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: var(--color-carbon);
+    }
+    .slush-service-card p {
+      color: var(--color-carbon);
+      font-size: 14px;
+      line-height: 1.45;
+      margin: 0 0 20px;
+    }
+    .slush-service-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px dashed rgba(0,0,0,0.2);
+    }
+    .slush-price-tag {
+      font-family: var(--font-lateral);
+      font-size: 24px;
+      color: var(--color-carbon);
+    }
+    .slush-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .slush-brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-pills);
+      background: var(--color-paper-white);
+      border: 1px solid var(--color-carbon);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-lateral);
+      font-size: 22px;
+      color: var(--color-carbon);
+      text-decoration: none;
+    }
+    .slush-pill-group {
+      display: flex;
+      gap: 6px;
+      background: var(--color-soft-mist);
+      padding: 4px;
+      border-radius: var(--radius-pills);
+      border: 1px solid var(--color-carbon);
+    }
+    .slush-pill-link {
+      height: 36px;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      border-radius: var(--radius-pills);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.032em;
+      color: var(--color-carbon);
+      text-decoration: none;
+    }
+    .slush-pill-link.active,
+    .slush-pill-link:hover {
+      background: var(--color-paper-white);
+      border: 1px solid var(--color-carbon);
+    }
+  </style>
+</head>
+<body class="slush-theme">
+
+  <!-- 1. Marquee Strip Superior -->
+  <div class="slush-top-marquee">
+    <div class="slush-top-marquee-content">
+      <span>NOVA BARBA &bull; INFLATABLE STICKER UNIVERSE &bull; CORTE DEGRADÊ &bull; BARBOTERAPIA &bull; SEM APLICATIVOS &bull; 100% NO CELULAR &bull; PONTUALIDADE BRITÂNICA &bull; </span>
+      <span>NOVA BARBA &bull; INFLATABLE STICKER UNIVERSE &bull; CORTE DEGRADÊ &bull; BARBOTERAPIA &bull; SEM APLICATIVOS &bull; 100% NO CELULAR &bull; PONTUALIDADE BRITÂNICA &bull; </span>
+    </div>
+  </div>
+
+  <!-- 2. Header & Nav em Pilula -->
+  <header style="background: var(--color-sky-wash); border-bottom: 1px solid var(--color-carbon);">
+    <div class="slush-nav-bar">
+      <a href="/slush" class="slush-brand-mark">B</a>
+      <div class="slush-pill-group">
+        <a href="#cortes" class="slush-pill-link active">CORTES</a>
+        <a href="#barbeiros" class="slush-pill-link">EQUIPE</a>
+        <a href="#avaliacoes" class="slush-pill-link">REVIEWS</a>
+        <a href="/agendar" class="slush-pill-link">MODO CLÁSSICO</a>
+      </div>
+      <a href="/agendar" class="slush-cta-black" style="height:40px;padding:0 20px;font-size:13px">
+        AGENDAR AGORA
+      </a>
+    </div>
+  </header>
+
+  <!-- 3. Hero Section em Sky Wash (#dceeff) -->
+  <section class="slush-hero-banner">
+    <!-- Fita 3D Azul Inflavel que cruza a composicao -->
+    <div class="slush-3d-tube" aria-hidden="true"></div>
+
+    <!-- Adesivos fisicos soltos flutuantes com 1px borda preta -->
+    <div class="slush-sticker-item sticker-1" title="Energia pura">💈</div>
+    <div class="slush-sticker-item sticker-2" title="Preço justo">✂️</div>
+    <div class="slush-sticker-item sticker-3" title="Satisfação garantida">✓</div>
+    <div class="slush-sticker-item sticker-4" title="Toalha quente">🧼</div>
+
+    <div class="slush-container" style="position:relative;z-index:2">
+      <h1 class="slush-sculptural-title">
+        NOVA<br>BARBA
+      </h1>
+      <p class="slush-hero-tagline">
+        Cortes clássicos, barboterapia de alta precisão e visual contemporâneo. Agende pelo Instagram em 30 segundos sem senhas.
+      </p>
+
+      <div class="slush-pills-row">
+        <a href="/agendar" class="slush-cta-black">
+          AGENDAR HORÁRIO &rarr;
+        </a>
+        <a href="#cortes" class="slush-cta-ghost">
+          VER ESTILOS &amp; PREÇOS
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Faixa Paper White (#ffffff) — Catalogo de Servicos -->
+  <section id="cortes" style="background: var(--color-paper-white); padding: 60px 20px; border-bottom: 1px solid var(--color-carbon);">
+    <div class="slush-container">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:28px">
+        <div>
+          <span class="slush-badge-tag" style="background: var(--color-mint-pop);">CATÁLOGO EXCLUSIVO</span>
+          <h2 style="font-family:var(--font-lateral);font-size: clamp(32px, 5vw, 56px);line-height:0.85;margin:0;text-transform:uppercase">
+            NOSSOS SERVIÇOS
+          </h2>
+        </div>
+        <p style="margin:0;font-size:15px;color:var(--color-carbon);max-width:380px">
+          Técnica apurada, toalhas aquecidas e navalhas descartáveis para a máxima higiene e alinhamento.
+        </p>
+      </div>
+
+      <div class="slush-grid-services">
+        <div class="slush-service-card">
+          <span class="slush-badge-tag" style="background: var(--color-sunburst); align-self:flex-start">MAIS PEDIDO</span>
+          <h3>Corte Degradê Navalhado</h3>
+          <p>Fade milimétrico na navalha, transição perfeita e contornos alinhados na tesoura.</p>
+          <div class="slush-service-foot">
+            <span class="slush-price-tag">R$ 45</span>
+            <a href="/agendar" class="slush-cta-black" style="height:36px;padding:0 18px;font-size:12px">ESCOLHER</a>
+          </div>
+        </div>
+
+        <div class="slush-service-card">
+          <span class="slush-badge-tag" style="background: var(--color-lavender); align-self:flex-start">RELAXAMENTO</span>
+          <h3>Barboterapia &amp; Toalha Quente</h3>
+          <p>Óleos essenciais, massagem facial relaxante, toalha vaporizada e hidratação profunda.</p>
+          <div class="slush-service-foot">
+            <span class="slush-price-tag">R$ 40</span>
+            <a href="/agendar" class="slush-cta-black" style="height:36px;padding:0 18px;font-size:12px">ESCOLHER</a>
+          </div>
+        </div>
+
+        <div class="slush-service-card">
+          <span class="slush-badge-tag" style="background: var(--color-ember); color:#fff; align-self:flex-start">COMBO COMPLETO</span>
+          <h3>Cabelo + Barba Alinhada</h3>
+          <p>O ritual completo para renovar a autoestima e sair pronto para qualquer compromisso.</p>
+          <div class="slush-service-foot">
+            <span class="slush-price-tag">R$ 75</span>
+            <a href="/agendar" class="slush-cta-black" style="height:36px;padding:0 18px;font-size:12px">ESCOLHER</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Faixa Concrete Gray (#cccccc) — Equipe, Reviews e QR Download -->
+  <section id="barbeiros" class="slush-band-concrete">
+    <div class="slush-container">
+      <div style="text-align:center;margin-bottom:40px">
+        <span class="slush-badge-tag" style="background: var(--color-paper-white);">PROFISSIONAIS HOMOLOGADOS</span>
+        <h2 style="font-family:var(--font-lateral);font-size: clamp(32px, 5vw, 56px);line-height:0.85;margin:0 0 10px;text-transform:uppercase">
+          MESTRES NA CADEIRA
+        </h2>
+        <p style="margin:0;font-size:15px">Barbeiros premiados com foco em visagismo e pontualidade britânica.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px">
+        <!-- Card Barbeiro 1 -->
+        <div class="slush-sheet-card" style="text-align:center">
+          <div style="width:72px;height:72px;border-radius:var(--radius-pills);background:var(--color-sunburst);border:1px solid #000;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px">
+            ✂️
+          </div>
+          <h3 style="margin:0 0 4px;font-size:20px;font-weight:700">Bruno Barbeiro</h3>
+          <span style="font-size:12px;font-weight:700;color:#000;text-transform:uppercase;letter-spacing:0.032em">Mestre em Degradê &bull; ★ 5.0</span>
+          <p style="font-size:13px;margin:12px 0 18px;line-height:1.4">
+            Especialista em visagismo e contorno navalhado com mais de 8 anos de experiência.
+          </p>
+          <a href="/agendar" class="slush-cta-ghost" style="width:100%;height:40px">Agendar com Bruno</a>
+        </div>
+
+        <!-- Card Barbeiro 2 -->
+        <div class="slush-sheet-card" style="text-align:center">
+          <div style="width:72px;height:72px;border-radius:var(--radius-pills);background:var(--color-mint-pop);border:1px solid #000;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 14px">
+            🧔
+          </div>
+          <h3 style="margin:0 0 4px;font-size:20px;font-weight:700">Rafael Barboterapia</h3>
+          <span style="font-size:12px;font-weight:700;color:#000;text-transform:uppercase;letter-spacing:0.032em">Especialista em Barba &bull; ★ 4.9</span>
+          <p style="font-size:13px;margin:12px 0 18px;line-height:1.4">
+            Mestre no alinhamento de barba lenhador e aplicação de toalha quente relaxante.
+          </p>
+          <a href="/agendar" class="slush-cta-ghost" style="width:100%;height:40px">Agendar com Rafael</a>
+        </div>
+
+        <!-- Card QR Download em Voltage Violet -->
+        <div class="slush-qr-card">
+          <span class="slush-badge-tag" style="background:#fff;color:#000;margin-bottom:16px">ACESSO DIRETO</span>
+          <h3 style="font-size:22px;margin:0 0 8px;font-weight:700">AGENDAMENTO PELO CELULAR</h3>
+          <p style="font-size:13px;margin:0 0 20px;line-height:1.4">
+            Aponte a câmera do seu iPhone ou Android e agende em 30 segundos sem baixar apps.
+          </p>
+          <div style="background:#fff;padding:12px;border-radius:16px;border:1px solid #000;display:inline-block;margin-bottom:16px">
+            <svg viewBox="0 0 100 100" width="100" height="100">
+              <rect x="5" y="5" width="28" height="28" fill="none" stroke="#000" stroke-width="4"/>
+              <rect x="12" y="12" width="14" height="14" fill="#000"/>
+              <rect x="67" y="5" width="28" height="28" fill="none" stroke="#000" stroke-width="4"/>
+              <rect x="74" y="12" width="14" height="14" fill="#000"/>
+              <rect x="5" y="67" width="28" height="28" fill="none" stroke="#000" stroke-width="4"/>
+              <rect x="12" y="74" width="14" height="14" fill="#000"/>
+              <rect x="42" y="15" width="10" height="20" fill="#000"/>
+              <rect x="42" y="45" width="20" height="20" fill="#000"/>
+              <rect x="70" y="45" width="20" height="10" fill="#000"/>
+              <rect x="42" y="75" width="25" height="15" fill="#000"/>
+              <circle cx="50" cy="50" r="8" fill="#4da2ff"/>
+            </svg>
+          </div>
+          <div>
+            <a href="/agendar" class="slush-cta-black" style="width:100%;background:#000;color:#fff">ABRIR AGENDAMENTO</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Rodapé Slush Paper White -->
+  <footer style="background: var(--color-paper-white); padding: 40px 20px; text-align: center; border-top: 1px solid var(--color-carbon);">
+    <div class="slush-container">
+      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <a href="/termos.html" class="slush-pill" style="height:34px;padding:0 14px;font-size:12px">Termos de Uso</a>
+        <a href="/privacidade.html" class="slush-pill" style="height:34px;padding:0 14px;font-size:12px">Privacidade</a>
+        <a href="/transparencia.html" class="slush-pill" style="height:34px;padding:0 14px;font-size:12px">Transparência</a>
+        <a href="/compliance.html" class="slush-pill" style="height:34px;padding:0 14px;font-size:12px">Segurança &bull; 40 Requisitos</a>
+      </div>
+      <p style="font-size:13px;color:var(--color-carbon);margin:0">
+        <strong>Nova Barba</strong> &bull; Sistema Gestor de Barbearia &bull; Desenvolvido com Slush Design System por <strong>Nova Runtime</strong> &bull; 2026
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

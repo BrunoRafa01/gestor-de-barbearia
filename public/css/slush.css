@@ -1,0 +1,299 @@
+/* ===========================================================================
+   SLUSH DESIGN SYSTEM — Inflatable Sticker Universe on Pastel Paper
+   Fonte de Verdade Canônica: design.md
+   =========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Bowlby+One&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+
+:root {
+  /* Slush Palette */
+  --color-carbon: #000000;
+  --color-paper-white: #ffffff;
+  --color-sky-wash: #dceeff;
+  --color-concrete-gray: #cccccc;
+  --color-soft-mist: #e9e9e9;
+  --color-electric-blue: #4da2ff;
+  --color-mint-pop: #55db9c;
+  --color-lavender: #e9ccff;
+  --color-ember: #fb4903;
+  --color-sunburst: #ffd731;
+  --color-voltage-violet: #5c4ade;
+
+  /* Typography */
+  --font-lateral: 'Bowlby One', 'Impact', -apple-system, sans-serif;
+  --font-aeonik-pro: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Slush Radii */
+  --radius-pills: 1600px;
+  --radius-cards: 24px;
+  --radius-cards-elevated: 40px;
+  --radius-sticker: 20px;
+}
+
+/* Base Overrides para Estética Slush */
+body.slush-theme {
+  background-color: var(--color-paper-white) !important;
+  color: var(--color-carbon) !important;
+  font-family: var(--font-aeonik-pro) !important;
+  margin: 0;
+  padding: 0;
+  box-shadow: none !important;
+}
+
+/* Marquee Bar Superior */
+.slush-top-marquee {
+  width: 100%;
+  background: var(--color-carbon);
+  border-bottom: 1px solid var(--color-carbon);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 7px 0;
+  position: relative;
+  z-index: 100;
+}
+
+.slush-top-marquee-content {
+  display: inline-block;
+  animation: slush-loop 24s linear infinite;
+  font-family: var(--font-aeonik-pro);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.032em;
+  color: var(--color-paper-white);
+  text-transform: uppercase;
+}
+
+@keyframes slush-loop {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Hero Section em Pastel Sky Wash */
+.slush-hero-banner {
+  background-color: var(--color-sky-wash);
+  padding: 60px 20px 48px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-carbon);
+  text-align: center;
+}
+
+/* Fita 3D Azul Tubo Inflavel */
+.slush-3d-tube {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -20%) rotate(-14deg);
+  width: min(850px, 120vw);
+  height: 180px;
+  background: radial-gradient(circle at 35% 25%, #88c5ff 0%, #4da2ff 50%, #1573dd 100%);
+  border-radius: 120px;
+  opacity: 0.92;
+  filter: drop-shadow(0 20px 30px rgba(21, 115, 221, 0.3));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Titulo Monumental Esmagado */
+.slush-sculptural-title {
+  font-family: var(--font-lateral);
+  font-size: clamp(64px, 16vw, 190px);
+  line-height: 0.77 !important; /* REGRA INEGOCIAVEL: 0.75 a 0.80 */
+  letter-spacing: -0.02em;
+  color: var(--color-carbon);
+  margin: 0 0 20px;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+  word-break: break-word;
+}
+
+.slush-hero-tagline {
+  font-family: var(--font-aeonik-pro);
+  font-weight: 500;
+  font-size: clamp(15px, 2.5vw, 22px);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--color-carbon);
+  max-width: 580px;
+  margin: 0 auto 28px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Adesivos Fisicos Flutuantes */
+.slush-sticker-item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-sticker);
+  font-size: 26px;
+  z-index: 3;
+  box-shadow: none; /* ZERO SOMBRAS */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.slush-sticker-item:hover {
+  transform: scale(1.1) rotate(0deg) !important;
+}
+
+.sticker-1 {
+  background: var(--color-ember);
+  top: 15%;
+  left: 6%;
+  transform: rotate(-12deg);
+}
+
+.sticker-2 {
+  background: var(--color-sunburst);
+  top: 20%;
+  right: 8%;
+  transform: rotate(14deg);
+}
+
+.sticker-3 {
+  background: var(--color-mint-pop);
+  bottom: 12%;
+  left: 10%;
+  transform: rotate(8deg);
+}
+
+.sticker-4 {
+  background: var(--color-lavender);
+  bottom: 15%;
+  right: 12%;
+  transform: rotate(-10deg);
+}
+
+/* Navegacao e Abas em Pilula */
+.slush-pills-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+  position: relative;
+  z-index: 5;
+}
+
+.slush-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 20px;
+  background: var(--color-paper-white);
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-pills);
+  font-family: var(--font-aeonik-pro);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.032em;
+  color: var(--color-carbon);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.12s ease;
+}
+
+.slush-pill:hover,
+.slush-pill.active {
+  background: var(--color-carbon);
+  color: var(--color-paper-white);
+}
+
+/* CTAs Canonicos */
+.slush-cta-black {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 28px;
+  background: var(--color-carbon) !important;
+  color: var(--color-paper-white) !important;
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-pills);
+  font-family: var(--font-aeonik-pro);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.032em;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: transform 0.15s ease;
+}
+
+.slush-cta-black:hover {
+  transform: scale(1.02);
+}
+
+.slush-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 28px;
+  background: var(--color-paper-white) !important;
+  color: var(--color-carbon) !important;
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-pills);
+  font-family: var(--font-aeonik-pro);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.032em;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.slush-cta-ghost:hover {
+  background: var(--color-soft-mist) !important;
+}
+
+/* Cards em Estilo Recorte de Papel (Zero Box-Shadow) */
+.slush-sheet-card {
+  background: var(--color-paper-white);
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-cards);
+  padding: 24px;
+  box-shadow: none !important;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.slush-badge-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-pills);
+  font-family: var(--font-aeonik-pro);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.032em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* Seção de Fundo Concreto Cinza */
+.slush-band-concrete {
+  background-color: var(--color-concrete-gray);
+  border-top: 1px solid var(--color-carbon);
+  border-bottom: 1px solid var(--color-carbon);
+  padding: 60px 20px;
+}
+
+/* Card QR em Voltage Violet */
+.slush-qr-card {
+  background-color: var(--color-voltage-violet);
+  border: 1px solid var(--color-carbon);
+  border-radius: var(--radius-cards);
+  padding: 24px;
+  color: var(--color-paper-white);
+  text-align: center;
+}
