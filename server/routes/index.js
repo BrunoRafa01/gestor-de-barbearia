@@ -10,6 +10,7 @@ import { reportRoutes } from './reports.routes.js';
 import { serviceRoutes } from './services.routes.js';
 import { settingsRoutes } from './settings.routes.js';
 import { whatsappRoutes } from './whatsapp.routes.js';
+import { lgpdRoutes } from './lgpd.routes.js';
 
 /**
  * Todas as rotas da API. Por padrao exigem sessao de administrador;
@@ -28,4 +29,5 @@ export const apiRoutes = [
   ...settingsRoutes,
   ...whatsappRoutes,
   ...backupRoutes,
+  ...lgpdRoutes,
 ];

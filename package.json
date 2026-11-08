@@ -20,6 +20,10 @@
     "test:responsive": "node tests/responsive-check.mjs",
     "test:stress": "node scripts/stress-test.mjs",
     "test:all": "npm run typecheck && node tests/smoke.mjs && node tests/whatsapp-cloud.test.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs && node scripts/stress-test.mjs",
+    "audit:compliance": "node scripts/compliance-audit.mjs",
+    "audit:deps": "npm audit",
+    "backup": "node scripts/backup-db.mjs",
+    "retention:purge": "node scripts/retention-purge.mjs",
     "screenshots": "node scripts/capture-all-screenshots.mjs"
   },
   "dependencies": {

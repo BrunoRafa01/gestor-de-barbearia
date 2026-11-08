@@ -88,6 +88,16 @@ const PAGE_ALIASES = {
   '/painel': 'index.html',
   '/agendar': 'agendar.html',
   '/agendar.html': 'agendar.html',
+  '/termos': 'termos.html',
+  '/termos.html': 'termos.html',
+  '/privacidade': 'privacidade.html',
+  '/privacidade.html': 'privacidade.html',
+  '/cookies': 'cookies.html',
+  '/cookies.html': 'cookies.html',
+  '/compliance': 'compliance.html',
+  '/compliance.html': 'compliance.html',
+  '/transparencia': 'transparencia.html',
+  '/transparencia.html': 'transparencia.html',
 };
 
 function validateOrigin(request) {

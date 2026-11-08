@@ -1,0 +1,9 @@
+# RFC 9116 - Vulnerability Disclosure Policy
+Contact: mailto:security@novaruntime.com.br
+Contact: https://gestor-de-barbearia.onrender.com/compliance.html
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: pt-BR, en
+Canonical: https://gestor-de-barbearia.onrender.com/.well-known/security.txt
+Policy: https://gestor-de-barbearia.onrender.com/privacidade.html
+Hiring: https://novaruntime.com.br
+Acknowledgments: https://gestor-de-barbearia.onrender.com/compliance.html

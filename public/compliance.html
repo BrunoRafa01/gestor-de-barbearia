@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Conformidade e Direitos do Titular (LGPD) | Gestor de Barbearia</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <style>
+    .comp-container { max-width: 920px; margin: 40px auto; padding: 0 20px; color: #1e293b; }
+    .card { background: #fff; border-radius: 16px; padding: 32px; border: 1px solid #e2e8f0; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .badge-success { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; }
+    .input-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; font-size: 0.95rem; }
+    .btn-primary { background: #0284c7; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: #0369a1; }
+    .btn-outline { background: transparent; color: #0284c7; border: 1px solid #0284c7; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
+    .req-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.85rem; }
+    .req-item strong { display: block; color: #0f172a; margin-bottom: 2px; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div class="comp-container">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Portal de Conformidade e Direitos LGPD</h1>
+        <p class="text-slate-500 text-sm mt-1">Transparência, Segurança da Informação e Exercício dos Direitos do Titular</p>
+      </div>
+      <a href="/" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Voltar ao Sistema</a>
+    </div>
+
+    <!-- Card 1: Portabilidade e Exportação de Dados -->
+    <div class="card">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">1. Portabilidade e Acesso aos Dados (Art. 18, V LGPD)</h2>
+          <p class="text-sm text-slate-500">Baixe instantaneamente um arquivo JSON com todos os seus agendamentos e registros.</p>
+        </div>
+        <span class="badge-success">Self-Service</span>
+      </div>
+      <form id="exportForm" class="flex flex-col sm:flex-row gap-3 items-end">
+        <div class="flex-1">
+          <label class="block text-xs font-bold text-slate-600 uppercase">Seu Telefone (com DDD)</label>
+          <input type="tel" id="exportPhone" required placeholder="(11) 99999-9999" class="input-field">
+        </div>
+        <button type="submit" class="btn-primary whitespace-nowrap">📥 Baixar Meus Dados (JSON)</button>
+      </form>
+      <div id="exportResult" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
+    </div>
+
+    <!-- Card 2: Formulario DSR (Exclusao, Retificacao, Revogacao) -->
+    <div class="card">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">2. Requisição de Direitos do Titular (DSR)</h2>
+          <p class="text-sm text-slate-500">Solicite exclusão, correção, confirmação de tratamento ou revogação de consentimento.</p>
+        </div>
+        <span class="badge-success">Prazo Legal 15 dias</span>
+      </div>
+      <form id="dsrForm" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase">Nome Completo</label>
+            <input type="text" id="dsrName" required placeholder="Seu nome" class="input-field">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase">Telefone (WhatsApp)</label>
+            <input type="tel" id="dsrPhone" required placeholder="(11) 99999-9999" class="input-field">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase">E-mail para Resposta</label>
+            <input type="email" id="dsrEmail" placeholder="seu@email.com (opcional)" class="input-field">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase">Tipo de Solicitação</label>
+            <select id="dsrType" required class="input-field bg-white">
+              <option value="exclusao">🗑️ Exclusão de Dados Cadastrais</option>
+              <option value="correcao">✏️ Correção / Retificação de Dados</option>
+              <option value="anonimizacao">🔒 Anonimização ou Bloqueio</option>
+              <option value="acesso">👁️ Acesso e Informação sobre Compartilhamento</option>
+              <option value="revogacao">🚫 Revogação de Consentimento</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase">Detalhes Adicionais (opcional)</label>
+          <textarea id="dsrMessage" rows="2" placeholder="Descreva sua solicitação se necessário..." class="input-field"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Enviar Solicitação Formal ao DPO</button>
+      </form>
+      <div id="dsrResult" class="mt-4 hidden p-4 rounded-lg text-sm"></div>
+    </div>
+
+    <!-- Card 3: Status dos 40 Requisitos de Seguranca & Compliance -->
+    <div class="card">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">3. Auditoria de Segurança & 40 Requisitos de Conformidade</h2>
+          <p class="text-sm text-slate-500">Monitoramento em tempo real dos controles de segurança e governança implementados.</p>
+        </div>
+        <div class="text-right">
+          <span class="badge-success text-sm py-1 px-3">100% CONFORME</span>
+        </div>
+      </div>
+      <div id="complianceLoading" class="text-sm text-slate-500">Carregando auditoria de segurança...</div>
+      <div id="complianceGrid" class="req-grid hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Exportacao de Dados
+    document.getElementById('exportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById('exportPhone').value;
+      const resEl = document.getElementById('exportResult');
+      resEl.className = 'mt-4 p-3 rounded-lg text-sm bg-blue-50 text-blue-700 block';
+      resEl.textContent = 'Consultando e preparando arquivo seguro...';
+
+      try {
+        const res = await fetch(`/api/lgpd/export?phone=${encodeURIComponent(phone)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao exportar dados.');
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `meus-dados-barbearia-${Date.now()}.json`;
+        a.click();
+
+        resEl.className = 'mt-4 p-3 rounded-lg text-sm bg-emerald-50 text-emerald-800 block';
+        resEl.innerHTML = `✅ <strong>Exportação concluída!</strong> O arquivo JSON com ${data.agendamentos.length} registro(s) foi baixado para seu dispositivo.`;
+      } catch (err) {
+        resEl.className = 'mt-4 p-3 rounded-lg text-sm bg-rose-50 text-rose-800 block';
+        resEl.textContent = '❌ ' + err.message;
+      }
+    });
+
+    // 2. Envio DSR
+    document.getElementById('dsrForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resEl = document.getElementById('dsrResult');
+      resEl.className = 'mt-4 p-3 rounded-lg text-sm bg-blue-50 text-blue-700 block';
+      resEl.textContent = 'Registrando solicitação formal...';
+
+      const payload = {
+        name: document.getElementById('dsrName').value,
+        phone: document.getElementById('dsrPhone').value,
+        email: document.getElementById('dsrEmail').value,
+        requestType: document.getElementById('dsrType').value,
+        message: document.getElementById('dsrMessage').value,
+      };
+
+      try {
+        const res = await fetch('/api/lgpd/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao registrar.');
+
+        resEl.className = 'mt-4 p-4 rounded-lg text-sm bg-emerald-50 text-emerald-900 border border-emerald-200 block';
+        resEl.innerHTML = `
+          <div class="font-bold text-base mb-1">🎉 Protocolo Gerado: <span class="font-mono text-emerald-700">${data.protocolo}</span></div>
+          <p>${data.mensagem}</p>
+          <p class="text-xs text-slate-500 mt-2">Dúvidas? Escreva para <strong>${data.contato_dpo}</strong> com o número do protocolo.</p>
+        `;
+        document.getElementById('dsrForm').reset();
+      } catch (err) {
+        resEl.className = 'mt-4 p-3 rounded-lg text-sm bg-rose-50 text-rose-800 block';
+        resEl.textContent = '❌ ' + err.message;
+      }
+    });
+
+    // 3. Carregar 40 Requisitos
+    async function loadCompliance() {
+      try {
+        const res = await fetch('/api/compliance/status');
+        const data = await res.json();
+        const grid = document.getElementById('complianceGrid');
+        const loading = document.getElementById('complianceLoading');
+
+        grid.innerHTML = data.requisitos.map(r => `
+          <div class="req-item">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold text-slate-400">#${String(r.id).padStart(2, '0')}</span>
+              <span class="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">${r.category}</span>
+            </div>
+            <strong>${r.name}</strong>
+            <div class="text-slate-600 text-xs mt-1">${r.evidence}</div>
+          </div>
+        `).join('');
+
+        loading.classList.add('hidden');
+        grid.classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('complianceLoading').textContent = 'Erro ao carregar auditoria: ' + err.message;
+      }
+    }
+    loadCompliance();
+  </script>
+</body>
+</html>

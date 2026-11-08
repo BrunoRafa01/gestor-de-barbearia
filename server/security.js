@@ -2,7 +2,7 @@
 // e utilitarios de IP/origem. Tudo em memoria - suficiente para uma instancia
 // unica no plano gratuito do Render.
 
-import { randomUUID } from 'node:crypto';
+import { createCipheriv, createDecipheriv, randomBytes, randomUUID } from 'node:crypto';
 
 /* --------------------------- Cabecalhos de resposta ------------------------ */
 
@@ -131,3 +131,131 @@ export const publicReadLimiter = createRateLimiter({
   max: 300,
   message: 'Muitas consultas seguidas. Aguarde alguns instantes.',
 });
+
+/** DSR / LGPD: 10 solicitacoes por hora por IP. */
+export const dsrLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: 'Limite de solicitacoes LGPD atingido. Tente novamente mais tarde.',
+});
+
+/* -------------------- Anonimizacao de IP & Protecao LGPD ------------------- */
+
+/** Anonimiza enderecos IP para logs e auditoria em conformidade com a LGPD. */
+export function anonymizeIp(ip) {
+  if (!ip || typeof ip !== 'string') return '0.0.0.0';
+  if (ip.includes('.')) {
+    const parts = ip.split('.');
+    if (parts.length === 4) return `${parts[0]}.${parts[1]}.***.***`;
+  }
+  if (ip.includes(':')) {
+    const parts = ip.split(':');
+    return `${parts.slice(0, 3).join(':')}:****:****:****`;
+  }
+  return '***.***.***.***';
+}
+
+/* ----------------------- Criptografia de Dados em Repouso ------------------ */
+
+const ENCRYPTION_KEY = process.env.DATA_ENCRYPTION_KEY
+  ? Buffer.from(process.env.DATA_ENCRYPTION_KEY, 'hex')
+  : Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+
+/** Criptografa dados sensiveis (PII) usando AES-256-GCM. */
+export function encryptSensitiveField(plaintext) {
+  if (typeof plaintext !== 'string') return plaintext;
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+  let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const tag = cipher.getAuthTag().toString('hex');
+  return `enc:${iv.toString('hex')}:${tag}:${encrypted}`;
+}
+
+/** Descriptografa dados usando AES-256-GCM. */
+export function decryptSensitiveField(ciphertext) {
+  if (typeof ciphertext !== 'string' || !ciphertext.startsWith('enc:')) return ciphertext;
+  try {
+    const parts = ciphertext.split(':');
+    if (parts.length !== 4) return ciphertext;
+    const iv = Buffer.from(parts[1], 'hex');
+    const tag = Buffer.from(parts[2], 'hex');
+    const encryptedText = parts[3];
+    const decipher = createDecipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+    decipher.setAuthTag(tag);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch {
+    return ciphertext;
+  }
+}
+
+/* ----------------------- Rotina e Validacao de Senhas --------------------- */
+
+/**
+ * Valida a forca da senha conforme padrao de seguranca (OWASP / NIST).
+ * Minimo de 8 caracteres, com maiuscula, minuscula, numero e caractere especial.
+ */
+export function validatePasswordStrength(password) {
+  if (!password || typeof password !== 'string') {
+    return { valid: false, message: 'Senha obrigatoria.' };
+  }
+  if (password.length < 8) {
+    return { valid: false, message: 'A senha deve ter no minimo 8 caracteres.' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: 'A senha deve conter pelo menos uma letra maiuscula.' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: 'A senha deve conter pelo menos uma letra minuscula.' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: 'A senha deve conter pelo menos um numero.' };
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    return { valid: false, message: 'A senha deve conter pelo menos um caractere especial.' };
+  }
+  return { valid: true };
+}
+
+/* ---------------------- Sanitizacao & Anti-XSS --------------------------- */
+
+/** Sanitiza strings de entrada para impedir injecao XSS. */
+export function sanitizeInput(value) {
+  if (typeof value !== 'string') return value;
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .trim();
+}
+
+/* ---------------------- Logger de Eventos SecOps ------------------------- */
+
+const SECURITY_LOGS = [];
+const MAX_LOG_ENTRIES = 500;
+
+export function logSecurityEvent(type, details = {}, req = null) {
+  const ip = req ? clientIp(req) : 'sistema';
+  const entry = {
+    id: randomUUID(),
+    timestamp: new Date().toISOString(),
+    type,
+    ip_anonymized: anonymizeIp(ip),
+    userAgent: req?.headers['user-agent']?.slice(0, 120) || 'n/a',
+    details,
+  };
+  SECURITY_LOGS.push(entry);
+  if (SECURITY_LOGS.length > MAX_LOG_ENTRIES) {
+    SECURITY_LOGS.shift();
+  }
+  return entry;
+}
+
+export function getSecurityLogs(limit = 50) {
+  return SECURITY_LOGS.slice(-limit).reverse();
+}

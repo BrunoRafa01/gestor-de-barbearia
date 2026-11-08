@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Cookies e Tecnologias de Rastreamento | Gestor de Barbearia</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <style>
+    .legal-container { max-width: 860px; margin: 40px auto; padding: 0 20px; line-height: 1.7; color: #334155; }
+    .legal-card { background: #ffffff; border-radius: 16px; padding: 36px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .legal-title { font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .legal-subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 32px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; }
+    .legal-section { margin-bottom: 28px; }
+    .legal-section h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.88rem; }
+    th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; color: #1e293b; }
+    .nav-links { display: flex; gap: 16px; margin-bottom: 24px; font-size: 0.9rem; }
+    .nav-links a { color: #0284c7; text-decoration: none; font-weight: 600; }
+    .nav-links a:hover { text-decoration: underline; }
+    .btn-manage-cookies { background: #0284c7; color: white; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div class="legal-container">
+    <div class="nav-links">
+      <a href="/">&larr; Voltar ao Início</a>
+      <a href="/privacidade.html">Política de Privacidade</a>
+      <a href="/termos.html">Termos de Uso</a>
+      <a href="/compliance.html">Portal de Direitos (DSR)</a>
+    </div>
+
+    <div class="legal-card">
+      <h1 class="legal-title">Política de Cookies e Rastreamento</h1>
+      <div class="legal-subtitle">
+        Transparência e Gestão de Consentimento &bull; Atualizado em Novembro de 2026
+      </div>
+
+      <div class="legal-section">
+        <h2>1. O que são Cookies?</h2>
+        <p>Cookies são pequenos arquivos de texto armazenados no seu navegador para registrar informações essenciais de sessão, manter você conectado de forma segura e lembrar preferências de agendamento. Nós respeitamos sua privacidade e não utilizamos cookies invasivos de espionagem cross-site.</p>
+      </div>
+
+      <div class="legal-section">
+        <h2>2. Categorias de Cookies Utilizados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome do Cookie</th>
+              <th>Categoria</th>
+              <th>Finalidade</th>
+              <th>Validade</th>
+              <th>Origem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>barbearia_session</code></td>
+              <td><strong>Essencial</strong></td>
+              <td>Autenticação segura de administradores com flag HttpOnly e SameSite=Strict</td>
+              <td>12 horas</td>
+              <td>Própria</td>
+            </tr>
+            <tr>
+              <td><code>barbearia_consent</code></td>
+              <td><strong>Essencial</strong></td>
+              <td>Armazena as preferências de consentimento do usuário (CMP)</td>
+              <td>1 ano</td>
+              <td>Própria (localStorage)</td>
+            </tr>
+            <tr>
+              <td><code>barbearia_theme</code></td>
+              <td><strong>Preferências</strong></td>
+              <td>Salva a preferência de tema (claro/escuro) e visualização do painel</td>
+              <td>6 meses</td>
+              <td>Própria (localStorage)</td>
+            </tr>
+            <tr>
+              <td><code>_sec_csrf_token</code></td>
+              <td><strong>Segurança</strong></td>
+              <td>Proteção contra requisições forjadas entre sites (Anti-CSRF)</td>
+              <td>Sessão</td>
+              <td>Própria</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="legal-section">
+        <h2>3. Como Gerenciar ou Revogar seu Consentimento</h2>
+        <p>Você pode alterar ou revogar suas escolhas de cookies a qualquer momento clicando no botão abaixo:</p>
+        <div class="mt-4">
+          <button type="button" class="btn-manage-cookies" onclick="window.reopenConsentModal && window.reopenConsentModal()">
+            ⚙️ Gerenciar Preferências de Cookies
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-200 text-center text-sm text-slate-500">
+        Dúvidas? Entre em contato com nosso DPO: <a href="mailto:dpo@novaruntime.com.br" class="text-blue-600 font-semibold underline">dpo@novaruntime.com.br</a>
+      </div>
+    </div>
+  </div>
+  <script src="/js/consent.js"></script>
+</body>
+</html>
