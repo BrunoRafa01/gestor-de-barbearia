@@ -119,4 +119,17 @@
       createBanner();
     }
   }
+
+  // Interacoes sem violacao de CSP (script-src 'self')
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-reopen-cookies');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        window.reopenConsentModal();
+      });
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  });
 })();

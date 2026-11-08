@@ -206,12 +206,5 @@
 
     <script type="module" src="/js/agendar.js"></script>
     <script src="/js/consent.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
-        });
-      }
-    </script>
   </body>
 </html>
