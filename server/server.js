@@ -98,6 +98,8 @@ const PAGE_ALIASES = {
   '/compliance.html': 'compliance.html',
   '/transparencia': 'transparencia.html',
   '/transparencia.html': 'transparencia.html',
+  '/motionsites': 'motionsites.html',
+  '/motionsites.html': 'motionsites.html',
 };
 
 function validateOrigin(request) {
