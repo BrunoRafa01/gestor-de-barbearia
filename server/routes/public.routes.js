@@ -405,7 +405,7 @@ export const publicRoutes = [
       }
 
       const shopName = getSetting('shop_name', 'Nova Barbearia');
-      const shopAddress = getSetting('shop_address', 'Av. Paulista, 1106 - São Paulo - SP');
+      const shopAddress = getSetting('shop_address', 'Av. Modelo, 100 - Cidade Fictícia - SP');
       const dClean = appt.date.replace(/-/g, '');
       const sClean = appt.start_time.replace(/:/g, '') + '00';
       const eClean = (appt.end_time || appt.start_time).replace(/:/g, '') + '00';

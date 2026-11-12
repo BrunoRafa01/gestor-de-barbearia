@@ -22,7 +22,7 @@ const DEMO_SETTINGS = {
   shop_company: 'Cortes & Barba Tradicional',
   shop_phone: '(11) 98765-4321',
   shop_whatsapp: '5511987654321',
-  shop_address: 'Rua Augusta, 1420 - Consolação - São Paulo',
+  shop_address: 'Rua Exemplo, 150 - Centro - Cidade Fictícia',
   shop_instagram: '@domnavalha.barber',
   public_booking: '1',
 };

@@ -2735,7 +2735,7 @@ function renderBackupMeta(meta) {
 async function viewMarketing() {
   const shopName = state.settings.shop_name || 'Nova Barbearia';
   const shopPhone = state.settings.shop_whatsapp || state.settings.shop_phone || '';
-  const shopAddress = state.settings.shop_address || 'Av. Paulista, 1106, São Paulo - SP';
+  const shopAddress = state.settings.shop_address || 'Av. Modelo, 100, Cidade Fictícia - SP';
   const shopInstagram = state.settings.shop_instagram || '@novabarbearia.oficial';
   const publicUrl = `${window.location.origin}/agendar`;
   const customShopUrl = `${window.location.origin}/b/nova-barbearia`;
