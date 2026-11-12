@@ -72,8 +72,9 @@ function sign(payload, secret) {
 
 export function createSessionToken() {
   const secret = process.env.SESSION_SECRET || getSetting('session_secret');
+  const ver = Number(getSetting('session_version', '1')) || 1;
   const payload = base64url(
-    JSON.stringify({ sub: 'admin', iat: Date.now(), exp: Date.now() + SESSION_TTL_MS })
+    JSON.stringify({ sub: 'admin', ver, iat: Date.now(), exp: Date.now() + SESSION_TTL_MS })
   );
   return `${payload}.${sign(payload, secret)}`;
 }
@@ -81,6 +82,8 @@ export function createSessionToken() {
 export async function rotateSessionSecret() {
   const secret = randomBytes(32).toString('hex');
   await setSetting('session_secret', secret);
+  const nextVer = (Number(getSetting('session_version', '1')) || 1) + 1;
+  await setSetting('session_version', String(nextVer));
   return secret;
 }
 
@@ -101,6 +104,8 @@ export function verifySessionToken(token) {
 
   try {
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    const currentVer = Number(getSetting('session_version', '1')) || 1;
+    if (data.ver !== undefined && Number(data.ver) !== currentVer) return false;
     return typeof data.exp === 'number' && data.exp > Date.now();
   } catch {
     return false;

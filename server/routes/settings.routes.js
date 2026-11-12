@@ -157,12 +157,10 @@ export const settingsRoutes = [
       await setSetting('admin_password_hash', hashPassword(next));
       await setSetting('admin_password_default', '0');
 
-      // Rotaciona o secret de sessão para invalidar outras sessões ativas
-      if (!process.env.SESSION_SECRET) {
-        await rotateSessionSecret();
-        if (res) {
-          startSession(res, { secure: isSecureRequest(req) });
-        }
+      // Rotaciona o secret e a versao de sessao para invalidar outras sessoes ativas
+      await rotateSessionSecret();
+      if (res) {
+        startSession(res, { secure: isSecureRequest(req) });
       }
 
       return { status: 200, body: { updated: true, authenticated: isAuthenticated(req) } };

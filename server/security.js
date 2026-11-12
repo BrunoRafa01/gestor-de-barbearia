@@ -41,11 +41,15 @@ export function applySecurityHeaders(res, { secure = false, requestId = null } =
   if (requestId) res.setHeader('X-Request-Id', requestId);
 }
 
-/** 127.0.0.1 / IP real por tras do proxy do Render. */
+/** 127.0.0.1 / IP real por tras de proxy confiavel (usa o IP adicionado pelo proxy). */
 export function clientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length) {
-    return forwarded.split(',')[0].trim();
+  const trustProxy = process.env.TRUST_PROXY === 'true' || process.env.NODE_ENV === 'production';
+  if (trustProxy) {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string' && forwarded.length) {
+      const parts = forwarded.split(',').map((item) => item.trim()).filter(Boolean);
+      if (parts.length) return parts[parts.length - 1];
+    }
   }
   return req.socket?.remoteAddress || 'desconhecido';
 }
@@ -157,15 +161,23 @@ export function anonymizeIp(ip) {
 
 /* ----------------------- Criptografia de Dados em Repouso ------------------ */
 
-const ENCRYPTION_KEY = process.env.DATA_ENCRYPTION_KEY
-  ? Buffer.from(process.env.DATA_ENCRYPTION_KEY, 'hex')
-  : Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+const EPHEMERAL_DEV_KEY = randomBytes(32);
+
+function getEncryptionKey() {
+  if (process.env.DATA_ENCRYPTION_KEY && /^[0-9a-f]{64}$/i.test(process.env.DATA_ENCRYPTION_KEY)) {
+    return Buffer.from(process.env.DATA_ENCRYPTION_KEY, 'hex');
+  }
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('DATA_ENCRYPTION_KEY nao configurada em producao.');
+  }
+  return EPHEMERAL_DEV_KEY;
+}
 
 /** Criptografa dados sensiveis (PII) usando AES-256-GCM. */
 export function encryptSensitiveField(plaintext) {
   if (typeof plaintext !== 'string') return plaintext;
   const iv = randomBytes(12);
-  const cipher = createCipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+  const cipher = createCipheriv('aes-256-gcm', getEncryptionKey(), iv);
   let encrypted = cipher.update(plaintext, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   const tag = cipher.getAuthTag().toString('hex');
@@ -181,7 +193,7 @@ export function decryptSensitiveField(ciphertext) {
     const iv = Buffer.from(parts[1], 'hex');
     const tag = Buffer.from(parts[2], 'hex');
     const encryptedText = parts[3];
-    const decipher = createDecipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+    const decipher = createDecipheriv('aes-256-gcm', getEncryptionKey(), iv);
     decipher.setAuthTag(tag);
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

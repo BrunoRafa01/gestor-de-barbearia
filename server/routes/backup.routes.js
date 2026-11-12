@@ -39,7 +39,13 @@ const DELETE_ORDER = [
   'business_hours',
 ];
 
-const REDACTED_SETTINGS = ['session_secret'];
+const REDACTED_SETTINGS = [
+  'session_secret',
+  'admin_password_hash',
+  'admin_password_default',
+  'whatsapp_access_token',
+  'whatsapp_webhook_verify_token',
+];
 
 function quoteIdentifier(name) {
   if (!/^[a-z_][a-z0-9_]*$/.test(name)) {
@@ -97,12 +103,15 @@ function insertStatements(table, rows) {
   const columnList = columns.map((name) => quoteIdentifier(name)).join(', ');
   const placeholders = columns.map(() => '?').join(', ');
 
-  return rows
-    .filter((row) => row && typeof row === 'object')
-    .map((row) => ({
-      sql: `INSERT OR REPLACE INTO ${target} (${columnList}) VALUES (${placeholders})`,
-      params: columns.map((column) => (row[column] === undefined ? null : row[column])),
-    }));
+  const filteredRows =
+    table === 'settings'
+      ? rows.filter((row) => row && typeof row === 'object' && !REDACTED_SETTINGS.includes(row.key))
+      : rows.filter((row) => row && typeof row === 'object');
+
+  return filteredRows.map((row) => ({
+    sql: `INSERT OR REPLACE INTO ${target} (${columnList}) VALUES (${placeholders})`,
+    params: columns.map((column) => (row[column] === undefined ? null : row[column])),
+  }));
 }
 
 function validateBackupInput(data) {
@@ -143,7 +152,15 @@ export const backupRoutes = [
       const statements = [];
       if (mode === 'replace') {
         for (const table of DELETE_ORDER) {
-          statements.push({ sql: `DELETE FROM ${quoteIdentifier(table)}`, params: [] });
+          if (table === 'settings') {
+            const placeholders = REDACTED_SETTINGS.map(() => '?').join(', ');
+            statements.push({
+              sql: `DELETE FROM ${quoteIdentifier(table)} WHERE "key" NOT IN (${placeholders})`,
+              params: REDACTED_SETTINGS,
+            });
+          } else {
+            statements.push({ sql: `DELETE FROM ${quoteIdentifier(table)}`, params: [] });
+          }
         }
       }
 

@@ -1,5 +1,6 @@
 // Rotas da API para gerenciamento do WhatsApp Cloud API, historico e webhook.
 
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { all, get, run } from '../db.js';
 import { HttpError } from '../http.js';
 import { digitsOnly, optionalString, requiredId, requiredString } from '../validate.js';
@@ -204,7 +205,19 @@ export const whatsappRoutes = [
     method: 'POST',
     path: '/api/whatsapp/webhook',
     auth: false,
-    handler: async ({ body }) => {
+    handler: async ({ req, body }) => {
+      const appSecret = process.env.WHATSAPP_APP_SECRET;
+      if (appSecret) {
+        const sigHeader = String(req.headers['x-hub-signature-256'] || '');
+        const expected = 'sha256=' + createHmac('sha256', appSecret).update(JSON.stringify(body || {})).digest('hex');
+        const a = Buffer.from(sigHeader);
+        const b = Buffer.from(expected);
+        if (a.length !== b.length || !timingSafeEqual(a, b)) {
+          throw new HttpError(403, 'Assinatura X-Hub-Signature-256 invalida.');
+        }
+      } else if (process.env.NODE_ENV === 'production') {
+        throw new HttpError(503, 'WHATSAPP_APP_SECRET nao configurado.');
+      }
       await handleWebhookEvent(body);
       return { status: 200, body: { status: 'ok' } };
     },

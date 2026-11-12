@@ -12,13 +12,16 @@ import { clientIp, isSecureRequest, loginLimiter } from '../security.js';
 import { requiredString } from '../validate.js';
 
 function statusPayload(req, authenticated) {
-  return {
+  const payload = {
     authenticated,
     shop_name: getSetting('shop_name', 'Gestor de Barbearia'),
     company: getSetting('shop_company', 'Nova Runtime'),
-    password_is_default: isUsingDefaultPassword(),
     demo: isDemoMode(),
   };
+  if (authenticated) {
+    payload.password_is_default = isUsingDefaultPassword();
+  }
+  return payload;
 }
 
 export const authRoutes = [

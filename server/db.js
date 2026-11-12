@@ -690,8 +690,15 @@ export async function getShopReviews(slug = 'nova-barbearia') {
 }
 
 export async function addReview({ shopSlug = 'nova-barbearia', clientName, rating, comment, appointmentId, barberId }) {
+  let verified = 0;
+  if (appointmentId) {
+    const appt = await get('SELECT id, status FROM appointments WHERE id = ?', [Number(appointmentId)]);
+    if (appt && appt.status !== 'canceled') {
+      verified = 1;
+    }
+  }
   return await run(
-    'INSERT INTO reviews (shop_slug, client_name, rating, comment, appointment_id, barber_id, verified) VALUES (?, ?, ?, ?, ?, ?, 1)',
-    [shopSlug, clientName, Number(rating), comment || '', appointmentId || null, barberId || null]
+    'INSERT INTO reviews (shop_slug, client_name, rating, comment, appointment_id, barber_id, verified) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [shopSlug, clientName, Number(rating), comment || '', appointmentId || null, barberId || null, verified]
   );
 }

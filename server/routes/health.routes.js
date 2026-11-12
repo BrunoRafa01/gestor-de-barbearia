@@ -1,7 +1,7 @@
 // Health check usado pelo Render (e por qualquer monitor externo) para saber se
 // a aplicacao esta no ar e se o banco de dados responde.
 
-import { driverKind, driverLabel, healthCheck } from '../db.js';
+import { driverKind, healthCheck } from '../db.js';
 
 const startedAt = Date.now();
 
@@ -22,9 +22,7 @@ export const healthRoutes = [
           company: 'Nova Runtime',
           uptime_seconds: Math.round((Date.now() - startedAt) / 1000),
           driver: driverKind(),
-          target: driverLabel(),
-          database,
-          environment: process.env.NODE_ENV || 'development',
+          database: { ok },
           timestamp: new Date().toISOString(),
         },
       };

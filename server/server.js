@@ -98,8 +98,6 @@ const PAGE_ALIASES = {
   '/compliance.html': 'compliance.html',
   '/transparencia': 'transparencia.html',
   '/transparencia.html': 'transparencia.html',
-  '/motionsites': 'motionsites.html',
-  '/motionsites.html': 'motionsites.html',
 };
 
 function validateOrigin(request) {
@@ -113,12 +111,12 @@ function validateOrigin(request) {
     if (hostHeader) {
       const expectedHost = hostHeader.toLowerCase().split(':')[0];
       const actualHost = originUrl.hostname.toLowerCase();
-      if (
-        actualHost !== expectedHost &&
-        actualHost !== 'localhost' &&
-        actualHost !== '127.0.0.1' &&
-        actualHost !== '0.0.0.0'
-      ) {
+      const localHosts = new Set(['localhost', '127.0.0.1', '0.0.0.0']);
+      const isDevLocalMatch =
+        process.env.NODE_ENV !== 'production' &&
+        localHosts.has(expectedHost) &&
+        localHosts.has(actualHost);
+      if (actualHost !== expectedHost && !isDevLocalMatch) {
         return false;
       }
     }

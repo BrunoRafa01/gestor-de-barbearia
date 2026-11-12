@@ -1,6 +1,7 @@
 // Rotas de Conformidade LGPD, Direitos dos Titulares (DSR),
 // Gestao de Consentimento e Auditoria de Seguranca.
 
+import { isAuthenticated } from '../auth.js';
 import { all, get, run } from '../db.js';
 import { HttpError, readJsonBody } from '../http.js';
 import {
@@ -37,6 +38,23 @@ export const lgpdRoutes = [
       const cleanPhone = String(rawPhone).replace(/\D/g, '');
       if (cleanPhone.length < 10) {
         throw new HttpError(400, 'Telefone invalido.');
+      }
+
+      // Exige sessao administrativa OU token valido de agendamento pertencente ao titular
+      if (!isAuthenticated(req)) {
+        const token = String(query?.token || '').trim();
+        if (!/^[a-f0-9]{16,64}$/i.test(token)) {
+          throw new HttpError(401, 'Informe o codigo do seu agendamento (token) ou autentique-se como administrador para exportar dados.');
+        }
+        const owned = await get(
+          `SELECT a.id FROM appointments a
+           JOIN clients c ON c.id = a.client_id
+           WHERE a.cancel_token = ? AND REPLACE(REPLACE(REPLACE(REPLACE(c.phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?`,
+          [token, cleanPhone]
+        );
+        if (!owned) {
+          throw new HttpError(403, 'Codigo de agendamento nao corresponde ao telefone informado.');
+        }
       }
 
       const client = await get(

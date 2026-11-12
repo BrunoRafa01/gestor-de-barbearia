@@ -139,8 +139,8 @@ export const publicRoutes = [
       const serviceId = requiredId(query.service_id, 'servico');
       const date = isValidDate(query.date) ? query.date : todayISO();
 
-      const shop = shopPayload();
-      const maxDate = addDays(todayISO(), shop.max_advance_days + 1);
+      const shop = await shopPayload(query.shop);
+      const maxDate = addDays(todayISO(), (Number(shop.max_advance_days) || 45) + 1);
       if (date > maxDate) {
         return {
           status: 200,
@@ -241,7 +241,7 @@ export const publicRoutes = [
             whatsapp_automated: Boolean(whatsappDelivery?.clientResult?.success),
           },
           whatsapp: whatsappDelivery,
-          shop: shopPayload(),
+          shop: await shopPayload(),
         },
       };
     },
@@ -277,7 +277,7 @@ export const publicRoutes = [
           price: appointment.price,
           client_name: appointment.client_name,
           notes: appointment.notes,
-          shop: shopPayload(),
+          shop: await shopPayload(),
         },
       };
     },
@@ -411,6 +411,13 @@ export const publicRoutes = [
       const eClean = (appt.end_time || appt.start_time).replace(/:/g, '') + '00';
       const nowClean = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
+      const escIcs = (value) =>
+        String(value || '')
+          .replace(/[\r\n]+/g, ' ')
+          .replace(/\\/g, '\\\\')
+          .replace(/;/g, '\\;')
+          .replace(/,/g, '\\,');
+
       const ics = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
@@ -422,9 +429,9 @@ export const publicRoutes = [
         `DTSTAMP:${nowClean}`,
         `DTSTART:${dClean}T${sClean}`,
         `DTEND:${dClean}T${eClean}`,
-        `SUMMARY:${appt.service_name} com ${appt.barber_name} | ${shopName}`,
-        `DESCRIPTION:Agendamento confirmado de ${appt.service_name} na ${shopName}.`,
-        `LOCATION:${shopAddress}`,
+        `SUMMARY:${escIcs(appt.service_name)} com ${escIcs(appt.barber_name)} | ${escIcs(shopName)}`,
+        `DESCRIPTION:Agendamento confirmado de ${escIcs(appt.service_name)} na ${escIcs(shopName)}.`,
+        `LOCATION:${escIcs(shopAddress)}`,
         'STATUS:CONFIRMED',
         'END:VEVENT',
         'END:VCALENDAR',
