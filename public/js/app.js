@@ -263,9 +263,20 @@ function shellHtml() {
         </div>
         <nav class="nav">${navHtml}</nav>
         <div class="sidebar-footer">
+          <div class="stitch-saas-card">
+            <div class="stitch-saas-row">
+              <span>Plano SaaS</span>
+              <span class="stitch-pro-pill">PRO ATIVO</span>
+            </div>
+            <div class="stitch-saas-track"><div class="stitch-saas-fill"></div></div>
+            <div class="stitch-saas-row">
+              <span>Operação ativa</span>
+              <span style="color:#60A5FA;font-weight:600">Online</span>
+            </div>
+          </div>
           <a class="nav-item" href="/agendar" target="_blank" rel="noopener">${icon('external')}<span>Página de agendamento</span></a>
           <button class="nav-item" type="button" id="logout">${icon('logout')}<span>Sair do painel</span></button>
-          <div class="company">Sistema de Gestão para Barbearias</div>
+          <div class="company">Gestor de Barbearia · Azul &amp; Preto</div>
         </div>
       </aside>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
@@ -2581,9 +2592,9 @@ async function loadReport(body) {
   body.innerHTML = `
     <div class="grid grid-kpi">
       ${kpi({ label: 'Receita Realizada', value: esc(money(totals.revenue_realized)), small: true, iconName: 'wallet', foot: `${totals.completed} atendimento(s) concluído(s)` })}
-      ${kpi({ label: 'Receita Prevista', value: esc(money(totals.revenue_expected)), small: true, iconName: 'chart', foot: `${totals.appointments} agendamento(s) ativos` })}
-      ${kpi({ label: 'Comissões a Pagar', value: esc(money(totalCommissions)), small: true, iconName: 'users', foot: 'Repasse total da equipe' })}
-      ${kpi({ label: 'Saldo Líquido da Casa', value: esc(money(netHouse)), small: true, iconName: 'sparkles', foot: 'Receita livre de comissões' })}
+      <div class="stitch-kpi-cyan">${kpi({ label: 'Receita Prevista', value: esc(money(totals.revenue_expected)), small: true, iconName: 'chart', foot: `${totals.appointments} agendamento(s) ativos` })}</div>
+      <div class="stitch-kpi-blue">${kpi({ label: 'Comissões a Pagar', value: esc(money(totalCommissions)), small: true, iconName: 'users', foot: 'Repasse total da equipe' })}</div>
+      <div class="stitch-kpi-emerald">${kpi({ label: 'Saldo Líquido da Casa', value: esc(money(netHouse)), small: true, iconName: 'sparkles', foot: 'Receita livre de comissões' })}</div>
     </div>
 
     <div class="grid grid-kpi" style="margin-top:14px">

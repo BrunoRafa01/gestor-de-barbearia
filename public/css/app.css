@@ -100,9 +100,8 @@ body {
 }
 
 body {
-  background: radial-gradient(circle at 12% 8%, #15213B 0%, #0F131D 48%, #090E17 100%);
-  background-attachment: fixed;
-  color: #DEE2F0;
+  background: #06090E;
+  color: #E2E8F0;
   font-family: var(--font);
   font-size: 13.5px;
   line-height: 1.5;
@@ -175,8 +174,9 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 .sidebar {
   width: var(--sidebar-w);
   flex: 0 0 var(--sidebar-w);
-  background: #090E17;
-  border-right: 1px solid rgba(141, 144, 160, 0.14);
+  background: #0A0F18;
+  border-right: 1px solid rgba(30, 41, 59, 0.75);
+  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   padding: 18px 12px;
@@ -184,7 +184,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   top: 0;
   height: 100vh;
   z-index: 40;
-  color: #DEE2F0;
+  color: #E2E8F0;
 }
 
 .brand {
@@ -200,10 +200,11 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   width: 36px;
   height: 36px;
   flex: 0 0 36px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--gold-line);
-  background: var(--gold-soft);
-  color: var(--gold);
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%);
+  box-shadow: 0 0 18px rgba(37, 99, 235, 0.55);
+  color: #FFFFFF;
   font-weight: 700;
   font-size: 13px;
   transition: border-color 0.14s ease, background 0.14s ease;
@@ -274,9 +275,10 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 }
 
 .nav-item.active {
-  background: rgba(37, 99, 235, 0.16);
-  border-color: rgba(59, 130, 246, 0.35);
-  color: #FFFFFF;
+  background: rgba(37, 99, 235, 0.20);
+  border-color: rgba(59, 130, 246, 0.40);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.25);
+  color: #60A5FA;
   font-weight: 600;
 }
 
@@ -322,14 +324,15 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 26px;
-  background: rgba(9, 14, 23, 0.88);
-  border-bottom: 1px solid rgba(141, 144, 160, 0.14);
-  color: #DEE2F0;
+  padding: 14px 26px;
+  background: rgba(6, 9, 14, 0.92);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  color: #E2E8F0;
 }
 
-.topbar-title h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: #DEE2F0; }
-.topbar-title p { font-size: 12px; color: #8D90A0; margin-top: 1px; }
+.topbar-title h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: #FFFFFF; }
+.topbar-title p { font-size: 12px; color: #94A3B8; margin-top: 1px; }
 
 .topbar-actions {
   margin-left: auto;
@@ -339,31 +342,32 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 }
 
 .topbar .btn-primary {
-  background: #2563EB;
+  background: linear-gradient(90deg, #2563EB 0%, #3B82F6 100%);
   color: #FFFFFF;
-  border-color: #3B82F6;
-  border-radius: 9999px;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 18px rgba(37, 99, 235, 0.45);
+  border-radius: 12px;
   padding: 8px 16px;
   font-weight: 600;
 }
 
 .topbar .btn-primary:hover {
-  background: #1D4ED8;
+  background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%);
 }
 
 .content {
-  --surface: #171C25;
-  --surface-2: #1B2029;
-  --surface-3: #252A34;
-  --border: rgba(141, 144, 160, 0.16);
-  --border-strong: rgba(180, 197, 255, 0.30);
-  --text: #DEE2F0;
-  --text-dim: #C3C6D7;
-  --text-faint: #8D90A0;
-  --primary: #2563EB;
+  --surface: #0A101A;
+  --surface-2: #0F172A;
+  --surface-3: #162032;
+  --border: #1E293B;
+  --border-strong: rgba(59, 130, 246, 0.40);
+  --text: #E2E8F0;
+  --text-dim: #94A3B8;
+  --text-faint: #64748B;
+  --primary: #3B82F6;
   --gold: #60A5FA;
-  --gold-light: #B4C5FF;
-  background: transparent;
+  --gold-light: #93C5FD;
+  background: #06090E;
   color: var(--text);
   margin: 0;
   padding: 24px 26px 48px;
@@ -372,34 +376,81 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 }
 
 .content .btn-primary {
-  background: #2563EB;
+  background: linear-gradient(90deg, #2563EB 0%, #3B82F6 100%);
   color: #FFFFFF;
-  border-color: #3B82F6;
-  border-radius: 9999px;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.35);
+  border-radius: 12px;
 }
 
 .content .btn-primary:hover {
-  background: #1D4ED8;
-  border-color: #60A5FA;
+  background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%);
 }
 
 .content .btn {
-  border-radius: 9999px;
+  border-radius: 12px;
 }
 
 .content .card,
 .content .kpi {
-  background: #171C25;
-  border: 1px solid rgba(141, 144, 160, 0.16);
+  background: #0A101A;
+  border: 1px solid #1E293B;
   border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .content .kpi:hover,
 .content .v7-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.45);
+  background: #0C1422;
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.stitch-kpi-cyan .kpi-value { color: #38BDF8; }
+.stitch-kpi-blue .kpi-value { color: #60A5FA; }
+.stitch-kpi-emerald .kpi-value { color: #34D399; }
+
+.stitch-saas-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: #0B121E;
+  border: 1px solid #1E293B;
+  margin-bottom: 10px;
+}
+
+.stitch-saas-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.stitch-pro-pill {
+  font-size: 10px;
+  font-weight: 700;
+  color: #34D399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.30);
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.stitch-saas-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: #162032;
+  overflow: hidden;
+  margin: 8px 0 6px;
+}
+
+.stitch-saas-fill {
+  height: 100%;
+  width: 82%;
+  background: linear-gradient(90deg, #2563EB 0%, #38BDF8 100%);
+  box-shadow: 0 0 8px #38BDF8;
 }
 
 /* Obsidian Blade Hero & Stitch Financeiro Cards */
