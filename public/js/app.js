@@ -489,12 +489,12 @@ async function viewDashboard() {
         <svg viewBox="0 0 460 120" width="100%" height="120" preserveAspectRatio="none" aria-hidden="true" style="display:block">
           <defs>
             <linearGradient id="v7AreaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2D6A56" stop-opacity="0.32" />
-              <stop offset="100%" stop-color="#2D6A56" stop-opacity="0.02" />
+              <stop offset="0%" stop-color="#2563EB" stop-opacity="0.34" />
+              <stop offset="100%" stop-color="#2563EB" stop-opacity="0.02" />
             </linearGradient>
           </defs>
           <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36 L460,120 L0,120 Z" fill="url(#v7AreaGrad)" />
-          <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36" fill="none" stroke="#1F5B48" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36" fill="none" stroke="#4CD7F6" stroke-width="2.5" stroke-linecap="round" />
         </svg>
 
         <div class="v7-mini-grid-4">
@@ -516,11 +516,11 @@ async function viewDashboard() {
 
         <div class="v7-gauge-wrap">
           <svg viewBox="0 0 140 85" width="160" height="96" aria-hidden="true">
-            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#DCE3E0" stroke-width="11" stroke-linecap="round" />
-            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#2D6A56" stroke-width="11" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="${dashOffset}" />
+            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#252A34" stroke-width="11" stroke-linecap="round" />
+            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#2563EB" stroke-width="11" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="${dashOffset}" />
             <g transform="translate(70,72) rotate(${needleAngle})">
-              <line x1="0" y1="0" x2="0" y2="-36" stroke="#111815" stroke-width="2.5" stroke-linecap="round" />
-              <circle cx="0" cy="0" r="4.5" fill="#111815" />
+              <line x1="0" y1="0" x2="0" y2="-36" stroke="#DEE2F0" stroke-width="2.5" stroke-linecap="round" />
+              <circle cx="0" cy="0" r="4.5" fill="#4CD7F6" />
             </g>
           </svg>
           <div class="v7-gauge-pct">${rate === null ? '--' : `${occupancyPct}%`}</div>
@@ -2541,19 +2541,65 @@ async function loadReport(body) {
         .join('')
     : `<tr><td colspan="5"><div class="empty">Nenhum atendimento no período.</div></td></tr>`;
 
+  const totalCommissions = report.by_barber.reduce((sum, b) => sum + Number(b.commission_value || 0), 0);
+  const netHouse = Math.max(0, Number(totals.revenue_realized || 0) - totalCommissions);
+
+  const barberCards = report.by_barber.length
+    ? report.by_barber
+        .map(
+          (item) => `
+          <div class="barber-repasse-card">
+            <div class="barber-repasse-head">
+              <div class="barber-repasse-id">
+                <div class="avatar">${esc(initials(item.name))}</div>
+                <div>
+                  <div style="font-weight:600;color:#DEE2F0">${esc(item.name)}</div>
+                  <div style="font-size:11.5px;color:#4CD7F6">${item.completed} concluído(s)</div>
+                </div>
+              </div>
+              <span class="barber-repasse-badge">${item.commission_percent}% Comissão</span>
+            </div>
+            <div class="barber-repasse-metrics">
+              <div>
+                <span>Faturamento Bruto</span>
+                <strong>${esc(money(item.realized))}</strong>
+              </div>
+              <div>
+                <span>Comissão Total</span>
+                <strong class="text-blue-accent">${esc(money(item.commission_value))}</strong>
+              </div>
+            </div>
+            <div class="barber-repasse-foot">
+              <span>${item.total} atendimento(s) no período</span>
+              <span class="text-emerald-accent">Repasse calculado</span>
+            </div>
+          </div>`
+        )
+        .join('')
+    : emptyBlock('Nenhum profissional com atendimentos no período');
+
   body.innerHTML = `
     <div class="grid grid-kpi">
-      ${kpi({ label: 'Agendamentos', value: totals.appointments, iconName: 'calendar', foot: `${range.active_days} dia(s) com movimento` })}
-      ${kpi({ label: 'Receita realizada', value: esc(money(totals.revenue_realized)), small: true, iconName: 'wallet', foot: `${totals.completed} concluído(s)` })}
-      ${kpi({ label: 'Receita prevista', value: esc(money(totals.revenue_expected)), small: true, iconName: 'chart', foot: 'Exclui cancelados' })}
-      ${kpi({ label: 'Ticket médio', value: esc(money(totals.average_ticket)), small: true, iconName: 'sparkles', foot: 'Por atendimento concluído' })}
+      ${kpi({ label: 'Receita Realizada', value: esc(money(totals.revenue_realized)), small: true, iconName: 'wallet', foot: `${totals.completed} atendimento(s) concluído(s)` })}
+      ${kpi({ label: 'Receita Prevista', value: esc(money(totals.revenue_expected)), small: true, iconName: 'chart', foot: `${totals.appointments} agendamento(s) ativos` })}
+      ${kpi({ label: 'Comissões a Pagar', value: esc(money(totalCommissions)), small: true, iconName: 'users', foot: 'Repasse total da equipe' })}
+      ${kpi({ label: 'Saldo Líquido da Casa', value: esc(money(netHouse)), small: true, iconName: 'sparkles', foot: 'Receita livre de comissões' })}
     </div>
 
-    <div class="grid grid-kpi" style="margin-top:16px">
+    <div class="grid grid-kpi" style="margin-top:14px">
+      ${kpi({ label: 'Ticket médio', value: esc(money(totals.average_ticket)), small: true, foot: 'Por atendimento concluído' })}
       ${kpi({ label: 'Taxa de conclusão', value: percent(totals.completion_rate), foot: `${totals.completed} de ${totals.appointments}` })}
       ${kpi({ label: 'Taxa de cancelamento', value: percent(totals.cancellation_rate), foot: `${totals.cancelled} cancelado(s)` })}
-      ${kpi({ label: 'Faltas (no-show)', value: percent(totals.no_show_rate), foot: `${totals.no_show} falta(s)` })}
-      ${kpi({ label: 'Novos clientes', value: totals.new_clients, foot: 'Cadastrados no período' })}
+      ${kpi({ label: 'Novos clientes', value: totals.new_clients, foot: `${totals.no_show} falta(s) no período` })}
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="card-header" style="margin-bottom:12px">
+        <h2>Repasse por Barbeiro & Performance Individual</h2>
+        <span class="spacer"></span>
+        <span class="card-sub">Taxas individuais calculadas sobre receita realizada</span>
+      </div>
+      <div class="grid grid-3">${barberCards}</div>
     </div>
 
     <div class="grid grid-2" style="margin-top:16px">
