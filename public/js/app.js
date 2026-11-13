@@ -468,28 +468,70 @@ async function viewDashboard() {
     ? Math.min(100, Math.round((today.revenue_realized / today.revenue_expected) * 100))
     : 0;
 
+  const dashOffset = (157 - (157 * occupancyPct) / 100).toFixed(1);
+  const needleAngle = -90 + (180 * occupancyPct) / 100;
+
   const heroBlock = `
-    <section class="hero">
-      <div class="hero-main">
-        <span class="hero-eyebrow">${esc(formatDateLong(state.date))}</span>
-        <h2 class="hero-title">${today.total} agendamento(s) neste dia</h2>
-        <div class="hero-meta">
-          <span class="pill pill-pending">${today.pending} aguardando</span>
-          <span class="pill pill-confirmed">${today.confirmed} confirmados</span>
-          <span class="pill pill-completed">${today.completed} concluídos</span>
+    <section class="v7-hero-grid">
+      <div class="v7-panel v7-card">
+        <div class="v7-panel-head">
+          <div>
+            <div class="v7-panel-title">Faturamento & Movimento</div>
+            <div class="v7-panel-sub">${esc(formatDateLong(state.date))} · ${today.total} agendamento(s)</div>
+          </div>
+          <div class="v7-pill-group">
+            <span class="v7-pill-tab active">Receita</span>
+            <span class="v7-pill-tab">Hoje</span>
+            <span class="v7-pill-tab">Mês</span>
+          </div>
+        </div>
+
+        <svg viewBox="0 0 460 120" width="100%" height="120" preserveAspectRatio="none" aria-hidden="true" style="display:block">
+          <defs>
+            <linearGradient id="v7AreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2D6A56" stop-opacity="0.32" />
+              <stop offset="100%" stop-color="#2D6A56" stop-opacity="0.02" />
+            </linearGradient>
+          </defs>
+          <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36 L460,120 L0,120 Z" fill="url(#v7AreaGrad)" />
+          <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36" fill="none" stroke="#1F5B48" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+
+        <div class="v7-mini-grid-4">
+          <div class="v7-mini-stat"><span>Realizado hoje</span><strong>${esc(money(today.revenue_realized))}</strong></div>
+          <div class="v7-mini-stat"><span>Previsto hoje</span><strong>${esc(money(today.revenue_expected))}</strong></div>
+          <div class="v7-mini-stat"><span>Semana</span><strong>${esc(money(week.revenue_expected))}</strong></div>
+          <div class="v7-mini-stat"><span>Ticket médio</span><strong>${esc(money(month.average_ticket))}</strong></div>
         </div>
       </div>
-      <div class="hero-gauge">
-        <span class="hero-gauge-label">Ocupação do dia</span>
-        <strong>${rate === null ? '--' : `${rate}%`}</strong>
-        <div class="progress"><span style="width:${occupancyPct}%"></span></div>
-        <span class="hero-gauge-foot">${today.occupancy.barbers} profissional(is) ativo(s)</span>
-      </div>
-      <div class="hero-gauge">
-        <span class="hero-gauge-label">Receita realizada</span>
-        <strong>${esc(money(today.revenue_realized))}</strong>
-        <div class="progress"><span style="width:${realizedPct}%"></span></div>
-        <span class="hero-gauge-foot">${realizedPct}% do previsto (${esc(money(today.revenue_expected))})</span>
+
+      <div class="v7-panel v7-card">
+        <div class="v7-panel-head">
+          <div>
+            <div class="v7-panel-title">Ocupação do Dia</div>
+            <div class="v7-panel-sub">${today.occupancy.barbers} profissional(is) ativo(s)</div>
+          </div>
+          <span class="pill pill-confirmed">${realizedPct}% receita</span>
+        </div>
+
+        <div class="v7-gauge-wrap">
+          <svg viewBox="0 0 140 85" width="160" height="96" aria-hidden="true">
+            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#DCE3E0" stroke-width="11" stroke-linecap="round" />
+            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#2D6A56" stroke-width="11" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="${dashOffset}" />
+            <g transform="translate(70,72) rotate(${needleAngle})">
+              <line x1="0" y1="0" x2="0" y2="-36" stroke="#111815" stroke-width="2.5" stroke-linecap="round" />
+              <circle cx="0" cy="0" r="4.5" fill="#111815" />
+            </g>
+          </svg>
+          <div class="v7-gauge-pct">${rate === null ? '--' : `${occupancyPct}%`}</div>
+          <div class="v7-gauge-caption">Capacidade preenchida</div>
+        </div>
+
+        <div class="v7-mini-grid-3">
+          <div class="v7-mini-stat"><span>Aguardando</span><strong>${today.pending}</strong></div>
+          <div class="v7-mini-stat"><span>Confirmados</span><strong>${today.confirmed}</strong></div>
+          <div class="v7-mini-stat"><span>Concluídos</span><strong>${today.completed}</strong></div>
+        </div>
       </div>
     </section>`;
 
