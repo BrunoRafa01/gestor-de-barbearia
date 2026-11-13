@@ -359,8 +359,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
+  background: rgba(9, 9, 11, 0.78);
   z-index: 35;
 }
 
@@ -850,9 +849,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(9, 10, 13, 0.8);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(9, 9, 11, 0.82);
   display: grid;
   place-items: center;
   padding: 20px;
@@ -1646,13 +1643,10 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .steps { display: none; }
 
 .booking-card {
-  background: linear-gradient(180deg, rgba(20, 24, 31, 0.75) 0%, rgba(12, 14, 18, 0.92) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: #111113;
+  border: 1px solid #27272A;
+  border-radius: 8px;
   padding: 20px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   margin-bottom: 18px;
   scroll-margin-top: 80px;
 }
@@ -1692,13 +1686,11 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   align-items: center;
   width: 100%;
   padding: 16px 18px;
-  border-radius: 14px;
-  background: rgba(20, 28, 45, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #09090B;
+  border: 1px solid #27272A;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.15s ease, background 0.15s ease;
   text-align: left;
   min-height: 48px;
 }
@@ -1800,13 +1792,11 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   gap: 12px;
   width: 100%;
   padding: 14px 18px;
-  border-radius: 14px;
-  background: rgba(20, 28, 45, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #09090B;
+  border: 1px solid #27272A;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.15s ease, background 0.15s ease;
   text-align: left;
   min-height: 48px;
 }
@@ -2067,9 +2057,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(9, 9, 11, 0.82);
   z-index: 999;
   display: flex;
   align-items: flex-end;
