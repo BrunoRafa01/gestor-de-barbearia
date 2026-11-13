@@ -263,20 +263,9 @@ function shellHtml() {
         </div>
         <nav class="nav">${navHtml}</nav>
         <div class="sidebar-footer">
-          <div class="stitch-saas-card">
-            <div class="stitch-saas-row">
-              <span>Plano SaaS</span>
-              <span class="stitch-pro-pill">PRO ATIVO</span>
-            </div>
-            <div class="stitch-saas-track"><div class="stitch-saas-fill"></div></div>
-            <div class="stitch-saas-row">
-              <span>Operação ativa</span>
-              <span style="color:#60A5FA;font-weight:600">Online</span>
-            </div>
-          </div>
           <a class="nav-item" href="/agendar" target="_blank" rel="noopener">${icon('external')}<span>Página de agendamento</span></a>
           <button class="nav-item" type="button" id="logout">${icon('logout')}<span>Sair do painel</span></button>
-          <div class="company">Gestor de Barbearia · Azul &amp; Preto</div>
+          <div class="company">Gestor de Barbearia</div>
         </div>
       </aside>
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
