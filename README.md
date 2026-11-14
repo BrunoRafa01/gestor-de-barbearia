@@ -23,51 +23,45 @@ Simultaneamente, o gestor conta com um **painel administrativo executivo**, rela
 
 ## 🎨 Identidade Visual & Design System Oficial
 
-O sistema adota o Design System institucional da **Nova Runtime**, com contraste elevado, estética refinada, foco em legibilidade e ausência de elementos visuais artificiais:
+O sistema adota um Design System em **Preto Obsidiana + Azul Limpo** focado em legibilidade, camadas tonais, tipografia `tabular-nums` e ausência de ruído visual:
 
-| Token | Hexadecimal | Finalidade |
+| Token | Valor | Finalidade |
 | :--- | :--- | :--- |
-| **Fundo Principal** | `#080B12` | Base escura imersiva de alto padrão |
-| **Fundo Secundário** | `#101622` | Áreas de navegação e barras laterais |
-| **Superfícies (Cards)** | `#141C2D` | Cards, modais e containers de dados |
-| **Bordas** | `#1E293B` | Linhas de contorno discretas e elegantes |
-| **Azul Principal** | `#3B82F6` | Acentos primários, botões de ação e foco |
-| **Azul Secundário** | `#60A5FA` | Estados de hover e destaques secundários |
-| **Texto Principal** | `#F8FAFC` | Tipografia de alto contraste e legibilidade |
-| **Texto Secundário** | `#94A3B8` | Metadados, descrições e legendas |
-| **Sucesso** | `#10B981` | Atendimentos concluídos e confirmações |
-| **Alerta** | `#F59E0B` | Agendamentos pendentes e avisos |
-| **Erro / Perigo** | `#EF4444` | Cancelamentos, conflitos e exclusões |
+| **Fundo Principal (`--bg`)** | `#07080B` / `#09090B` | Base escura em preto obsidiana |
+| **Sidebar (`--bg-secondary`)** | `#0B0C0F` | Navegação lateral e cabeçalhos |
+| **Superfícies (`--surface`)** | `#0E1015` / `#111216` | Cards, painéis bento e tabelas |
+| **Elevação (`--surface-2`)** | `#17181E` | Abas ativas, modais e hover |
+| **Bordas (`--border`)** | `rgba(255, 255, 255, 0.06)` | Linhas divisórias *hairline* sutis |
+| **Azul Principal (`--accent`)** | `#3B82F6` / `#2563EB` | Ações primárias, seleção e gráficos |
+| **Azul Destaque (`--accent-hover`)** | `#60A5FA` | Preços, links, hover e curvas SVG |
+| **Texto Principal (`--text`)** | `#F4F4F5` | Tipografia de alto contraste |
+| **Texto Secundário (`--text-dim`)** | `#A1A1AA` | Metadados, subtítulos e legendas |
+| **Sucesso / Alerta / Erro** | `#34D399` · `#FBBF24` · `#FB7185` | Pílulas de status translúcidas |
 
 ---
 
-## 📸 Demonstração Visual (Capturas Reais)
+## ✨ Experiência de Produto & Interfaces
 
-Todas as imagens abaixo foram capturadas diretamente da aplicação em execução:
-
-### 1. Painel Executivo — Dashboard Operacional & Financeiro
-Visão consolidada com taxa de ocupação em tempo real, receita prevista vs. realizada, próximos atendimentos e ranking de serviços e barbeiros.
+### 1. Painel Executivo — Bento Grid de 3 Colunas (`/`)
+Layout modular em duas linhas de 3 colunas com atualização dinâmica:
+* **Linha 1:** *Resumo de Hoje* (receita realizada + ações rápidas), *Faturamento & Movimento* (gráfico SVG de duas curvas em `#3B82F6`/`#60A5FA`) e *Capacidade & Turno* (barra de ocupação).
+* **Linha 2:** *Metas & Indicadores* (anéis circulares SVG), *Status dos Agendamentos* (gráfico donut dinâmico) e *Próximos na Agenda*.
 ![Dashboard com indicadores do dia, ocupação e receita](docs/screenshots/dashboard.png)
 
-### 2. Agenda Diária e Semanal por Barbeiro
-Visualização dinâmica por colunas de profissionais, atualização de disponibilidade e edição de horários.
-![Agenda diária por profissional](docs/screenshots/agenda.png)
-
-### 3. Página Pública de Agendamento (Mobile-First)
-Experiência responsiva para clientes que chegam pelo Instagram: seleção de serviços com categorias, escolha do profissional (com opção de "Qualquer disponível"), calendário e confirmação com botão para adicionar ao calendário (.ics).
+### 2. Página Pública de Agendamento Temática (`/agendar`)
+Estúdio de barbearia em Preto Obsidiana + Azul com fotografia editorial na capa (`public/img/barber-studio-hero.jpg`), selo **Agenda online**, menu de serviços com duração em `JetBrains Mono` e valores em `tabular-nums`, sem necessidade de baixar aplicativo.
 ![Página pública de agendamento em celular](docs/screenshots/agendamento-mobile.png)
 
-### 4. Relatórios Financeiros, Fechamento de Caixa & Comissões
-Demonstrativo analítico de faturamento por período, comissões automáticas calculadas exclusivamente sobre serviços concluídos e exportação em CSV.
-![Relatórios de faturamento e comissão por profissional](docs/screenshots/relatorios.png)
+### 3. Apresentação Cinética & Interativa (`/apresentacao.html`)
+Landing page com transição atmosférica **Preto → Azul Elétrico → Branco Gelo**:
+* **Hero 3D interativo:** camadas isométricas com paralaxe do cursor, *spotlight* e ticker ao vivo.
+* **Fluxo técnico em 4 colunas:** diagramas isométricos em SVG responsivos ao hover.
+* **Telemetria interativa:** seletor `7d | 30d | 90d`, mapa de calor por horário (*dot-matrix*) e resumo clicável de bancada.
+* **Galeria de Estúdio:** fotografias editoriais em `public/img/barber-chair-studio.jpg` e `public/img/barber-craft-tools.jpg`.
 
-### 5. Gestão Completa de Clientes
-Histórico individual de visitas, total investido, preferências anotadas e botão direto para WhatsApp.
-![Lista de clientes cadastrados](docs/screenshots/clientes.png)
-
-### 6. Acesso Seguro ao Painel Administrativo
-Autenticação com proteção contra força bruta, timing-safe e isolamento de permissões.
-![Tela de login do painel administrativo](docs/screenshots/login.png)
+### 4. Agenda, Financeiro, Clientes & Páginas LGPD
+* **Agenda & Relatórios:** grade por barbeiro, fechamento de caixa e cálculo automático de comissões sobre atendimentos concluídos (`docs/screenshots/agenda.png`, `docs/screenshots/relatorios.png`).
+* **Páginas Legais & DSR:** `/compliance.html`, `/privacidade.html`, `/termos.html`, `/cookies.html`, `/transparencia.html` e banner de cookies unificados no tema escuro Preto + Azul.
 
 ---
 
@@ -166,7 +160,7 @@ O sistema foi submetido a uma auditoria rigorosa de DevSecOps, atingindo **100% 
 | **Backend & Roteador** | HTTP Nativo (`node:http`) | Altíssimo desempenho, baixa pegada de memória (~35MB RAM) e sem overhead de frameworks externos. |
 | **Persistência Local** | SQLite (`node:sqlite`) | Armazenamento local rápido e independente com WAL (Write-Ahead Logging). |
 | **Persistência em Nuvem** | Turso / libSQL (`@libsql/client`) | Banco distribuído via HTTP que viabiliza deploy gratuito no Render com persistência durável. |
-| **Frontend** | HTML5 Semântico + CSS Moderno + Vanilla JS | Single Page Application (SPA) ultrarrápida, sem bundlers pesados, com Service Worker PWA offline-first. |
+| **Frontend** | HTML5 Semântico + CSS Design System + Vanilla JS | Interface SPA leve, sem bundlers pesados, com cache-busting e carregamento direto sem dependência de instalação PWA. |
 | **Criptografia** | `node:crypto` | Funções criptográficas nativas do kernel do Node.js. |
 
 ---

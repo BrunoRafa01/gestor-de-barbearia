@@ -254,10 +254,10 @@ async function runTests() {
     const serviceRes = await run('INSERT INTO services (name, duration_min, price, active) VALUES (?, ?, ?, ?)', ['Corte Teste', 30, 45, 1]);
     const clientRes = await run('INSERT INTO clients (name, phone) VALUES (?, ?)', ['Cliente Lembrete', '11933334444']);
 
-    // Calcular data/hora de exatamente amanha (~24h a frente)
-    const tomorrow = new Date(Date.now() + 24 * 3600 * 1000);
-    const tomorrowDate = tomorrow.toISOString().slice(0, 10);
-    const tomorrowTime = `${String(tomorrow.getHours()).padStart(2, '0')}:${String(tomorrow.getMinutes()).padStart(2, '0')}`;
+    // Calcular data/hora dentro da janela de 24h (12h a frente em horario local)
+    const reminderTarget = new Date(Date.now() + 12 * 3600 * 1000);
+    const tomorrowDate = `${reminderTarget.getFullYear()}-${String(reminderTarget.getMonth() + 1).padStart(2, '0')}-${String(reminderTarget.getDate()).padStart(2, '0')}`;
+    const tomorrowTime = `${String(reminderTarget.getHours()).padStart(2, '0')}:${String(reminderTarget.getMinutes()).padStart(2, '0')}`;
 
     const apptRes = await run(`
       INSERT INTO appointments (client_id, barber_id, service_id, date, start_time, end_time, price, status, source)
