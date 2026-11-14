@@ -29,56 +29,54 @@
     wrapper.id = 'consent-banner-wrapper';
     wrapper.style.cssText = `
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      max-width: 680px;
-      margin: 0 auto;
-      background: #111216;
-      color: #F4F4F5;
+      bottom: 14px;
+      right: 14px;
+      left: 14px;
+      max-width: 560px;
+      margin-left: auto;
+      background: rgba(14, 16, 21, 0.96);
+      backdrop-filter: blur(10px);
+      color: #E4E4E7;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
       z-index: 99999;
       font-family: inherit;
-      line-height: 1.5;
+      line-height: 1.4;
     `;
 
     wrapper.innerHTML = `
-      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
-        <div>
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <strong style="font-size: 1.05rem; color: #F4F4F5;">Privacidade & Cookies (LGPD)</strong>
-          </div>
-          <p style="font-size: 0.88rem; color: #A1A1AA; margin: 0 0 16px 0;">
-            Utilizamos cookies essenciais para autenticação e segurança. Você pode personalizar o uso de cookies opcionais para análise e melhoria de experiência. Saiba mais em nossa <a href="/privacidade.html" style="color: #60A5FA; text-decoration: underline;">Política de Privacidade</a> e <a href="/cookies.html" style="color: #60A5FA; text-decoration: underline;">Política de Cookies</a>.
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="flex: 1 1 260px; min-width: 0;">
+          <strong style="display: block; font-size: 12.5px; font-weight: 600; color: #F4F4F5; margin-bottom: 2px;">Cookies &amp; Privacidade (LGPD)</strong>
+          <p style="font-size: 12px; color: #A1A1AA; margin: 0;">
+            Usamos cookies essenciais de sessão e segurança. <a href="/privacidade.html" style="color: #60A5FA; text-decoration: underline;">Privacidade</a> · <a href="/cookies.html" style="color: #60A5FA; text-decoration: underline;">Cookies</a>
           </p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+          <button id="consent-btn-custom" style="background: transparent; color: #A1A1AA; border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 10px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer;">
+            Preferências
+          </button>
+          <button id="consent-btn-reject" style="background: #171920; color: #E4E4E7; border: 1px solid rgba(255, 255, 255, 0.08); padding: 6px 10px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer;">
+            Essenciais
+          </button>
+          <button id="consent-btn-accept" style="background: #2563EB; color: #FFFFFF; border: none; padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            Aceitar
+          </button>
         </div>
       </div>
 
-      <div id="consent-custom-options" style="display: none; margin-bottom: 16px; padding: 12px; background: #17181E; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; font-size: 0.82rem;">
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #F4F4F5;">
-          <input type="checkbox" checked disabled> <strong>Essenciais (Segurança e Sessão):</strong> Obrigatórios para o funcionamento da plataforma.
+      <div id="consent-custom-options" style="display: none; margin-top: 10px; padding: 10px; background: #17181E; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; font-size: 12px;">
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: #F4F4F5;">
+          <input type="checkbox" checked disabled> <strong>Essenciais:</strong> Obrigatórios para autenticação e segurança.
         </label>
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #F4F4F5; cursor: pointer;">
-          <input type="checkbox" id="consent-opt-analytics" checked> <strong>Analíticos:</strong> Métricas anônimas de uso e performance.
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: #F4F4F5; cursor: pointer;">
+          <input type="checkbox" id="consent-opt-analytics" checked> <strong>Analíticos:</strong> Métricas anônimas de uso.
         </label>
         <label style="display: flex; align-items: center; gap: 8px; color: #F4F4F5; cursor: pointer;">
-          <input type="checkbox" id="consent-opt-marketing"> <strong>Comunicação e WhatsApp:</strong> Lembretes opcionais e novidades.
+          <input type="checkbox" id="consent-opt-marketing"> <strong>Comunicação:</strong> Lembretes e novidades via WhatsApp.
         </label>
-      </div>
-
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; align-items: center;">
-        <button id="consent-btn-custom" style="background: transparent; color: #A1A1AA; border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-          ⚙️ Personalizar
-        </button>
-        <button id="consent-btn-reject" style="background: #1F2128; color: #F4F4F5; border: 1px solid rgba(255, 255, 255, 0.08); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-          Apenas Necessários
-        </button>
-        <button id="consent-btn-accept" style="background: #3B82F6; color: #FFFFFF; border: none; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-          Aceitar Todos
-        </button>
       </div>
     `;
 

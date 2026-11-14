@@ -50,27 +50,19 @@
       text-decoration: none;
     }
 
-    /* ---------------- HERO ATMOSPHERE (BLACK -> ELECTRIC BLUE SWEEP) ---------------- */
+    /* ---------------- HERO ATMOSPHERE (OBSIDIAN + DISCIPLINED BLUE) ---------------- */
     .hero-band {
       position: relative;
       background:
-        radial-gradient(ellipse 88% 78% at 88% 94%, rgba(191, 219, 254, 0.95) 0%, rgba(96, 165, 250, 0.88) 22%, rgba(37, 99, 235, 0.72) 48%, rgba(15, 23, 42, 0.35) 68%, rgba(6, 7, 10, 0) 84%),
-        radial-gradient(ellipse 65% 55% at 68% 100%, rgba(37, 99, 235, 0.55) 0%, transparent 72%),
+        radial-gradient(ellipse 52% 48% at 82% 18%, rgba(37, 99, 235, 0.16) 0%, rgba(15, 23, 42, 0.08) 55%, transparent 100%),
         #06070A;
       overflow: hidden;
-      padding-bottom: 136px;
+      padding-bottom: 88px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .hero-band::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 165px;
-      background: linear-gradient(180deg, rgba(245, 248, 255, 0) 0%, rgba(245, 248, 255, 0.78) 60%, var(--ice-bg) 100%);
-      pointer-events: none;
-      z-index: 2;
+      display: none;
     }
 
     .hero-grid-lines {
@@ -361,6 +353,161 @@
       height: 6px;
       border-radius: 999px;
       background: #60A5FA;
+    }
+
+    /* ---------------- STUDIO PRODUCT PREVIEW WINDOW ---------------- */
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #60A5FA;
+      margin-bottom: 18px;
+    }
+
+    .studio-window {
+      background: #0B0D12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    }
+
+    .studio-window-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #0F1218;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      gap: 12px;
+    }
+
+    .studio-window-title {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: #A1A1AA;
+    }
+
+    .studio-window-tabs {
+      display: inline-flex;
+      background: #07080B;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 7px;
+      padding: 2px;
+    }
+
+    .studio-tab {
+      background: transparent;
+      border: 0;
+      color: #A1A1AA;
+      font-family: var(--font);
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 140ms var(--ease), color 140ms var(--ease);
+    }
+
+    .studio-tab.active {
+      background: #1C2230;
+      color: #F4F4F5;
+    }
+
+    .studio-window-body {
+      padding: 16px;
+    }
+
+    .studio-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .studio-metric {
+      background: #0F1218;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .studio-metric span {
+      display: block;
+      font-size: 11px;
+      color: #71717A;
+      margin-bottom: 4px;
+    }
+
+    .studio-metric strong {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: #F4F4F5;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .studio-rows {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .studio-row {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #0B0D12;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+    }
+
+    .studio-row:first-child {
+      border-top: 0;
+    }
+
+    .studio-row-time {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #93C5FD;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .studio-row-main strong {
+      display: block;
+      font-weight: 500;
+      color: #F4F4F5;
+      font-size: 13px;
+    }
+
+    .studio-row-main span {
+      font-size: 11.5px;
+      color: #71717A;
+    }
+
+    .studio-row-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: #60A5FA;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.22);
+    }
+
+    .studio-row-tag.ok {
+      color: #34D399;
+      background: rgba(52, 211, 153, 0.1);
+      border-color: rgba(52, 211, 153, 0.22);
+    }
+
+    .studio-row-tag.free {
+      color: #A1A1AA;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
     }
 
     /* ---------------- INTERACTIVE 3D ISOMETRIC STACK ---------------- */
@@ -1021,10 +1168,7 @@
 
       <div class="hero-container">
         <div>
-          <div class="hero-badges">
-            <span class="hero-badge"><i class="pulse-dot"></i><strong>AO VIVO</strong> · AGENDA ONLINE</span>
-            <span class="hero-badge">GESTÃO DE BARBEARIA</span>
-          </div>
+          <div class="hero-eyebrow">GESTOR DE BARBEARIA · AGENDA E CAIXA</div>
 
           <h1 class="hero-h1">
             <span class="line-muted">Agendada antes</span>
@@ -1050,33 +1194,63 @@
           </div>
         </div>
 
-        <div class="iso-stage" id="iso-stage" aria-hidden="true">
-          <span class="iso-crosshair" style="top:18px;left:24px">+</span>
-          <span class="iso-crosshair" style="bottom:20px;right:24px">+</span>
-
-          <div class="iso-callout">
-            <span id="live-ticker-tag">Horário reservado</span>
-            <strong id="live-ticker-text" style="font-weight:500">10:30 · Degradê + Barba</strong>
+        <div class="studio-window" aria-label="Prévia da agenda operacional">
+          <div class="studio-window-head">
+            <span class="studio-window-title">painel / agenda-do-dia</span>
+            <div class="studio-window-tabs" role="tablist">
+              <button type="button" class="studio-tab active" data-preview="agenda">Agenda</button>
+              <button type="button" class="studio-tab" data-preview="caixa">Caixa</button>
+            </div>
           </div>
-
-          <div class="iso-stack" id="iso-stack">
-            <div class="iso-plane iso-plane-1"></div>
-            <div class="iso-plane iso-plane-2">
-              <span class="iso-tag">Ocupação · 84%</span>
-              <div class="iso-mini-bars">
-                <div class="iso-mini-bar blue"></div>
-                <div class="iso-mini-bar" style="width:48%"></div>
+          <div class="studio-window-body" id="studio-preview-body">
+            <div class="studio-metrics-row">
+              <div class="studio-metric">
+                <span>Realizado hoje</span>
+                <strong>R$ 540,00</strong>
+              </div>
+              <div class="studio-metric">
+                <span>Previsto</span>
+                <strong>R$ 980,00</strong>
+              </div>
+              <div class="studio-metric">
+                <span>Ocupação</span>
+                <strong>84%</strong>
               </div>
             </div>
-            <div class="iso-plane iso-plane-3">
-              <span class="iso-tag">Cadeira 01 · Carlos</span>
-              <div class="iso-node-dot"></div>
+            <div class="studio-rows">
+              <div class="studio-row">
+                <span class="studio-row-time">09:00</span>
+                <div class="studio-row-main">
+                  <strong>Mateus Rocha · Degradê Navalhado</strong>
+                  <span>Profissional: Bruno · 40 min</span>
+                </div>
+                <span class="studio-row-tag ok">Concluído</span>
+              </div>
+              <div class="studio-row">
+                <span class="studio-row-time">10:30</span>
+                <div class="studio-row-main">
+                  <strong>Lucas Ferreira · Corte + Barba</strong>
+                  <span>Profissional: Diego · 60 min</span>
+                </div>
+                <span class="studio-row-tag">Confirmado</span>
+              </div>
+              <div class="studio-row">
+                <span class="studio-row-time">11:30</span>
+                <div class="studio-row-main">
+                  <strong>Gabriel Souza · Barboterapia</strong>
+                  <span>Profissional: Rafael · 30 min</span>
+                </div>
+                <span class="studio-row-tag">WhatsApp OK</span>
+              </div>
+              <div class="studio-row">
+                <span class="studio-row-time">14:00</span>
+                <div class="studio-row-main">
+                  <strong>Horário disponível</strong>
+                  <span>Link da bio · Reserva imediata</span>
+                </div>
+                <span class="studio-row-tag free">Livre</span>
+              </div>
             </div>
-          </div>
-
-          <div class="iso-callout-bottom">
-            <span>Confirmação instantânea</span>
-            WhatsApp + Calendário (.ics)
           </div>
         </div>
       </div>
@@ -1337,14 +1511,50 @@
         ['Cadeira 02 confirmada', '11:15 · Barboterapia · Mateus'],
         ['Lembrete enviado', '14:00 · Corte Social · Carlos']
       ];
-      let tIdx = 0;
-      setInterval(() => {
-        tIdx = (tIdx + 1) % tickerData.length;
-        if (tickerTag && tickerText) {
-          tickerTag.textContent = tickerData[tIdx][0];
-          tickerText.textContent = tickerData[tIdx][1];
-        }
-      }, 3200);
+      // 2. Interactive Studio Preview Tabs (Agenda / Caixa)
+      const previewBody = document.getElementById('studio-preview-body');
+      const previewTabs = document.querySelectorAll('.studio-tab');
+      const previewTemplates = {
+        agenda: previewBody ? previewBody.innerHTML : '',
+        caixa: `
+          <div class="studio-metrics-row">
+            <div class="studio-metric"><span>Caixa do dia</span><strong>R$ 540,00</strong></div>
+            <div class="studio-metric"><span>Comissões (50%)</span><strong>R$ 270,00</strong></div>
+            <div class="studio-metric"><span>Líquido casa</span><strong>R$ 270,00</strong></div>
+          </div>
+          <div class="studio-rows">
+            <div class="studio-row">
+              <span class="studio-row-time">Bruno</span>
+              <div class="studio-row-main"><strong>4 atendimentos concluídos</strong><span>Repasse 50% · R$ 110,00</span></div>
+              <span class="studio-row-tag ok">R$ 220,00</span>
+            </div>
+            <div class="studio-row">
+              <span class="studio-row-time">Diego</span>
+              <div class="studio-row-main"><strong>3 atendimentos concluídos</strong><span>Repasse 50% · R$ 95,00</span></div>
+              <span class="studio-row-tag ok">R$ 190,00</span>
+            </div>
+            <div class="studio-row">
+              <span class="studio-row-time">Rafael</span>
+              <div class="studio-row-main"><strong>2 atendimentos concluídos</strong><span>Repasse 50% · R$ 65,00</span></div>
+              <span class="studio-row-tag ok">R$ 130,00</span>
+            </div>
+            <div class="studio-row">
+              <span class="studio-row-time">Previsto</span>
+              <div class="studio-row-main"><strong>5 horários confirmados ainda hoje</strong><span>Projeção de fechamento</span></div>
+              <span class="studio-row-tag">R$ 440,00</span>
+            </div>
+          </div>`
+      };
+      previewTabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          previewTabs.forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+          const key = tab.dataset.preview;
+          if (previewBody && previewTemplates[key]) {
+            previewBody.innerHTML = previewTemplates[key];
+          }
+        });
+      });
 
       // 3. Interactive dot-matrix heatmap
       const matrix = document.getElementById('dot-matrix');
