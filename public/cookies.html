@@ -3,26 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090B">
   <title>Política de Cookies e Tecnologias de Rastreamento | Gestor de Barbearia</title>
   <link rel="stylesheet" href="/css/app.css">
   <link rel="icon" type="image/png" href="/icon-192.png">
   <style>
-    .legal-container { max-width: 860px; margin: 40px auto; padding: 0 20px; line-height: 1.7; color: #334155; }
-    .legal-card { background: #ffffff; border-radius: 16px; padding: 36px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .legal-title { font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.02em; }
-    .legal-subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 32px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; }
+    body { background: #09090B; color: #A1A1AA; min-height: 100vh; }
+    .legal-container { max-width: 860px; margin: 40px auto; padding: 0 20px; line-height: 1.7; color: #A1A1AA; }
+    .legal-card { background: #111216; border-radius: 16px; padding: 36px; border: 1px solid rgba(255, 255, 255, 0.06); box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.55); }
+    .legal-title { font-size: 2rem; font-weight: 800; color: #F4F4F5; margin-bottom: 8px; letter-spacing: -0.02em; }
+    .legal-subtitle { color: #71717A; font-size: 0.95rem; margin-bottom: 32px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 16px; }
     .legal-section { margin-bottom: 28px; }
-    .legal-section h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; }
+    .legal-section h2 { font-size: 1.25rem; font-weight: 700; color: #F4F4F5; margin-bottom: 12px; }
+    .legal-section strong { color: #F4F4F5; }
+    .legal-section code { background: #17181E; color: #60A5FA; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85em; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.88rem; }
-    th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-    th { background: #f8fafc; font-weight: 700; color: #1e293b; }
-    .nav-links { display: flex; gap: 16px; margin-bottom: 24px; font-size: 0.9rem; }
-    .nav-links a { color: #0284c7; text-decoration: none; font-weight: 600; }
+    th, td { border: 1px solid rgba(255, 255, 255, 0.06); padding: 12px; text-align: left; }
+    th { background: #17181E; font-weight: 700; color: #F4F4F5; }
+    .nav-links { display: flex; gap: 16px; margin-bottom: 24px; font-size: 0.9rem; flex-wrap: wrap; }
+    .nav-links a { color: #60A5FA; text-decoration: none; font-weight: 600; }
     .nav-links a:hover { text-decoration: underline; }
-    .btn-manage-cookies { background: #0284c7; color: white; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+    .btn-manage-cookies { background: #3B82F6; color: #FFFFFF; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: background 0.15s ease; }
+    .btn-manage-cookies:hover { background: #2563EB; }
+    .legal-footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.06); text-align: center; font-size: 0.875rem; color: #71717A; }
+    .legal-footer a { color: #60A5FA; font-weight: 600; text-decoration: underline; }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body>
   <div class="legal-container">
     <div class="nav-links">
       <a href="/">&larr; Voltar ao Início</a>
@@ -97,8 +104,8 @@
         </div>
       </div>
 
-      <div class="mt-8 pt-6 border-t border-slate-200 text-center text-sm text-slate-500">
-        Dúvidas? Entre em contato com nosso DPO: <a href="mailto:dpo@novaruntime.com.br" class="text-blue-600 font-semibold underline">dpo@novaruntime.com.br</a>
+      <div class="legal-footer">
+        Dúvidas? Entre em contato com nosso DPO: <a href="mailto:dpo@novaruntime.com.br">dpo@novaruntime.com.br</a>
       </div>
     </div>
   </div>

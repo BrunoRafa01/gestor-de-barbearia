@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#09090B" />
+    <meta name="theme-color" content="#07080B" />
     <title>Agendar horário | Barbearia</title>
     <meta
       name="description"
@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -25,7 +25,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Barbearia" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/app.css?v=20261114d" />
   </head>
   <body class="booking-body">
     <div class="booking-page">
@@ -44,16 +44,10 @@
             </div>
             <div class="brand-text">
               <strong id="shop-name">Nova Barbearia</strong>
-              <span id="shop-company">Nova Runtime SaaS</span>
+              <span id="shop-company">Barbearia &amp; Grooming</span>
             </div>
           </div>
-          <button type="button" class="btn-app-install" id="pwa-install-btn" title="Instalar aplicativo na tela inicial">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="3" ry="3"/>
-              <line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-            <span>Baixar App</span>
-          </button>
+          <span class="booking-open-pill"><span class="booking-open-dot" aria-hidden="true"></span>Agenda online</span>
         </div>
 
         <!-- Apresentacao Publica Oficial da Barbearia -->
@@ -81,7 +75,7 @@
             </div>
           </div>
           <p class="shop-bio-text" id="shop-bio">
-            Agendamento online de corte, barba e serviços da barbearia com confirmação imediata de horário.
+            Corte, barba e acabamento de precisão. Escolha seu serviço, barbeiro e horário sem fila.
           </p>
           <div class="shop-quick-actions" id="shop-actions"></div>
         </div>
@@ -135,51 +129,6 @@
       </footer>
     </div>
 
-    <!-- Modal elegante para instalar app no iOS / Safari -->
-    <div class="modal-backdrop hidden" id="ios-install-modal">
-      <div class="ios-install-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-          <div class="sheet-icon" aria-hidden="true">
-            <svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="8" cy="8" r="3"/>
-              <circle cx="8" cy="24" r="3"/>
-              <line x1="26" y1="6" x2="10.5" y2="21.5"/>
-              <line x1="18.5" y1="18.5" x2="26" y2="26"/>
-            </svg>
-          </div>
-          <div>
-            <h4>Instalar App no iPhone</h4>
-            <p class="sheet-sub">Acesso direto da sua tela inicial, sem barra de navegação</p>
-          </div>
-          <button type="button" class="btn-close-modal" id="close-ios-modal" aria-label="Fechar modal">&times;</button>
-        </div>
-        <div class="ios-steps-list">
-          <div class="ios-step-item">
-            <div class="ios-step-num">1</div>
-            <div class="ios-step-text">
-              Toque no botão <strong>Compartilhar</strong> na barra inferior do Safari (o ícone de quadrado com a seta para cima <span class="share-icon-pill">⎙</span>).
-            </div>
-          </div>
-          <div class="ios-step-item">
-            <div class="ios-step-num">2</div>
-            <div class="ios-step-text">
-              Role a lista de opções para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>.
-            </div>
-          </div>
-          <div class="ios-step-item">
-            <div class="ios-step-num">3</div>
-            <div class="ios-step-text">
-              Toque em <strong>"Adicionar"</strong> no canto superior direito. O ícone da barbearia ficará salvo como app nativo no seu iPhone!
-            </div>
-          </div>
-        </div>
-        <button type="button" class="btn btn-primary btn-block" id="dismiss-ios-modal" style="margin-top:18px">
-          Entendi, vou instalar
-        </button>
-      </div>
-    </div>
-
     <noscript>
       <div class="page-centered">
         <div class="auth-card">
@@ -189,20 +138,20 @@
       </div>
     </noscript>
 
-    <footer style="margin: 30px auto 20px; text-align: center; font-size: 0.8rem; color: #64748b; max-width: 480px; padding: 0 16px;">
-      <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
-        <a href="/termos.html" style="color: #64748b; text-decoration: underline;">Termos de Uso</a>
+    <footer class="booking-legal-footer">
+      <div class="booking-legal-links">
+        <a href="/termos.html">Termos de Uso</a>
         <span>&bull;</span>
-        <a href="/privacidade.html" style="color: #64748b; text-decoration: underline;">Privacidade (LGPD)</a>
+        <a href="/privacidade.html">Privacidade (LGPD)</a>
         <span>&bull;</span>
-        <a href="/cookies.html" style="color: #64748b; text-decoration: underline;">Cookies</a>
+        <a href="/cookies.html">Cookies</a>
         <span>&bull;</span>
-        <a href="/compliance.html" style="color: #64748b; text-decoration: underline;">Conformidade & DSR</a>
+        <a href="/compliance.html">Conformidade & DSR</a>
       </div>
       <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90</div>
     </footer>
 
-    <script type="module" src="/js/agendar.js"></script>
-    <script src="/js/consent.js"></script>
+    <script type="module" src="/js/agendar.js?v=20261114"></script>
+    <script src="/js/consent.js?v=20261114"></script>
   </body>
 </html>

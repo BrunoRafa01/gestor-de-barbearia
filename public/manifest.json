@@ -5,8 +5,8 @@
   "start_url": "/agendar",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#060709",
-  "theme_color": "#060709",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
   "orientation": "portrait",
   "categories": ["lifestyle", "business", "utilities"],
   "icons": [

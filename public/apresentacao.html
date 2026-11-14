@@ -2,269 +2,1415 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor de Barbearia SaaS | Nova Runtime Tecnologia</title>
-  <meta name="description" content="Plataforma comercial de agendamento online e gestão completa para barbearias modernas. Desenvolvido pela Nova Runtime.">
-  <link rel="stylesheet" href="/css/app.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06070A">
+  <title>Gestor de Barbearia | Operação em Tempo Real</title>
+  <meta name="description" content="Sistema de agendamento online, agenda por profissional e controle financeiro para barbearias.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/icon-192.png">
   <style>
-    .lp-body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      line-height: 1.6;
+    :root {
+      --bg-dark: #06070A;
+      --blue: #2563EB;
+      --blue-bright: #3B82F6;
+      --blue-soft: #60A5FA;
+      --blue-ice: #93C5FD;
+      --ice-bg: #F5F8FF;
+      --ice-card: #FFFFFF;
+      --ice-border: #E2E8F0;
+      --ink-dark: #09090B;
+      --ink-muted: #52525B;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
       margin: 0;
       padding: 0;
+      font-family: var(--font);
+      background: var(--bg-dark);
+      color: #F4F4F5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    .lp-header {
-      border-bottom: 1px solid var(--border);
-      background: rgba(8, 11, 18, 0.85);
-      backdrop-filter: blur(16px);
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ---------------- HERO ATMOSPHERE (BLACK -> ELECTRIC BLUE SWEEP) ---------------- */
+    .hero-band {
+      position: relative;
+      background:
+        radial-gradient(ellipse 88% 78% at 88% 94%, rgba(191, 219, 254, 0.95) 0%, rgba(96, 165, 250, 0.88) 22%, rgba(37, 99, 235, 0.72) 48%, rgba(15, 23, 42, 0.35) 68%, rgba(6, 7, 10, 0) 84%),
+        radial-gradient(ellipse 65% 55% at 68% 100%, rgba(37, 99, 235, 0.55) 0%, transparent 72%),
+        #06070A;
+      overflow: hidden;
+      padding-bottom: 136px;
+    }
+
+    .hero-band::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 165px;
+      background: linear-gradient(180deg, rgba(245, 248, 255, 0) 0%, rgba(245, 248, 255, 0.78) 60%, var(--ice-bg) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .hero-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 72px 72px;
+      -webkit-mask-image: radial-gradient(ellipse 92% 74% at 62% 38%, #000 22%, transparent 90%);
+      mask-image: radial-gradient(ellipse 92% 74% at 62% 38%, #000 22%, transparent 90%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-spotlight {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(480px circle at var(--mx, 72%) var(--my, 46%), rgba(96, 165, 250, 0.14), transparent 65%);
+      transition: opacity 250ms ease;
+    }
+
+    /* ---------------- HEADER ---------------- */
+    .lp-nav-bar {
       position: sticky;
       top: 0;
       z-index: 50;
-      padding: 16px 24px;
+      background: rgba(6, 7, 10, 0.74);
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .lp-header-inner {
-      max-width: 1100px;
+
+    .lp-nav-inner {
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 13px 28px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
+      gap: 24px;
     }
-    .lp-brand {
+
+    .lp-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      color: #FAFAFA;
+    }
+
+    .lp-logo-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: rgba(37, 99, 235, 0.18);
+      border: 1px solid rgba(96, 165, 250, 0.5);
+      display: grid;
+      place-items: center;
+      color: #60A5FA;
+    }
+
+    .lp-nav-links {
       display: flex;
       align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--text);
+      gap: 28px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #A1A1AA;
     }
-    .lp-hero {
-      max-width: 900px;
-      margin: 60px auto 40px;
-      padding: 0 24px;
-      text-align: center;
+
+    .lp-nav-links a {
+      transition: color 150ms var(--ease);
     }
-    .lp-badge {
+
+    .lp-nav-links a:hover {
+      color: #FFFFFF;
+    }
+
+    .lp-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav-ghost {
+      font-size: 13px;
+      font-weight: 500;
+      color: #E4E4E7;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+      transition: background 150ms var(--ease), border-color 150ms var(--ease);
+    }
+
+    .btn-nav-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .btn-nav-white {
+      font-size: 13px;
+      font-weight: 600;
+      color: #09090B;
+      padding: 8px 15px;
+      border-radius: 8px;
+      background: #FFFFFF;
+      border: 1px solid #FFFFFF;
+      transition: transform 120ms var(--ease), background 150ms var(--ease);
+    }
+
+    .btn-nav-white:hover {
+      background: #E2E8F0;
+    }
+
+    .btn-nav-white:active {
+      transform: scale(0.98);
+    }
+
+    /* ---------------- HERO CONTENT + KINETIC 3D STAGE ---------------- */
+    .hero-container {
+      position: relative;
+      z-index: 3;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 76px 28px 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      animation: fadeUp 520ms var(--ease) both;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #A1A1AA;
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .hero-badge strong {
+      color: #60A5FA;
+      font-weight: 600;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #60A5FA;
+      box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.6);
+      animation: pulseRing 2.2s infinite;
+    }
+
+    .hero-h1 {
+      margin: 0 0 20px;
+      font-size: clamp(2.9rem, 5.5vw, 4.5rem);
+      font-weight: 600;
+      line-height: 1.01;
+      letter-spacing: -0.045em;
+      animation: fadeUp 620ms var(--ease) 60ms both;
+    }
+
+    .hero-h1 .line-muted {
+      display: block;
+      color: #A1A1AA;
+    }
+
+    .hero-h1 .line-solid {
+      display: block;
+      color: #FFFFFF;
+    }
+
+    .hero-sub {
+      margin: 0 0 32px;
+      max-width: 48ch;
+      font-size: 16px;
+      line-height: 1.55;
+      color: #D4D4D8;
+      animation: fadeUp 680ms var(--ease) 120ms both;
+    }
+
+    .hero-cta-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      animation: fadeUp 740ms var(--ease) 180ms both;
+    }
+
+    .btn-split-blue {
+      display: inline-flex;
+      align-items: stretch;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #2563EB;
+      border: 1px solid rgba(191, 219, 254, 0.45);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 140ms var(--ease), background 160ms var(--ease), box-shadow 180ms var(--ease);
+    }
+
+    .btn-split-blue:hover {
+      background: #1D4ED8;
+      box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.7);
+    }
+
+    .btn-split-blue:active {
+      transform: scale(0.98);
+    }
+
+    .btn-split-label {
+      padding: 12px 18px;
+    }
+
+    .btn-split-arrow {
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.16);
+      display: grid;
+      place-items: center;
+      transition: transform 160ms var(--ease);
+    }
+
+    .btn-split-blue:hover .btn-split-arrow {
+      transform: translateX(2px);
+    }
+
+    .btn-hero-secondary {
+      padding: 12px 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(6, 7, 10, 0.45);
+      color: #FAFAFA;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 150ms var(--ease), border-color 150ms var(--ease);
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .hero-trust {
+      margin-top: 56px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 28px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.68);
+      animation: fadeUp 800ms var(--ease) 240ms both;
+    }
+
+    .hero-trust-item {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 14px;
-      background: rgba(59, 130, 246, 0.12);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: var(--primary-hover);
+    }
+
+    .hero-trust-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 999px;
+      background: #60A5FA;
+    }
+
+    /* ---------------- INTERACTIVE 3D ISOMETRIC STACK ---------------- */
+    .iso-stage {
+      position: relative;
+      height: 440px;
+      display: grid;
+      place-items: center;
+      perspective: 1300px;
+    }
+
+    .iso-crosshair {
+      position: absolute;
+      font-family: var(--font-mono);
       font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 24px;
+      color: rgba(255, 255, 255, 0.28);
+      pointer-events: none;
+      user-select: none;
     }
-    .lp-title {
-      font-size: clamp(2rem, 5vw, 3.4rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      color: #FFFFFF;
-      margin: 0 0 20px;
+
+    .iso-stack {
+      position: relative;
+      width: 310px;
+      height: 310px;
+      transform-style: preserve-3d;
+      transform: rotateX(58deg) rotateZ(-42deg);
+      transition: transform 220ms ease-out;
     }
-    .lp-subtitle {
-      font-size: 1.15rem;
-      color: var(--text-dim);
-      max-width: 720px;
-      margin: 0 auto 36px;
+
+    .iso-plane {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
     }
-    .lp-cta-row {
+
+    .iso-plane-1 {
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.24), rgba(15, 23, 42, 0.4)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 24px);
+      box-shadow: 0 28px 70px rgba(37, 99, 235, 0.42);
+      transform: translateZ(0px);
+      animation: isoFloat1 6.5s ease-in-out infinite;
+    }
+
+    .iso-plane-2 {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.38), rgba(147, 197, 253, 0.14));
+      border-color: rgba(147, 197, 253, 0.6);
+      backdrop-filter: blur(10px);
+      transform: translateZ(62px);
+      animation: isoFloat2 6.5s ease-in-out infinite;
       display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
     }
-    .lp-section {
-      max-width: 1100px;
-      margin: 80px auto;
-      padding: 0 24px;
+
+    .iso-plane-3 {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(59, 130, 246, 0.08));
+      border-color: rgba(255, 255, 255, 0.55);
+      transform: translateZ(128px);
+      animation: isoFloat3 6.5s ease-in-out infinite;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .lp-section-title {
-      text-align: center;
+
+    .iso-tag {
+      display: inline-block;
+      align-self: flex-start;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #FFFFFF;
+      background: rgba(37, 99, 235, 0.78);
+      border: 1px solid rgba(191, 219, 254, 0.65);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .iso-mini-bars {
+      display: grid;
+      gap: 8px;
+    }
+
+    .iso-mini-bar {
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    .iso-mini-bar.blue {
+      background: #BFDBFE;
+      width: 76%;
+    }
+
+    .iso-node-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #FFFFFF;
+      box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.35);
+      align-self: flex-end;
+    }
+
+    .iso-callout {
+      position: absolute;
+      right: 8px;
+      top: 38px;
+      background: rgba(6, 7, 10, 0.88);
+      border: 1px solid rgba(147, 197, 253, 0.38);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #FAFAFA;
+      backdrop-filter: blur(12px);
+      z-index: 4;
+      animation: fadeUp 800ms var(--ease) 260ms both;
+      min-width: 210px;
+    }
+
+    .iso-callout span {
+      display: block;
+      font-size: 9.5px;
+      color: #60A5FA;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .iso-callout-bottom {
+      position: absolute;
+      left: 10px;
+      bottom: 36px;
+      background: rgba(6, 7, 10, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #FAFAFA;
+      backdrop-filter: blur(12px);
+      z-index: 4;
+      animation: fadeUp 860ms var(--ease) 340ms both;
+    }
+
+    .iso-callout-bottom span {
+      display: block;
+      font-size: 9.5px;
+      color: #34D399;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* ---------------- ICE WHITE SECTION 1 (4-COLUMN INTERACTIVE DIAGRAMS) ---------------- */
+    .ice-section {
+      background: var(--ice-bg);
+      color: var(--ink-dark);
+      padding: 72px 28px 88px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .ice-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .ice-head {
+      max-width: 720px;
       margin-bottom: 48px;
     }
-    .lp-section-title h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      margin: 0 0 8px;
+
+    .ice-h2 {
+      margin: 0 0 14px;
+      font-size: clamp(2.1rem, 4vw, 3.35rem);
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      color: #09090B;
     }
-    .lp-section-title p {
-      color: var(--text-dim);
+
+    .ice-h2 span {
+      display: block;
+      color: #2563EB;
+    }
+
+    .ice-sub {
       margin: 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--ink-muted);
     }
-    .lp-grid-3 {
+
+    .four-col-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-    }
-    .lp-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--ice-border);
       border-radius: 16px;
-      padding: 28px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      background: var(--ice-card);
+      overflow: hidden;
+      box-shadow: 0 12px 32px -18px rgba(15, 23, 42, 0.08);
     }
-    .lp-card:hover {
-      border-color: var(--primary);
-      transform: translateY(-3px);
-    }
-    .lp-card-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
+
+    .four-col-item {
+      padding: 26px 22px 28px;
+      border-right: 1px solid var(--ice-border);
       display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+      transition: background 200ms var(--ease);
+    }
+
+    .four-col-item:last-child {
+      border-right: none;
+    }
+
+    .four-col-item:hover {
+      background: #F4F8FF;
+    }
+
+    .four-col-item svg polygon,
+    .four-col-item svg rect,
+    .four-col-item svg circle {
+      transition: transform 280ms var(--ease);
+    }
+
+    .four-col-item:hover .diag-lift {
+      transform: translateY(-6px);
+    }
+
+    .four-col-item:hover .diag-drop {
+      transform: translateY(4px);
+    }
+
+    .col-index {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748B;
+    }
+
+    .col-diagram {
+      height: 132px;
+      display: grid;
+      place-items: center;
+    }
+
+    .col-title {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #09090B;
+    }
+
+    .col-desc {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #52525B;
+    }
+
+    .ice-link-row {
+      margin-top: 22px;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      color: var(--primary);
-      margin-bottom: 18px;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #2563EB;
     }
-    .lp-card h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--text);
-      margin: 0 0 10px;
+
+    .ice-link-row:hover {
+      text-decoration: underline;
     }
-    .lp-card p {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-      line-height: 1.5;
+
+    /* ---------------- ICE WHITE SECTION 2 (INTERACTIVE TELEMETRY SHOWCASE) ---------------- */
+    .ice-analytics {
+      background: linear-gradient(180deg, var(--ice-bg) 0%, #EBF1FC 100%);
+      color: var(--ink-dark);
+      padding: 40px 28px 96px;
+    }
+
+    .ice-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .signal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #2563EB;
+      margin-top: 14px;
+    }
+
+    .period-switch {
+      display: inline-flex;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .period-btn {
+      border: none;
+      background: transparent;
+      color: #64748B;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 150ms var(--ease), color 150ms var(--ease);
+    }
+
+    .period-btn.active {
+      background: #2563EB;
+      color: #FFFFFF;
+    }
+
+    .analytics-bento {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.08fr;
+      gap: 16px;
+      margin-top: 32px;
+      align-items: stretch;
+    }
+
+    .ana-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 28px -14px rgba(15, 23, 42, 0.08);
+    }
+
+    .ana-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .ana-card-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    .ana-card-sub {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: #64748B;
+      text-transform: uppercase;
+    }
+
+    .ana-kpis {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 16px;
+    }
+
+    .ana-kpi strong {
+      display: block;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      font-variant-numeric: tabular-nums;
+      color: #09090B;
+    }
+
+    .ana-kpi span {
+      font-size: 11.5px;
+      color: #64748B;
+    }
+
+    .dot-matrix {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 6px;
+      padding-top: 8px;
+    }
+
+    .dot-cell {
+      aspect-ratio: 1;
+      border-radius: 999px;
+      background: #E2E8F0;
+      transition: transform 150ms var(--ease), background 150ms var(--ease);
+      cursor: crosshair;
+    }
+
+    .dot-cell:hover {
+      transform: scale(1.28);
+    }
+
+    .dot-cell.b1 { background: #BFDBFE; }
+    .dot-cell.b2 { background: #60A5FA; }
+    .dot-cell.b3 { background: #2563EB; }
+
+    .dot-tooltip {
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #475569;
+      min-height: 16px;
+    }
+
+    .digest-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .digest-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+      background: #F8FAFF;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 150ms var(--ease), background 150ms var(--ease), transform 120ms var(--ease);
+    }
+
+    .digest-item:hover,
+    .digest-item.active {
+      border-color: #3B82F6;
+      background: #EFF6FF;
+    }
+
+    .digest-item:active {
+      transform: scale(0.99);
+    }
+
+    .digest-item strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    .digest-item span {
+      font-size: 11.5px;
+      color: #64748B;
+    }
+
+    .digest-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #2563EB;
+      background: rgba(37, 99, 235, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    /* ---------------- DARK STUDIO GALLERY + FOOTER ---------------- */
+    .dark-studio-band {
+      background: #06070A;
+      color: #F4F4F5;
+      padding: 84px 28px 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .studio-pair {
+      display: grid;
+      grid-template-columns: 7fr 5fr;
+      gap: 16px;
+      margin-bottom: 52px;
+    }
+
+    .studio-photo-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      aspect-ratio: 16 / 9;
       margin: 0;
     }
-    .lp-footer {
-      border-top: 1px solid var(--border);
-      background: var(--bg-secondary);
-      padding: 48px 24px 32px;
-      text-align: center;
-      color: var(--text-dim);
-      font-size: 0.9rem;
+
+    .studio-photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 420ms var(--ease);
+    }
+
+    .studio-photo-card:hover img {
+      transform: scale(1.03);
+    }
+
+    .studio-photo-cap {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6, 7, 10, 0) 45%, rgba(6, 7, 10, 0.92) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 22px 24px;
+    }
+
+    .studio-photo-cap span {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #60A5FA;
+      margin-bottom: 4px;
+    }
+
+    .studio-photo-cap strong {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+    }
+
+    .lp-footer-bar {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 28px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 12.5px;
+      color: #71717A;
+    }
+
+    .lp-footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .lp-footer-links a:hover {
+      color: #60A5FA;
+    }
+
+    /* ---------------- REVEAL & KEYFRAMES ---------------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 460ms var(--ease), transform 460ms var(--ease);
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseRing {
+      0% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.65); }
+      70% { box-shadow: 0 0 0 6px rgba(96, 165, 250, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
+    }
+
+    @keyframes isoFloat1 {
+      0%, 100% { transform: translateZ(0px); }
+      50% { transform: translateZ(8px); }
+    }
+
+    @keyframes isoFloat2 {
+      0%, 100% { transform: translateZ(62px); }
+      50% { transform: translateZ(74px); }
+    }
+
+    @keyframes isoFloat3 {
+      0%, 100% { transform: translateZ(128px); }
+      50% { transform: translateZ(146px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    @media (max-width: 1024px) {
+      .hero-container { grid-template-columns: 1fr; padding-top: 48px; }
+      .four-col-grid { grid-template-columns: repeat(2, 1fr); }
+      .four-col-item { border-bottom: 1px solid var(--ice-border); }
+      .analytics-bento { grid-template-columns: 1fr; }
+      .studio-pair { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .lp-nav-links { display: none; }
+      .four-col-grid { grid-template-columns: 1fr; }
+      .four-col-item { border-right: none; }
+      .iso-stage { height: 320px; }
+      .iso-stack { width: 220px; height: 220px; }
     }
   </style>
 </head>
-<body class="lp-body">
-  <header class="lp-header">
-    <div class="lp-header-inner">
-      <a href="/" class="lp-brand">
-        <div class="brand-mark" style="background:var(--primary);color:#FFFFFF">NR</div>
-        <div>
-          <strong style="color:var(--text);font-size:15px">Nova Runtime</strong>
-          <span style="display:block;font-size:11px;color:var(--text-dim)">Gestor de Barbearia SaaS</span>
-        </div>
+<body>
+  <header class="lp-nav-bar">
+    <div class="lp-nav-inner">
+      <a href="/apresentacao.html" class="lp-logo">
+        <span class="lp-logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/>
+            <line x1="20" y1="4" x2="8.2" y2="15.8"/><line x1="14.5" y1="14.5" x2="20" y2="20"/>
+          </svg>
+        </span>
+        <span>Gestor de Barbearia</span>
       </a>
-      <div style="display:flex;gap:12px;align-items:center">
-        <a href="/agendar" class="btn btn-ghost btn-sm">Ver Agendamento</a>
-        <a href="/" class="btn btn-primary btn-sm">Painel Administrativo</a>
+
+      <nav class="lp-nav-links" aria-label="Navegação principal">
+        <a href="#fluxo">Fluxo</a>
+        <a href="#telemetria">Operação</a>
+        <a href="#estudio">Estúdio</a>
+        <a href="/agendar">Agendar</a>
+      </nav>
+
+      <div class="lp-nav-actions">
+        <a href="/" class="btn-nav-ghost">Painel</a>
+        <a href="/agendar" class="btn-nav-white">Ver agendamento</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="lp-hero">
-      <div class="lp-badge">
-        <span>⚡ Tecnologia Nova Runtime</span> &bull; <span>Pronto para Barbearias Reais</span>
-      </div>
-      <h1 class="lp-title">
-        Transforme o Instagram da sua barbearia em uma <span style="color:var(--primary)">máquina de agendamentos</span>
-      </h1>
-      <p class="lp-subtitle">
-        Sem obrigar seu cliente a baixar aplicativos ou criar senhas. Agendamento em 4 etapas pelo celular, controle financeiro em tempo real e reputação autêntica.
-      </p>
-      <div class="lp-cta-row">
-        <a href="/agendar" class="btn btn-primary btn-lg" style="padding:14px 28px;font-size:15px">
-          Experimentar Agendamento ao Vivo &rarr;
-        </a>
-        <a href="/" class="btn btn-ghost btn-lg" style="padding:14px 28px;font-size:15px">
-          Acessar Painel do Barbeiro
-        </a>
-      </div>
-    </section>
+    <!-- HERO BAND: BLACK -> ELECTRIC BLUE -> ICE WHITE -->
+    <section class="hero-band" id="hero-band">
+      <div class="hero-grid-lines" aria-hidden="true"></div>
+      <div class="hero-spotlight" id="hero-spotlight" aria-hidden="true"></div>
 
-    <section class="lp-section">
-      <div class="lp-section-title">
-        <h2>Por que o barbeiro moderno escolhe este sistema?</h2>
-        <p>Desenvolvido para eliminar faltas, organizar o caixa e encantar o cliente desde o primeiro toque.</p>
-      </div>
-
-      <div class="lp-grid-3">
-        <div class="lp-card">
-          <div class="lp-card-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      <div class="hero-container">
+        <div>
+          <div class="hero-badges">
+            <span class="hero-badge"><i class="pulse-dot"></i><strong>AO VIVO</strong> · AGENDA ONLINE</span>
+            <span class="hero-badge">GESTÃO DE BARBEARIA</span>
           </div>
-          <h3>Agendamento Mobile Sem Barreiras</h3>
-          <p>O cliente acessa pelo link da Bio do Instagram e marca em menos de 1 minuto. Sem logins complexos, direto para o serviço e barbeiro preferido.</p>
+
+          <h1 class="hero-h1">
+            <span class="line-muted">Agendada antes</span>
+            <span class="line-solid">de virar fila.</span>
+          </h1>
+
+          <p class="hero-sub">
+            Reserve corte e barba pelo link da bio em segundos e acompanhe ocupação, comissões e faturamento em tempo real no painel.
+          </p>
+
+          <div class="hero-cta-wrap">
+            <a href="/agendar" class="btn-split-blue">
+              <span class="btn-split-label">Testar agendamento</span>
+              <span class="btn-split-arrow" aria-hidden="true">→</span>
+            </a>
+            <a href="/" class="btn-hero-secondary">Acessar painel</a>
+          </div>
+
+          <div class="hero-trust">
+            <span class="hero-trust-item"><i class="hero-trust-dot"></i>Link direto na bio</span>
+            <span class="hero-trust-item"><i class="hero-trust-dot"></i>Trava anti-conflito</span>
+            <span class="hero-trust-item"><i class="hero-trust-dot"></i>Repasse por barbeiro</span>
+          </div>
         </div>
 
-        <div class="lp-card">
-          <div class="lp-card-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <h3>Integração WhatsApp &amp; Calendário</h3>
-          <p>Confirmação automática de presença, botão de conversa direta e download de compromisso (.ics) para sincronizar com Google Calendar e Apple Calendar.</p>
-        </div>
+        <div class="iso-stage" id="iso-stage" aria-hidden="true">
+          <span class="iso-crosshair" style="top:18px;left:24px">+</span>
+          <span class="iso-crosshair" style="bottom:20px;right:24px">+</span>
 
-        <div class="lp-card">
-          <div class="lp-card-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+          <div class="iso-callout">
+            <span id="live-ticker-tag">Horário reservado</span>
+            <strong id="live-ticker-text" style="font-weight:500">10:30 · Degradê + Barba</strong>
           </div>
-          <h3>Controle Financeiro &amp; Comissões</h3>
-          <p>Separação clara entre receita prevista e realizada. Cálculo transparente de comissões por barbeiro, fechamento de caixa e ticket médio real.</p>
-        </div>
 
-        <div class="lp-card">
-          <div class="lp-card-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div class="iso-stack" id="iso-stack">
+            <div class="iso-plane iso-plane-1"></div>
+            <div class="iso-plane iso-plane-2">
+              <span class="iso-tag">Ocupação · 84%</span>
+              <div class="iso-mini-bars">
+                <div class="iso-mini-bar blue"></div>
+                <div class="iso-mini-bar" style="width:48%"></div>
+              </div>
+            </div>
+            <div class="iso-plane iso-plane-3">
+              <span class="iso-tag">Cadeira 01 · Carlos</span>
+              <div class="iso-node-dot"></div>
+            </div>
           </div>
-          <h3>Proteção Atômica contra Duplicidade</h3>
-          <p>Trava rigorosa no banco de dados que impede agendamentos simultâneos ou horários conflitantes para o mesmo profissional.</p>
-        </div>
 
-        <div class="lp-card">
-          <div class="lp-card-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="iso-callout-bottom">
+            <span>Confirmação instantânea</span>
+            WhatsApp + Calendário (.ics)
           </div>
-          <h3>Galeria de Cortes &amp; Reviews</h3>
-          <p>Apresentação dos estilos da casa (Degradê, Barboterapia, Social) e avaliações autênticas de clientes verificados que trazem credibilidade ao negócio.</p>
-        </div>
-
-        <div class="lp-card">
-          <div class="lp-card-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h3>40 Requisitos de Segurança &amp; LGPD</h3>
-          <p>Portal DSR para portabilidade de dados, cookie banner de consentimento, termos de uso em conformidade com o CDC e trilha de auditoria para administradores.</p>
         </div>
       </div>
     </section>
 
-    <section class="lp-section" style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 32px;text-align:center">
-      <h2 style="font-size:2rem;font-weight:800;color:#FFFFFF;margin:0 0 12px">Pronto para elevar o nível da sua barbearia?</h2>
-      <p style="color:var(--text-dim);max-width:600px;margin:0 auto 28px">
-        Entre em contato com os especialistas de engenharia da Nova Runtime e solicite uma demonstração exclusiva com a identidade da sua marca.
-      </p>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-        <a href="mailto:contato@novaruntime.com.br" class="btn btn-primary btn-lg">Falar com a Nova Runtime</a>
-        <a href="/agendar" class="btn btn-ghost btn-lg">Testar Agendamento</a>
+    <!-- ICE WHITE SECTION 1: 4-COLUMN TECHNICAL DIAGRAM GRID -->
+    <section class="ice-section" id="fluxo">
+      <div class="ice-inner">
+        <div class="ice-head reveal">
+          <h2 class="ice-h2">
+            Feito para os horários
+            <span>que realmente importam</span>
+          </h2>
+          <p class="ice-sub">
+            O sistema organiza sua bancada da reserva até o fechamento do caixa, sem ruído e sem aplicativo para o cliente baixar.
+          </p>
+        </div>
+
+        <div class="four-col-grid reveal">
+          <article class="four-col-item">
+            <span class="col-index">01 / Link da Bio</span>
+            <div class="col-diagram" aria-hidden="true">
+              <svg viewBox="0 0 140 100" width="140" height="100" fill="none">
+                <polygon class="diag-lift" points="70,12 122,38 70,64 18,38" stroke="#94A3B8" stroke-width="1.2" fill="#F8FAFC"/>
+                <polygon points="70,28 122,54 70,80 18,54" stroke="#3B82F6" stroke-width="1.5" fill="rgba(59,130,246,0.09)"/>
+                <polygon class="diag-drop" points="70,44 122,70 70,96 18,70" stroke="#CBD5E1" stroke-width="1.2" fill="none"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="col-title">Reserva em 4 passos</h3>
+              <p class="col-desc">Serviço, barbeiro, horário livre e confirmação imediata direto do celular.</p>
+            </div>
+          </article>
+
+          <article class="four-col-item">
+            <span class="col-index">02 / Anti-Conflito</span>
+            <div class="col-diagram" aria-hidden="true">
+              <svg viewBox="0 0 140 100" width="140" height="100" fill="none">
+                <rect x="24" y="22" width="40" height="24" rx="4" stroke="#94A3B8" stroke-width="1.2" fill="#FFFFFF"/>
+                <rect class="diag-lift" x="76" y="54" width="40" height="24" rx="4" stroke="#2563EB" stroke-width="1.5" fill="rgba(37,99,235,0.09)"/>
+                <path d="M64 34 H86 V54" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <circle class="diag-lift" cx="96" cy="66" r="4" fill="#2563EB"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="col-title">Horário travado no banco</h3>
+              <p class="col-desc">Validação atômica impede dois clientes no mesmo minuto e profissional.</p>
+            </div>
+          </article>
+
+          <article class="four-col-item">
+            <span class="col-index">03 / Repasse</span>
+            <div class="col-diagram" aria-hidden="true">
+              <svg viewBox="0 0 140 100" width="140" height="100" fill="none">
+                <circle cx="42" cy="30" r="5" stroke="#94A3B8" stroke-width="1.2"/>
+                <circle cx="70" cy="30" r="5" stroke="#94A3B8" stroke-width="1.2"/>
+                <circle cx="98" cy="30" r="5" stroke="#94A3B8" stroke-width="1.2"/>
+                <path d="M42 35 L70 65 M70 35 V65 M98 35 L70 65" stroke="#94A3B8" stroke-width="1.1"/>
+                <circle class="diag-lift" cx="70" cy="70" r="9" fill="#2563EB"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="col-title">Comissão automática</h3>
+              <p class="col-desc">Cada atendimento concluído calcula exatamente a parte da casa e do barbeiro.</p>
+            </div>
+          </article>
+
+          <article class="four-col-item">
+            <span class="col-index">04 / Retenção</span>
+            <div class="col-diagram" aria-hidden="true">
+              <svg viewBox="0 0 140 100" width="140" height="100" fill="none">
+                <polygon class="diag-lift" points="70,18 110,38 70,58 30,38" stroke="#94A3B8" stroke-width="1.2" fill="#FFFFFF"/>
+                <circle class="diag-lift" cx="70" cy="38" r="10" stroke="#2563EB" stroke-width="1.5" fill="rgba(37,99,235,0.1)"/>
+                <path d="M44 68 H96" stroke="#CBD5E1" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M52 78 H88" stroke="#93C5FD" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="col-title">Menos faltas na cadeira</h3>
+              <p class="col-desc">Lembretes pelo WhatsApp com link único para reagendar sem ligar.</p>
+            </div>
+          </article>
+        </div>
+
+        <a href="/agendar" class="ice-link-row">Explorar fluxo de agendamento →</a>
+      </div>
+    </section>
+
+    <!-- ICE WHITE SECTION 2: INTERACTIVE TELEMETRY & LIVE DIGEST -->
+    <section class="ice-analytics" id="telemetria">
+      <div class="ice-inner">
+        <div class="ice-top-bar reveal">
+          <div class="ice-head" style="margin-bottom:0">
+            <h2 class="ice-h2">
+              Sua equipe já sabe
+              <span>quem está na cadeira</span>
+            </h2>
+            <p class="ice-sub">
+              Acompanhe demanda por horário, receita prevista e fila do dia em uma única tela limpa.
+            </p>
+            <span class="signal-pill">● Operação sincronizada em tempo real</span>
+          </div>
+
+          <div class="period-switch" role="tablist" aria-label="Período de telemetria">
+            <button type="button" class="period-btn" data-period="7d">7d</button>
+            <button type="button" class="period-btn active" data-period="30d">30d</button>
+            <button type="button" class="period-btn" data-period="90d">90d</button>
+          </div>
+        </div>
+
+        <div class="analytics-bento reveal">
+          <!-- Card 1: Interactive Dot Matrix Heatmap -->
+          <div class="ana-card">
+            <div>
+              <div class="ana-card-head">
+                <span class="ana-card-title">Ocupação por Horário</span>
+                <span class="ana-card-sub" id="hm-period-label">Últimos 30 dias</span>
+              </div>
+              <div class="ana-kpis">
+                <div class="ana-kpi">
+                  <strong id="kpi-occ">84%</strong>
+                  <span>Taxa média</span>
+                </div>
+                <div class="ana-kpi">
+                  <strong id="kpi-appts">412</strong>
+                  <span>Atendimentos</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="dot-matrix" id="dot-matrix" aria-hidden="true"></div>
+              <div class="dot-tooltip" id="dot-tooltip">Passe o mouse nos pontos para ver o horário</div>
+            </div>
+          </div>
+
+          <!-- Card 2: Funnel Flow -->
+          <div class="ana-card">
+            <div>
+              <div class="ana-card-head">
+                <span class="ana-card-title">Funil de Confirmação</span>
+                <span class="ana-card-sub" id="fn-period-label">30 dias</span>
+              </div>
+              <div class="ana-kpis">
+                <div class="ana-kpi">
+                  <strong id="kpi-show">96,4%</strong>
+                  <span>Comparecimento</span>
+                </div>
+                <div class="ana-kpi">
+                  <strong id="kpi-rev">R$ 24.890</strong>
+                  <span>Receita no período</span>
+                </div>
+              </div>
+            </div>
+            <svg viewBox="0 0 280 96" width="100%" height="96" fill="none" aria-hidden="true">
+              <path d="M0 18 C70 18, 95 30, 140 30 C185 30, 210 24, 280 24 L280 72 C210 72, 185 66, 140 66 C95 66, 70 78, 0 78 Z" fill="rgba(37, 99, 235, 0.14)"/>
+              <path d="M0 32 C70 32, 95 40, 140 40 C185 40, 210 34, 280 34 L280 62 C210 62, 185 56, 140 56 C95 56, 70 64, 0 64 Z" fill="rgba(59, 130, 246, 0.28)"/>
+              <circle cx="52" cy="48" r="14" fill="#2563EB"/>
+              <circle cx="140" cy="48" r="11" fill="#3B82F6"/>
+              <circle cx="228" cy="48" r="13" fill="#1D4ED8"/>
+            </svg>
+          </div>
+
+          <!-- Card 3: Live Digest -->
+          <div class="ana-card">
+            <div class="ana-card-head">
+              <span class="ana-card-title">Resumo de Bancada</span>
+              <span class="ana-card-sub">Hoje</span>
+            </div>
+            <div class="digest-list">
+              <div class="digest-item active">
+                <div>
+                  <strong>09:30 · Lucas Mendes</strong>
+                  <span>Corte + Barba · Barbeiro Carlos</span>
+                </div>
+                <span class="digest-badge">R$ 85</span>
+              </div>
+              <div class="digest-item">
+                <div>
+                  <strong>10:30 · Rafael Souza</strong>
+                  <span>Degradê Navalhado · Carlos</span>
+                </div>
+                <span class="digest-badge">R$ 55</span>
+              </div>
+              <div class="digest-item">
+                <div>
+                  <strong>11:30 · Bruno Almeida</strong>
+                  <span>Barboterapia · Mateus</span>
+                </div>
+                <span class="digest-badge">R$ 45</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DARK STUDIO GALLERY + FOOTER -->
+    <section class="dark-studio-band" id="estudio">
+      <div class="ice-inner">
+        <div class="studio-pair reveal">
+          <figure class="studio-photo-card">
+            <img src="/img/barber-chair-studio.jpg?v=20261114e" alt="Estúdio de barbearia preto fosco com espelho iluminado em azul" loading="lazy">
+            <figcaption class="studio-photo-cap">
+              <span>Presença de marca</span>
+              <strong>Experiência de estúdio do link da bio até a cadeira</strong>
+            </figcaption>
+          </figure>
+          <figure class="studio-photo-card">
+            <img src="/img/barber-craft-tools.jpg?v=20261114e" alt="Tesoura e navalha de barbearia sobre pedra escura" loading="lazy">
+            <figcaption class="studio-photo-cap">
+              <span>Precisão operacional</span>
+              <strong>Cada atendimento e repasse registrado sem planilhas</strong>
+            </figcaption>
+          </figure>
+        </div>
+
+        <footer class="lp-footer-bar">
+          <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90</div>
+          <div class="lp-footer-links">
+            <a href="/agendar">Agendar</a>
+            <a href="/">Painel</a>
+            <a href="/termos.html">Termos</a>
+            <a href="/privacidade.html">Privacidade</a>
+            <a href="/transparencia.html">Transparência</a>
+            <a href="/compliance.html">Conformidade</a>
+          </div>
+        </footer>
       </div>
     </section>
   </main>
 
-  <footer class="lp-footer">
-    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">
-      <a href="/termos.html" style="color:var(--text-dim)">Termos de Uso</a>
-      <span>&bull;</span>
-      <a href="/privacidade.html" style="color:var(--text-dim)">Privacidade (LGPD)</a>
-      <span>&bull;</span>
-      <a href="/transparencia.html" style="color:var(--text-dim)">Transparência CDC</a>
-      <span>&bull;</span>
-      <a href="/compliance.html" style="color:var(--text-dim)">Conformidade</a>
-    </div>
-    <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90 &bull; Av. Modelo, 100, Cidade Fictícia - SP</div>
-  </footer>
+  <script>
+    (function () {
+      // 1. Cursor spotlight + subtle 3D parallax on hero isometric stack
+      const heroBand = document.getElementById('hero-band');
+      const spotlight = document.getElementById('hero-spotlight');
+      const isoStack = document.getElementById('iso-stack');
+      if (heroBand && spotlight) {
+        heroBand.addEventListener('mousemove', (e) => {
+          const rect = heroBand.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          spotlight.style.setProperty('--mx', x.toFixed(1) + '%');
+          spotlight.style.setProperty('--my', y.toFixed(1) + '%');
+          if (isoStack) {
+            const rx = 58 + ((y - 50) * 0.08);
+            const rz = -42 + ((x - 50) * 0.08);
+            isoStack.style.transform = `rotateX(${rx.toFixed(1)}deg) rotateZ(${rz.toFixed(1)}deg)`;
+          }
+        });
+      }
+
+      // 2. Live rotating booking ticker on the 3D stage
+      const tickerTag = document.getElementById('live-ticker-tag');
+      const tickerText = document.getElementById('live-ticker-text');
+      const tickerData = [
+        ['Horário reservado', '10:30 · Degradê + Barba'],
+        ['Cadeira 02 confirmada', '11:15 · Barboterapia · Mateus'],
+        ['Lembrete enviado', '14:00 · Corte Social · Carlos']
+      ];
+      let tIdx = 0;
+      setInterval(() => {
+        tIdx = (tIdx + 1) % tickerData.length;
+        if (tickerTag && tickerText) {
+          tickerTag.textContent = tickerData[tIdx][0];
+          tickerText.textContent = tickerData[tIdx][1];
+        }
+      }, 3200);
+
+      // 3. Interactive dot-matrix heatmap
+      const matrix = document.getElementById('dot-matrix');
+      const tooltip = document.getElementById('dot-tooltip');
+      const hours = ['09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h', '20h'];
+      const days = ['Ter', 'Qua', 'Qui', 'Sex'];
+      const levels = [0, 1, 2, 3, 2, 3, 3, 2, 1, 0, 2, 3, 1, 2, 3, 3, 2, 1, 2, 3, 3, 2, 1, 2, 0, 1, 2, 2, 3, 3, 2, 1, 2, 3, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 1, 2, 3];
+      if (matrix) {
+        levels.forEach((lvl, i) => {
+          const dot = document.createElement('span');
+          dot.className = 'dot-cell' + (lvl ? ` b${lvl}` : '');
+          const day = days[Math.floor(i / 12)];
+          const hour = hours[i % 12];
+          const pct = [22, 48, 76, 94][lvl];
+          dot.addEventListener('mouseenter', () => {
+            if (tooltip) tooltip.textContent = `${day} ${hour} · ${pct}% de ocupação nas cadeiras`;
+          });
+          matrix.appendChild(dot);
+        });
+      }
+
+      // 4. Period switcher (7d / 30d / 90d)
+      const periodStats = {
+        '7d': { label: 'Últimos 7 dias', short: '7 dias', occ: '89%', appts: '108', show: '97,2%', rev: 'R$ 6.480' },
+        '30d': { label: 'Últimos 30 dias', short: '30 dias', occ: '84%', appts: '412', show: '96,4%', rev: 'R$ 24.890' },
+        '90d': { label: 'Últimos 90 dias', short: '90 dias', occ: '86%', appts: '1.240', show: '95,8%', rev: 'R$ 74.120' }
+      };
+      document.querySelectorAll('.period-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.period-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          const s = periodStats[btn.dataset.period];
+          if (!s) return;
+          document.getElementById('hm-period-label').textContent = s.label;
+          document.getElementById('fn-period-label').textContent = s.short;
+          document.getElementById('kpi-occ').textContent = s.occ;
+          document.getElementById('kpi-appts').textContent = s.appts;
+          document.getElementById('kpi-show').textContent = s.show;
+          document.getElementById('kpi-rev').textContent = s.rev;
+        });
+      });
+
+      // 5. Interactive digest selection + scroll reveal
+      const items = document.querySelectorAll('.digest-item');
+      items.forEach((item) => {
+        item.addEventListener('click', () => {
+          items.forEach((i) => i.classList.remove('active'));
+          item.classList.add('active');
+        });
+      });
+
+      const reveals = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12 });
+        reveals.forEach((el) => io.observe(el));
+      } else {
+        reveals.forEach((el) => el.classList.add('in'));
+      }
+    })();
+  </script>
 </body>
 </html>

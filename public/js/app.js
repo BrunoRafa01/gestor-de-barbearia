@@ -429,22 +429,6 @@ async function viewDashboard() {
         .join('')}</div>`
     : emptyBlock('Nenhum agendamento neste dia', 'Clique em "Novo agendamento" para começar.');
 
-  const upcomingList = data.upcoming.length
-    ? `<div>${data.upcoming
-        .map(
-          (item) => `
-          <div class="list-row" data-appt="${item.id}" style="cursor:pointer">
-            <div class="avatar">${esc(initials(item.client_name))}</div>
-            <div class="grow">
-              <strong>${esc(item.client_name)}</strong>
-              <span>${esc(formatDateBR(item.date))} às ${esc(item.start_time)} - ${esc(item.barber_name)}</span>
-            </div>
-            ${statusPill(item.status)}
-          </div>`
-        )
-        .join('')}</div>`
-    : emptyBlock('Sem agendamentos futuros');
-
   const rankTable = (rows, emptyLabel) => {
     if (!rows.length) return `<div class="empty">${esc(emptyLabel)}</div>`;
     const maxVal = Math.max(...rows.map((r) => r.total || 1), 1);
@@ -468,107 +452,265 @@ async function viewDashboard() {
     ? Math.min(100, Math.round((today.revenue_realized / today.revenue_expected) * 100))
     : 0;
 
-  const dashOffset = (157 - (157 * occupancyPct) / 100).toFixed(1);
-  const needleAngle = -90 + (180 * occupancyPct) / 100;
+  const confirmPct = today.total ? Math.round((today.confirmed / today.total) * 100) : 0;
+  const completePct = today.total ? Math.round((today.completed / today.total) * 100) : 0;
+  const ticketPct = month.average_ticket ? Math.min(100, Math.max(12, Math.round((month.average_ticket / 120) * 100))) : 0;
+  const newClientsPct = month.new_clients
+    ? Math.min(100, Math.max(12, Math.round((month.new_clients / Math.max(month.total, 1)) * 100)))
+    : 0;
 
-  const heroBlock = `
-    <section class="v7-hero-grid">
-      <div class="v7-panel v7-card">
-        <div class="v7-panel-head">
+  const ringSvg = (pct, color) => {
+    const circ = 88;
+    const offset = (circ - (circ * Math.max(0, Math.min(100, pct))) / 100).toFixed(1);
+    return `
+      <svg class="finity-ring" viewBox="0 0 36 36" width="36" height="36" aria-hidden="true">
+        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3.2" />
+        <circle cx="18" cy="18" r="14" fill="none" stroke="${color}" stroke-width="3.2" stroke-linecap="round"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 18 18)" />
+      </svg>`;
+  };
+
+  const cancelledTotal = today.cancelled + today.no_show;
+  const statusSegments = [
+    { label: 'Confirmados', value: today.confirmed, color: '#2563EB' },
+    { label: 'Concluídos', value: today.completed, color: '#60A5FA' },
+    { label: 'Aguardando', value: today.pending, color: '#93C5FD' },
+    { label: 'Faltas/Canc.', value: cancelledTotal, color: '#334155' },
+  ];
+  const donutCirc = 289.03;
+  const donutTotal = statusSegments.reduce((acc, seg) => acc + seg.value, 0);
+  let donutOffset = 0;
+  const donutArcs = donutTotal
+    ? statusSegments
+        .filter((seg) => seg.value > 0)
+        .map((seg) => {
+          const segLen = (seg.value / donutTotal) * donutCirc;
+          const arc = `<circle cx="60" cy="60" r="46" fill="none" stroke="${seg.color}" stroke-width="12"
+            stroke-dasharray="${segLen.toFixed(2)} ${(donutCirc - segLen).toFixed(2)}"
+            stroke-dashoffset="${(-donutOffset).toFixed(2)}" transform="rotate(-90 60 60)" />`;
+          donutOffset += segLen;
+          return arc;
+        })
+        .join('')
+    : `<circle cx="60" cy="60" r="46" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12" />`;
+
+  const upcomingPreview = data.upcoming.length
+    ? `<div class="finity-tx-list">${data.upcoming
+        .slice(0, 4)
+        .map(
+          (item) => `
+          <div class="finity-tx-row" data-appt="${item.id}" role="button" tabindex="0">
+            <div class="avatar">${esc(initials(item.client_name))}</div>
+            <div class="finity-tx-meta">
+              <strong>${esc(item.client_name)}</strong>
+              <span>${esc(item.start_time)} · ${esc(item.barber_name)}</span>
+            </div>
+            ${statusPill(item.status)}
+          </div>`
+        )
+        .join('')}</div>`
+    : `<div class="finity-empty">Sem próximos agendamentos.</div>`;
+
+  const finityBento = `
+    <section class="finity-grid-top" aria-label="Resumo executivo">
+      <!-- Card 1: Resumo de Hoje -->
+      <article class="finity-card">
+        <div class="finity-card-head">
+          <span class="finity-label">Receita realizada hoje</span>
+          <span class="finity-badge">${realizedPct}% previsto</span>
+        </div>
+
+        <div class="finity-hero-val mono">${esc(money(today.revenue_realized))}</div>
+
+        <div class="finity-actions">
+          <button type="button" class="btn btn-primary btn-sm" id="finity-new-appt">+ Novo</button>
+          <button type="button" class="btn btn-sm" id="finity-open-agenda">Ver agenda</button>
+        </div>
+
+        <div class="finity-substats">
+          <div class="finity-substat">
+            <span>Previsto hoje</span>
+            <strong class="mono">${esc(money(today.revenue_expected))}</strong>
+          </div>
+          <div class="finity-substat">
+            <span>Semana</span>
+            <strong class="mono">${esc(money(week.revenue_expected))}</strong>
+          </div>
+        </div>
+
+        <div class="finity-progress-wrap">
+          <div class="finity-progress-head">
+            <span>Ocupação</span>
+            <strong class="mono">${rate === null ? '--' : `${occupancyPct}%`}</strong>
+          </div>
+          <div class="finity-progress-track">
+            <div class="finity-progress-fill" style="width:${occupancyPct}%"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: Faturamento & Movimento -->
+      <article class="finity-card">
+        <div class="finity-card-head">
           <div>
-            <div class="v7-panel-title">Faturamento & Movimento</div>
-            <div class="v7-panel-sub">${esc(formatDateLong(state.date))} · ${today.total} agendamento(s)</div>
+            <div class="finity-card-title">Faturamento &amp; Movimento</div>
+            <div class="finity-hero-val-sm mono">${esc(money(month.revenue_expected))}</div>
           </div>
-          <div class="v7-pill-group">
-            <span class="v7-pill-tab active">Receita</span>
-            <span class="v7-pill-tab">Hoje</span>
-            <span class="v7-pill-tab">Mês</span>
+          <div class="finity-head-right">
+            <span class="finity-period-pill">Mês / Hoje</span>
+            <div class="finity-legend-inline">
+              <span><i class="finity-dot" style="background:#3B82F6"></i>Realizado</span>
+              <span><i class="finity-dot" style="background:#60A5FA"></i>Previsto</span>
+            </div>
           </div>
         </div>
 
-        <svg viewBox="0 0 460 120" width="100%" height="120" preserveAspectRatio="none" aria-hidden="true" style="display:block">
-          <defs>
-            <linearGradient id="v7AreaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2563EB" stop-opacity="0.34" />
-              <stop offset="100%" stop-color="#2563EB" stop-opacity="0.02" />
-            </linearGradient>
-          </defs>
-          <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36 L460,120 L0,120 Z" fill="url(#v7AreaGrad)" />
-          <path d="M0,92 C55,86 85,54 140,62 C195,70 235,34 295,44 C355,54 395,24 460,36" fill="none" stroke="#4CD7F6" stroke-width="2.5" stroke-linecap="round" />
-        </svg>
-
-        <div class="v7-mini-grid-4">
-          <div class="v7-mini-stat"><span>Realizado hoje</span><strong>${esc(money(today.revenue_realized))}</strong></div>
-          <div class="v7-mini-stat"><span>Previsto hoje</span><strong>${esc(money(today.revenue_expected))}</strong></div>
-          <div class="v7-mini-stat"><span>Semana</span><strong>${esc(money(week.revenue_expected))}</strong></div>
-          <div class="v7-mini-stat"><span>Ticket médio</span><strong>${esc(money(month.average_ticket))}</strong></div>
-        </div>
-      </div>
-
-      <div class="v7-panel v7-card">
-        <div class="v7-panel-head">
-          <div>
-            <div class="v7-panel-title">Ocupação do Dia</div>
-            <div class="v7-panel-sub">${today.occupancy.barbers} profissional(is) ativo(s)</div>
-          </div>
-          <span class="pill pill-confirmed">${realizedPct}% receita</span>
-        </div>
-
-        <div class="v7-gauge-wrap">
-          <svg viewBox="0 0 140 85" width="160" height="96" aria-hidden="true">
-            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#252A34" stroke-width="11" stroke-linecap="round" />
-            <path d="M 20 72 A 50 50 0 0 1 120 72" fill="none" stroke="#2563EB" stroke-width="11" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="${dashOffset}" />
-            <g transform="translate(70,72) rotate(${needleAngle})">
-              <line x1="0" y1="0" x2="0" y2="-36" stroke="#DEE2F0" stroke-width="2.5" stroke-linecap="round" />
-              <circle cx="0" cy="0" r="4.5" fill="#4CD7F6" />
-            </g>
+        <div class="finity-chart-wrap">
+          <svg viewBox="0 0 420 132" width="100%" height="132" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="finityAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.28" />
+                <stop offset="100%" stop-color="#3B82F6" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="26" x2="420" y2="26" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
+            <line x1="0" y1="62" x2="420" y2="62" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
+            <line x1="0" y1="98" x2="420" y2="98" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
+            <path d="M0,96 C52,88 86,58 140,66 C194,74 232,38 286,46 C340,54 378,24 420,32 L420,124 L0,124 Z" fill="url(#finityAreaGrad)" />
+            <path d="M0,104 C58,98 92,76 146,82 C200,88 238,58 292,62 C346,66 382,42 420,48" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round" />
+            <path d="M0,96 C52,88 86,58 140,66 C194,74 232,38 286,46 C340,54 378,24 420,32" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" />
           </svg>
-          <div class="v7-gauge-pct">${rate === null ? '--' : `${occupancyPct}%`}</div>
-          <div class="v7-gauge-caption">Capacidade preenchida</div>
+          <div class="finity-chart-days">
+            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3: Capacidade & Turno -->
+      <article class="finity-card">
+        <div class="finity-card-head">
+          <span class="finity-card-title">Capacidade &amp; Turno</span>
+          <span class="finity-period-pill">${today.total} hoje</span>
         </div>
 
-        <div class="v7-mini-grid-3">
-          <div class="v7-mini-stat"><span>Aguardando</span><strong>${today.pending}</strong></div>
-          <div class="v7-mini-stat"><span>Confirmados</span><strong>${today.confirmed}</strong></div>
-          <div class="v7-mini-stat"><span>Concluídos</span><strong>${today.completed}</strong></div>
+        <div class="finity-studio-pass">
+          <div class="finity-pass-top">
+            <span class="finity-pass-tag">TURNO ATIVO</span>
+            <span class="finity-pass-date mono">${esc(formatDateBR(state.date))}</span>
+          </div>
+          <div class="finity-pass-main">
+            <strong>${today.occupancy.barbers} profissional(is)</strong>
+            <span>${today.total} agendamento(s) hoje</span>
+          </div>
         </div>
-      </div>
+
+        <div class="finity-progress-wrap" style="margin-top:16px">
+          <div class="finity-progress-head">
+            <span>Capacidade preenchida</span>
+            <strong class="mono">${rate === null ? '--' : `${occupancyPct}%`}</strong>
+          </div>
+          <div class="finity-progress-track">
+            <div class="finity-progress-fill" style="width:${occupancyPct}%"></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="finity-grid-bottom" aria-label="Indicadores e próximos atendimentos">
+      <!-- Card 4: Metas & Indicadores -->
+      <article class="finity-card">
+        <div class="finity-card-head">
+          <span class="finity-card-title">Metas &amp; Indicadores</span>
+          <span class="finity-period-pill">Hoje / Mês</span>
+        </div>
+        <div class="finity-goals-list">
+          <div class="finity-goal-row">
+            ${ringSvg(confirmPct, '#3B82F6')}
+            <div class="finity-goal-info">
+              <span>Confirmados hoje</span>
+              <strong class="mono">${today.confirmed} / ${today.total}</strong>
+            </div>
+            <span class="finity-goal-pct mono">${confirmPct}%</span>
+          </div>
+          <div class="finity-goal-row">
+            ${ringSvg(completePct, '#34D399')}
+            <div class="finity-goal-info">
+              <span>Concluídos hoje</span>
+              <strong class="mono">${today.completed} / ${today.total}</strong>
+            </div>
+            <span class="finity-goal-pct mono">${completePct}%</span>
+          </div>
+          <div class="finity-goal-row">
+            ${ringSvg(ticketPct, '#60A5FA')}
+            <div class="finity-goal-info">
+              <span>Ticket médio (mês)</span>
+              <strong class="mono">${esc(money(month.average_ticket))}</strong>
+            </div>
+            <span class="finity-goal-pct mono">${month.completed} atend.</span>
+          </div>
+          <div class="finity-goal-row">
+            ${ringSvg(newClientsPct, '#60A5FA')}
+            <div class="finity-goal-info">
+              <span>Novos clientes (mês)</span>
+              <strong class="mono">${month.new_clients}</strong>
+            </div>
+            <span class="finity-goal-pct mono">${newClientsPct}%</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 5: Status dos Agendamentos -->
+      <article class="finity-card">
+        <div class="finity-card-head">
+          <span class="finity-card-title">Status dos Agendamentos</span>
+        </div>
+        <div class="finity-donut-wrap">
+          <svg viewBox="0 0 120 120" width="124" height="124" aria-hidden="true">
+            ${donutArcs}
+          </svg>
+          <div class="finity-donut-center">
+            <span>Total</span>
+            <strong class="mono">${today.total}</strong>
+          </div>
+        </div>
+        <div class="finity-donut-legend">
+          ${statusSegments
+            .map(
+              (seg) => `
+            <div class="finity-legend-item">
+              <i class="finity-dot" style="background:${seg.color}"></i>
+              <span>${seg.label}</span>
+              <strong class="mono">${seg.value}</strong>
+            </div>`
+            )
+            .join('')}
+        </div>
+      </article>
+
+      <!-- Card 6: Próximos na Agenda -->
+      <article class="finity-card">
+        <div class="finity-card-head">
+          <span class="finity-card-title">Próximos na Agenda</span>
+          <span class="finity-period-pill">${data.upcoming.length}</span>
+        </div>
+        ${upcomingPreview}
+      </article>
     </section>`;
 
   content().innerHTML = `
     ${notice}
     ${quickActionsBar}
-    ${heroBlock}
-
-    <div class="grid grid-kpi" style="margin-top:16px">
-      ${kpi({ label: 'Agendamentos do dia', value: today.total, iconName: 'calendar', foot: `${today.pending} aguardando - ${today.confirmed} confirmados` })}
-      ${kpi({ label: 'Receita prevista', value: esc(money(today.revenue_expected)), small: true, iconName: 'wallet', foot: 'Agendamentos ativos de hoje' })}
-      ${kpi({ label: 'Receita realizada', value: esc(money(today.revenue_realized)), small: true, iconName: 'chart', foot: `${today.completed} concluído(s)` })}
-      ${kpi({ label: 'Faltas e cancelamentos', value: today.cancelled + today.no_show, iconName: 'ban', foot: `${today.cancelled} cancelado(s) - ${today.no_show} falta(s)` })}
-    </div>
-
-    <div class="grid grid-kpi" style="margin-top:16px">
-      ${kpi({ label: 'Esta semana', value: week.total, foot: `Previsto: ${esc(money(week.revenue_expected))}` })}
-      ${kpi({ label: 'Este mês', value: month.total, foot: `Previsto: ${esc(money(month.revenue_expected))}` })}
-      ${kpi({ label: 'Ticket médio (mês)', value: esc(money(month.average_ticket)), small: true, foot: `${month.completed} atendimentos concluídos` })}
-      ${kpi({ label: 'Novos clientes (mês)', value: month.new_clients })}
-    </div>
+    ${finityBento}
 
     ${dayNav}
 
-    <div class="grid grid-2">
-      <div class="card">
-        <div class="card-header">
-          <h2>Agenda do dia</h2>
-          <span class="spacer"></span>
-          <button class="btn btn-sm" id="dash-open-agenda" type="button">Abrir agenda</button>
-        </div>
-        ${todayTimeline}
+    <div class="card">
+      <div class="card-header">
+        <h2>Agenda do dia</h2>
+        <span class="spacer"></span>
+        <button class="btn btn-sm" id="dash-open-agenda" type="button">Abrir agenda</button>
       </div>
-      <div class="card">
-        <div class="card-header"><h2>Próximos agendamentos</h2></div>
-        ${upcomingList}
-      </div>
+      ${todayTimeline}
     </div>
 
     <div class="grid grid-2" style="margin-top:16px">
@@ -589,6 +731,19 @@ async function viewDashboard() {
         ${rankTable(data.top_barbers, 'Nenhum atendimento no mês.')}
       </div>
     </div>`;
+
+  const finityNewAppt = document.getElementById('finity-new-appt');
+  if (finityNewAppt) {
+    finityNewAppt.addEventListener('click', () => {
+      openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
+    });
+  }
+  const finityOpenAgenda = document.getElementById('finity-open-agenda');
+  if (finityOpenAgenda) {
+    finityOpenAgenda.addEventListener('click', () => {
+      location.hash = '#/agenda';
+    });
+  }
 
   const gotoDay = (iso) => {
     state.date = iso;

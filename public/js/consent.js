@@ -34,12 +34,12 @@
       right: 20px;
       max-width: 680px;
       margin: 0 auto;
-      background: #0f172a;
-      color: #f8fafc;
-      border: 1px solid #334155;
+      background: #111216;
+      color: #F4F4F5;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
       z-index: 99999;
       font-family: inherit;
       line-height: 1.5;
@@ -49,35 +49,34 @@
       <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
         <div>
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <span style="font-size: 1.25rem;">🍪</span>
-            <strong style="font-size: 1.05rem; color: #fff;">Privacidade & Cookies (LGPD)</strong>
+            <strong style="font-size: 1.05rem; color: #F4F4F5;">Privacidade & Cookies (LGPD)</strong>
           </div>
-          <p style="font-size: 0.88rem; color: #94a3b8; margin: 0 0 16px 0;">
-            Utilizamos cookies essenciais para autenticação e segurança. Você pode personalizar o uso de cookies opcionais para análise e melhoria de experiência. Saiba mais em nossa <a href="/privacidade.html" style="color: #38bdf8; text-decoration: underline;">Política de Privacidade</a> e <a href="/cookies.html" style="color: #38bdf8; text-decoration: underline;">Política de Cookies</a>.
+          <p style="font-size: 0.88rem; color: #A1A1AA; margin: 0 0 16px 0;">
+            Utilizamos cookies essenciais para autenticação e segurança. Você pode personalizar o uso de cookies opcionais para análise e melhoria de experiência. Saiba mais em nossa <a href="/privacidade.html" style="color: #60A5FA; text-decoration: underline;">Política de Privacidade</a> e <a href="/cookies.html" style="color: #60A5FA; text-decoration: underline;">Política de Cookies</a>.
           </p>
         </div>
       </div>
 
-      <div id="consent-custom-options" style="display: none; margin-bottom: 16px; padding: 12px; background: #1e293b; border-radius: 8px; font-size: 0.82rem;">
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #e2e8f0;">
+      <div id="consent-custom-options" style="display: none; margin-bottom: 16px; padding: 12px; background: #17181E; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; font-size: 0.82rem;">
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #F4F4F5;">
           <input type="checkbox" checked disabled> <strong>Essenciais (Segurança e Sessão):</strong> Obrigatórios para o funcionamento da plataforma.
         </label>
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #e2e8f0; cursor: pointer;">
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #F4F4F5; cursor: pointer;">
           <input type="checkbox" id="consent-opt-analytics" checked> <strong>Analíticos:</strong> Métricas anônimas de uso e performance.
         </label>
-        <label style="display: flex; align-items: center; gap: 8px; color: #e2e8f0; cursor: pointer;">
+        <label style="display: flex; align-items: center; gap: 8px; color: #F4F4F5; cursor: pointer;">
           <input type="checkbox" id="consent-opt-marketing"> <strong>Comunicação e WhatsApp:</strong> Lembretes opcionais e novidades.
         </label>
       </div>
 
       <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; align-items: center;">
-        <button id="consent-btn-custom" style="background: transparent; color: #94a3b8; border: 1px solid #475569; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+        <button id="consent-btn-custom" style="background: transparent; color: #A1A1AA; border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
           ⚙️ Personalizar
         </button>
-        <button id="consent-btn-reject" style="background: #334155; color: #f1f5f9; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+        <button id="consent-btn-reject" style="background: #1F2128; color: #F4F4F5; border: 1px solid rgba(255, 255, 255, 0.08); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
           Apenas Necessários
         </button>
-        <button id="consent-btn-accept" style="background: #0284c7; color: #ffffff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+        <button id="consent-btn-accept" style="background: #3B82F6; color: #FFFFFF; border: none; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
           Aceitar Todos
         </button>
       </div>

@@ -3,105 +3,141 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090B">
   <title>Portal de Conformidade e Direitos do Titular (LGPD) | Gestor de Barbearia</title>
   <link rel="stylesheet" href="/css/app.css">
   <link rel="icon" type="image/png" href="/icon-192.png">
   <style>
-    .comp-container { max-width: 920px; margin: 40px auto; padding: 0 20px; color: #1e293b; }
-    .card { background: #fff; border-radius: 16px; padding: 32px; border: 1px solid #e2e8f0; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .badge-success { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; }
-    .input-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; font-size: 0.95rem; }
-    .btn-primary { background: #0284c7; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: background 0.2s; }
-    .btn-primary:hover { background: #0369a1; }
-    .btn-outline { background: transparent; color: #0284c7; border: 1px solid #0284c7; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    body { background: #09090B; color: #A1A1AA; min-height: 100vh; }
+    .comp-container { max-width: 920px; margin: 40px auto; padding: 0 20px; color: #A1A1AA; }
+    .comp-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .comp-title { font-size: 1.875rem; font-weight: 800; color: #F4F4F5; letter-spacing: -0.02em; margin: 0; }
+    .comp-subtitle { color: #71717A; font-size: 0.875rem; margin-top: 4px; }
+    .comp-back { font-size: 0.875rem; font-weight: 600; color: #60A5FA; text-decoration: none; }
+    .comp-back:hover { text-decoration: underline; }
+    .card { background: #111216; border-radius: 16px; padding: 32px; border: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 24px; box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.55); }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 16px; margin-bottom: 16px; }
+    .card-head h2 { font-size: 1.25rem; font-weight: 700; color: #F4F4F5; margin: 0; }
+    .card-head p { font-size: 0.875rem; color: #A1A1AA; margin-top: 4px; }
+    .badge-success { background: rgba(59, 130, 246, 0.12); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.28); padding: 4px 10px; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; white-space: nowrap; }
+    .field-label { display: block; font-size: 0.75rem; font-weight: 700; color: #A1A1AA; text-transform: uppercase; letter-spacing: 0.04em; }
+    .input-field { width: 100%; padding: 10px 14px; border-radius: 8px; background: #17181E; color: #F4F4F5; border: 1px solid rgba(255, 255, 255, 0.08); margin-top: 6px; font-size: 0.95rem; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+    .input-field:focus { border-color: #3B82F6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35); }
+    .input-field::placeholder { color: #71717A; }
+    .btn-primary { background: #3B82F6; color: #FFFFFF; padding: 12px 20px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: background 0.15s ease, transform 0.1s ease; white-space: nowrap; }
+    .btn-primary:hover { background: #2563EB; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-outline { background: transparent; color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.35); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .export-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .export-form .field-wrap { flex: 1 1 240px; }
+    .dsr-form { display: flex; flex-direction: column; gap: 16px; }
+    .dsr-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
-    .req-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.85rem; }
-    .req-item strong { display: block; color: #0f172a; margin-bottom: 2px; }
+    .req-item { background: #17181E; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #A1A1AA; }
+    .req-item strong { display: block; color: #F4F4F5; margin-bottom: 2px; }
+    .hidden { display: none !important; }
+    .block { display: block; }
+    .mt-4 { margin-top: 16px; }
+    .p-3 { padding: 12px; }
+    .p-4 { padding: 16px; }
+    .rounded-lg { border-radius: 8px; }
+    .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-slate-400, .text-slate-500, .text-slate-600 { color: #A1A1AA; }
+    .bg-blue-50 { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.28); }
+    .text-blue-700 { color: #60A5FA; }
+    .bg-emerald-50 { background: rgba(52, 211, 153, 0.10); border: 1px solid rgba(52, 211, 153, 0.28); }
+    .text-emerald-800, .text-emerald-900, .text-emerald-700 { color: #34D399; }
+    .bg-emerald-100 { background: rgba(52, 211, 153, 0.12); }
+    .bg-rose-50 { background: rgba(251, 113, 133, 0.10); border: 1px solid rgba(251, 113, 133, 0.28); }
+    .text-rose-800 { color: #FB7185; }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body>
   <div class="comp-container">
-    <div class="flex items-center justify-between mb-6">
+    <div class="comp-header">
       <div>
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Portal de Conformidade e Direitos LGPD</h1>
-        <p class="text-slate-500 text-sm mt-1">Transparência, Segurança da Informação e Exercício dos Direitos do Titular</p>
+        <h1 class="comp-title">Portal de Conformidade e Direitos LGPD</h1>
+        <p class="comp-subtitle">Transparência, Segurança da Informação e Exercício dos Direitos do Titular</p>
       </div>
-      <a href="/" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Voltar ao Sistema</a>
+      <a href="/" class="comp-back">&larr; Voltar ao Sistema</a>
     </div>
 
     <!-- Card 1: Portabilidade e Exportação de Dados -->
     <div class="card">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+      <div class="card-head">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">1. Portabilidade e Acesso aos Dados (Art. 18, V LGPD)</h2>
-          <p class="text-sm text-slate-500">Baixe instantaneamente um arquivo JSON com todos os seus agendamentos e registros.</p>
+          <h2>1. Portabilidade e Acesso aos Dados (Art. 18, V LGPD)</h2>
+          <p>Baixe instantaneamente um arquivo JSON com todos os seus agendamentos e registros.</p>
         </div>
         <span class="badge-success">Self-Service</span>
       </div>
-      <form id="exportForm" class="flex flex-col sm:flex-row gap-3 items-end">
-        <div class="flex-1">
-          <label class="block text-xs font-bold text-slate-600 uppercase">Seu Telefone (com DDD)</label>
+      <form id="exportForm" class="export-form">
+        <div class="field-wrap">
+          <label class="field-label">Seu Telefone (com DDD)</label>
           <input type="tel" id="exportPhone" required placeholder="(11) 99999-9999" class="input-field">
         </div>
-        <button type="submit" class="btn-primary whitespace-nowrap">📥 Baixar Meus Dados (JSON)</button>
+        <button type="submit" class="btn-primary">Baixar Meus Dados (JSON)</button>
       </form>
       <div id="exportResult" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
     </div>
 
     <!-- Card 2: Formulario DSR (Exclusao, Retificacao, Revogacao) -->
     <div class="card">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+      <div class="card-head">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">2. Requisição de Direitos do Titular (DSR)</h2>
-          <p class="text-sm text-slate-500">Solicite exclusão, correção, confirmação de tratamento ou revogação de consentimento.</p>
+          <h2>2. Requisição de Direitos do Titular (DSR)</h2>
+          <p>Solicite exclusão, correção, confirmação de tratamento ou revogação de consentimento.</p>
         </div>
         <span class="badge-success">Prazo Legal 15 dias</span>
       </div>
-      <form id="dsrForm" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form id="dsrForm" class="dsr-form">
+        <div class="dsr-row">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase">Nome Completo</label>
+            <label class="field-label">Nome Completo</label>
             <input type="text" id="dsrName" required placeholder="Seu nome" class="input-field">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase">Telefone (WhatsApp)</label>
+            <label class="field-label">Telefone (WhatsApp)</label>
             <input type="tel" id="dsrPhone" required placeholder="(11) 99999-9999" class="input-field">
           </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="dsr-row">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase">E-mail para Resposta</label>
+            <label class="field-label">E-mail para Resposta</label>
             <input type="email" id="dsrEmail" placeholder="seu@email.com (opcional)" class="input-field">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase">Tipo de Solicitação</label>
-            <select id="dsrType" required class="input-field bg-white">
-              <option value="exclusao">🗑️ Exclusão de Dados Cadastrais</option>
-              <option value="correcao">✏️ Correção / Retificação de Dados</option>
-              <option value="anonimizacao">🔒 Anonimização ou Bloqueio</option>
-              <option value="acesso">👁️ Acesso e Informação sobre Compartilhamento</option>
-              <option value="revogacao">🚫 Revogação de Consentimento</option>
+            <label class="field-label">Tipo de Solicitação</label>
+            <select id="dsrType" required class="input-field">
+              <option value="exclusao">Exclusão de Dados Cadastrais</option>
+              <option value="correcao">Correção / Retificação de Dados</option>
+              <option value="anonimizacao">Anonimização ou Bloqueio</option>
+              <option value="acesso">Acesso e Informação sobre Compartilhamento</option>
+              <option value="revogacao">Revogação de Consentimento</option>
             </select>
           </div>
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase">Detalhes Adicionais (opcional)</label>
+          <label class="field-label">Detalhes Adicionais (opcional)</label>
           <textarea id="dsrMessage" rows="2" placeholder="Descreva sua solicitação se necessário..." class="input-field"></textarea>
         </div>
-        <button type="submit" class="btn-primary">Enviar Solicitação Formal ao DPO</button>
+        <div>
+          <button type="submit" class="btn-primary">Enviar Solicitação Formal ao DPO</button>
+        </div>
       </form>
       <div id="dsrResult" class="mt-4 hidden p-4 rounded-lg text-sm"></div>
     </div>
 
     <!-- Card 3: Status dos 40 Requisitos de Seguranca & Compliance -->
     <div class="card">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+      <div class="card-head">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">3. Auditoria de Segurança & 40 Requisitos de Conformidade</h2>
-          <p class="text-sm text-slate-500">Monitoramento em tempo real dos controles de segurança e governança implementados.</p>
+          <h2>3. Auditoria de Segurança & 40 Requisitos de Conformidade</h2>
+          <p>Monitoramento em tempo real dos controles de segurança e governança implementados.</p>
         </div>
-        <div class="text-right">
-          <span class="badge-success text-sm py-1 px-3">100% CONFORME</span>
+        <div>
+          <span class="badge-success">100% CONFORME</span>
         </div>
       </div>
       <div id="complianceLoading" class="text-sm text-slate-500">Carregando auditoria de segurança...</div>

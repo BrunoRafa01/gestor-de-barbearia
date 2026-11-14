@@ -899,56 +899,6 @@ function setupTabs() {
   });
 }
 
-function setupAppInstallation() {
-  const installBtn = document.getElementById('pwa-install-btn');
-  const iosModal = document.getElementById('ios-install-modal');
-  const closeBtn = document.getElementById('close-ios-modal');
-  const dismissBtn = document.getElementById('dismiss-ios-modal');
-
-  // Se já estiver rodando como app standalone instalado
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  if (isStandalone && installBtn) {
-    installBtn.classList.add('hidden');
-    return;
-  }
-
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  if (installBtn) {
-    installBtn.addEventListener('click', async () => {
-      haptic();
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          installBtn.classList.add('hidden');
-        }
-        deferredPrompt = null;
-        return;
-      }
-      // Se estiver no iOS Safari ou navegador mobile sem prompt nativo
-      if (iosModal) {
-        iosModal.classList.remove('hidden');
-      }
-    });
-  }
-
-  const closeModal = () => {
-    if (iosModal) iosModal.classList.add('hidden');
-  };
-  if (closeBtn) closeBtn.addEventListener('click', closeModal);
-  if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
-  if (iosModal) {
-    iosModal.addEventListener('click', (e) => {
-      if (e.target === iosModal) closeModal();
-    });
-  }
-}
-
 async function boot() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -994,7 +944,6 @@ async function boot() {
       event.target.value = formatPhone(event.target.value);
     });
     setStep(1);
-    setupAppInstallation();
   } catch (error) {
     content().innerHTML = unavailableHtml('Não foi possível carregar a agenda', error.message);
     document.getElementById('progress-container')?.classList.add('hidden');
