@@ -17,11 +17,11 @@
       --blue-bright: #3B82F6;
       --blue-soft: #60A5FA;
       --blue-ice: #93C5FD;
-      --ice-bg: #F5F8FF;
-      --ice-card: #FFFFFF;
-      --ice-border: #E2E8F0;
-      --ink-dark: #09090B;
-      --ink-muted: #52525B;
+      --ice-bg: #080A0F;
+      --ice-card: #0E1117;
+      --ice-border: rgba(255, 255, 255, 0.08);
+      --ink-dark: #F4F4F5;
+      --ink-muted: #A1A1AA;
       --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -691,12 +691,12 @@
       font-weight: 600;
       line-height: 1.05;
       letter-spacing: -0.035em;
-      color: #09090B;
+      color: var(--ink-dark);
     }
 
     .ice-h2 span {
       display: block;
-      color: #2563EB;
+      color: #60A5FA;
     }
 
     .ice-sub {
@@ -731,7 +731,7 @@
     }
 
     .four-col-item:hover {
-      background: #F4F8FF;
+      background: #121722;
     }
 
     .four-col-item svg polygon,
@@ -767,14 +767,14 @@
       font-size: 16px;
       font-weight: 600;
       letter-spacing: -0.02em;
-      color: #09090B;
+      color: var(--ink-dark);
     }
 
     .col-desc {
       margin: 0;
       font-size: 13.5px;
       line-height: 1.55;
-      color: #52525B;
+      color: var(--ink-muted);
     }
 
     .ice-link-row {
@@ -852,14 +852,13 @@
     }
 
     .ana-card {
-      background: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      border-radius: 16px;
+      background: var(--ice-card);
+      border: 1px solid var(--ice-border);
+      border-radius: 12px;
       padding: 22px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 10px 28px -14px rgba(15, 23, 42, 0.08);
     }
 
     .ana-card-head {
@@ -872,13 +871,13 @@
     .ana-card-title {
       font-size: 13.5px;
       font-weight: 600;
-      color: #0F172A;
+      color: var(--ink-dark);
     }
 
     .ana-card-sub {
       font-family: var(--font-mono);
       font-size: 10.5px;
-      color: #64748B;
+      color: #71717A;
       text-transform: uppercase;
     }
 
@@ -894,12 +893,12 @@
       font-weight: 600;
       letter-spacing: -0.025em;
       font-variant-numeric: tabular-nums;
-      color: #09090B;
+      color: var(--ink-dark);
     }
 
     .ana-kpi span {
       font-size: 11.5px;
-      color: #64748B;
+      color: var(--ink-muted);
     }
 
     .dot-matrix {
@@ -912,7 +911,7 @@
     .dot-cell {
       aspect-ratio: 1;
       border-radius: 999px;
-      background: #E2E8F0;
+      background: #1C2230;
       transition: transform 150ms var(--ease), background 150ms var(--ease);
       cursor: crosshair;
     }
@@ -921,15 +920,15 @@
       transform: scale(1.28);
     }
 
-    .dot-cell.b1 { background: #BFDBFE; }
-    .dot-cell.b2 { background: #60A5FA; }
-    .dot-cell.b3 { background: #2563EB; }
+    .dot-cell.b1 { background: #1E3A8A; }
+    .dot-cell.b2 { background: #3B82F6; }
+    .dot-cell.b3 { background: #60A5FA; }
 
     .dot-tooltip {
       margin-top: 10px;
       font-family: var(--font-mono);
       font-size: 11px;
-      color: #475569;
+      color: #A1A1AA;
       min-height: 16px;
     }
 
@@ -941,8 +940,8 @@
     .digest-item {
       padding: 12px 14px;
       border-radius: 10px;
-      border: 1px solid #E2E8F0;
-      background: #F8FAFF;
+      border: 1px solid var(--ice-border);
+      background: #11151E;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -954,7 +953,7 @@
     .digest-item:hover,
     .digest-item.active {
       border-color: #3B82F6;
-      background: #EFF6FF;
+      background: #161D2C;
     }
 
     .digest-item:active {
@@ -965,19 +964,19 @@
       display: block;
       font-size: 13px;
       font-weight: 600;
-      color: #0F172A;
+      color: var(--ink-dark);
     }
 
     .digest-item span {
       font-size: 11.5px;
-      color: #64748B;
+      color: var(--ink-muted);
     }
 
     .digest-badge {
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 600;
-      color: #2563EB;
+      color: #60A5FA;
       background: rgba(37, 99, 235, 0.1);
       padding: 4px 8px;
       border-radius: 6px;
@@ -1072,8 +1071,8 @@
 
     /* ---------------- REVEAL & KEYFRAMES ---------------- */
     .reveal {
-      opacity: 0;
-      transform: translateY(16px);
+      opacity: 1;
+      transform: none;
       transition: opacity 460ms var(--ease), transform 460ms var(--ease);
     }
 
