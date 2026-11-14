@@ -57,11 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao registrar.');
 
+        const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         resEl.className = 'mt-4 p-4 rounded-lg text-sm bg-emerald-50 text-emerald-900 border border-emerald-200 block';
         resEl.innerHTML = `
-          <div class="font-bold text-base mb-1">🎉 Protocolo Gerado: <span class="font-mono text-emerald-700">${data.protocolo}</span></div>
-          <p>${data.mensagem}</p>
-          <p class="text-xs text-slate-500 mt-2">Dúvidas? Escreva para <strong>${data.contato_dpo}</strong> com o número do protocolo.</p>
+          <div class="font-bold text-base mb-1">Protocolo Gerado: <span class="font-mono text-emerald-700">${esc(data.protocolo)}</span></div>
+          <p>${esc(data.mensagem)}</p>
+          <p class="text-xs text-slate-500 mt-2">Dúvidas? Escreva para <strong>${esc(data.contato_dpo)}</strong> com o número do protocolo.</p>
         `;
         dsrForm.reset();
       } catch (err) {
@@ -81,14 +82,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/compliance/status');
       const data = await res.json();
 
+      const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       grid.innerHTML = data.requisitos.map(r => `
         <div class="req-item">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs font-semibold text-slate-400">#${String(r.id).padStart(2, '0')}</span>
-            <span class="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">${r.category}</span>
+            <span class="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">${esc(r.category)}</span>
           </div>
-          <strong>${r.name}</strong>
-          <div class="text-slate-600 text-xs mt-1">${r.evidence}</div>
+          <strong>${esc(r.name)}</strong>
+          <div class="text-slate-600 text-xs mt-1">${esc(r.evidence)}</div>
         </div>
       `).join('');
 

@@ -2,6 +2,7 @@
 // Gerencia envio de mensagens, modelos (templates), fila/rotina de lembretes,
 // notificacoes de equipe, idempotencia e auditoria de mensagens.
 
+import { timingSafeEqual } from 'node:crypto';
 import { all, get, getSetting, run } from './db.js';
 import { buildMessages, normalizePhone } from './whatsapp.js';
 import { formatDateBR } from './time.js';
@@ -55,7 +56,7 @@ export function getWhatsAppConfig() {
   const webhookVerifyToken =
     getSetting('whatsapp_webhook_verify_token') ||
     env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ||
-    'barber_webhook_secret';
+    (env.NODE_ENV === 'production' ? '' : 'barber_webhook_secret');
 
   return {
     enabled,
@@ -543,7 +544,12 @@ export function stopWhatsAppWorker() {
 
 export function verifyWebhook(mode, token, challenge) {
   const config = getWhatsAppConfig();
-  if (mode === 'subscribe' && token === config.webhookVerifyToken) {
+  if (mode !== 'subscribe' || !config.webhookVerifyToken || typeof token !== 'string') {
+    return null;
+  }
+  const a = Buffer.from(token);
+  const b = Buffer.from(config.webhookVerifyToken);
+  if (a.length === b.length && timingSafeEqual(a, b)) {
     return challenge;
   }
   return null;

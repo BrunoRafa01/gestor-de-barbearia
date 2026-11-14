@@ -157,10 +157,25 @@ function skeletonHtml() {
 async function loadDays() {
   const from = todayISO();
   const to = addDays(from, daysLimit());
-  const days = await api.get(
-    `/api/public/calendar${query({ barber_id: state.barberId, service_id: state.serviceId, from, to })}`
-  );
-  state.days = days.filter((day) => day.open);
+  if (state.isAnyBarber && state.barbers.length) {
+    const allDays = await Promise.all(
+      state.barbers.map((b) =>
+        api.get(`/api/public/calendar${query({ barber_id: b.id, service_id: state.serviceId, from, to })}`)
+      )
+    );
+    const openMap = new Map();
+    for (const days of allDays) {
+      for (const day of days) {
+        if (day.open && !openMap.has(day.date)) openMap.set(day.date, day);
+      }
+    }
+    state.days = Array.from(openMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+  } else {
+    const days = await api.get(
+      `/api/public/calendar${query({ barber_id: state.barberId, service_id: state.serviceId, from, to })}`
+    );
+    state.days = days.filter((day) => day.open);
+  }
   if (!state.days.some((day) => day.date === state.date)) {
     state.date = state.days.length ? state.days[0].date : null;
   }
@@ -170,6 +185,38 @@ async function loadSlots() {
   if (!state.date) {
     state.slots = [];
     state.slotsReason = 'Nenhum dia disponível no momento.';
+    return;
+  }
+  if (state.isAnyBarber && state.barbers.length) {
+    const results = await Promise.all(
+      state.barbers.map(async (b) => ({
+        barber: b,
+        res: await api.get(
+          `/api/public/availability${query({
+            barber_id: b.id,
+            service_id: state.serviceId,
+            date: state.date,
+          })}`
+        ),
+      }))
+    );
+    const slotBarberMap = {};
+    for (const { barber, res } of results) {
+      for (const slot of res.slots || []) {
+        if (!slotBarberMap[slot]) slotBarberMap[slot] = barber.id;
+      }
+    }
+    state.slotBarberMap = slotBarberMap;
+    state.slots = Object.keys(slotBarberMap).sort();
+    const anyOpen = results.some(({ res }) => res.open);
+    state.slotsReason = anyOpen
+      ? 'Todos os horários deste dia já foram preenchidos.'
+      : (results[0]?.res?.reason || 'Barbearia fechada neste dia.');
+    if (!state.slots.includes(state.time)) {
+      state.time = null;
+    } else if (slotBarberMap[state.time]) {
+      state.barberId = slotBarberMap[state.time];
+    }
     return;
   }
   const result = await api.get(
@@ -335,6 +382,9 @@ function renderSlots() {
     element.addEventListener('click', () => {
       haptic();
       state.time = element.dataset.slot;
+      if (state.isAnyBarber && state.slotBarberMap?.[state.time]) {
+        state.barberId = state.slotBarberMap[state.time];
+      }
       renderSlots();
       revealSection('sec-form');
       renderSummary();
@@ -346,9 +396,10 @@ function renderSlots() {
 function renderSummary() {
   const service = state.services.find((item) => Number(item.id) === Number(state.serviceId));
   const barber = state.barbers.find((item) => Number(item.id) === Number(state.barberId));
+  const barberLabel = state.isAnyBarber && !state.time ? 'Qualquer disponível' : (barber?.name || '-');
   document.getElementById('summary').innerHTML = `
     <div><span>Serviço</span><strong>${esc(service?.name || '-')}</strong></div>
-    <div><span>Profissional</span><strong>${esc(barber?.name || '-')}</strong></div>
+    <div><span>Profissional</span><strong>${esc(barberLabel)}</strong></div>
     <div><span>Data</span><strong>${esc(state.date ? formatDateBR(state.date) : '-')}</strong></div>
     <div><span>Horário</span><strong>${esc(state.time || '-')}</strong></div>
     <div><span>Valor</span><strong>${esc(service ? money(service.price) : '-')}</strong></div>`;
@@ -528,8 +579,8 @@ function renderManageAppointment(token, appt) {
 }
 
 async function bootManage(token) {
-  const steps = document.getElementById('steps');
-  if (steps) steps.classList.add('hidden');
+  document.getElementById('progress-container')?.classList.add('hidden');
+  document.getElementById('view-tabs')?.classList.add('hidden');
   content().innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Buscando agendamento...</div>';
 
   try {
@@ -638,7 +689,7 @@ function applyShop(config) {
   document.getElementById('shop-name').textContent = config.shop.name;
   const company = (config.shop.company && config.shop.company !== 'Nova Runtime')
     ? config.shop.company
-    : 'Nova Runtime SaaS';
+    : (config.shop.address || 'Agendamento Online');
   document.getElementById('shop-company').textContent = company;
 
   const heroNameEl = document.getElementById('shop-hero-name');
@@ -852,25 +903,84 @@ function renderReviewsTab() {
           Deixar Minha Avaliação
         </button>
       </div>
+      <form id="review-inline-form" class="card hidden" style="margin-top:16px;padding:18px;border:1px solid var(--border-accent)">
+        <h4 style="margin:0 0 12px;font-size:15px">Nova Avaliação</h4>
+        <div class="field" style="margin-bottom:12px">
+          <label for="rev-name">Seu nome</label>
+          <input id="rev-name" placeholder="Ex.: Carlos Eduardo" maxlength="80" required />
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Sua nota</label>
+          <div id="rev-stars" style="display:flex;gap:6px;margin-top:4px">
+            ${[1, 2, 3, 4, 5]
+              .map(
+                (n) =>
+                  `<button type="button" class="btn btn-ghost btn-sm rev-star-btn" data-star="${n}" style="padding:6px 10px;font-size:16px;color:#F59E0B" aria-label="${n} estrela${n > 1 ? 's' : ''}">★</button>`
+              )
+              .join('')}
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label for="rev-comment">Comentário</label>
+          <textarea id="rev-comment" rows="3" placeholder="Conte como foi seu atendimento..." maxlength="400" required></textarea>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button type="button" class="btn btn-ghost btn-sm" id="rev-cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="rev-submit">Enviar Avaliação</button>
+        </div>
+      </form>
     </div>`;
 
-  document.getElementById('btn-open-review')?.addEventListener('click', () => {
-    const clientName = prompt('Qual é o seu nome?');
-    if (!clientName) return;
-    const comment = prompt('Conte como foi sua experiência:');
-    if (!comment) return;
-    api.post('/api/public/reviews', {
-      shop_slug: state.shop?.slug || 'nova-barbearia',
-      client_name: clientName,
-      rating: 5,
-      comment,
+  let selectedRating = 5;
+  const openBtn = document.getElementById('btn-open-review');
+  const form = document.getElementById('review-inline-form');
+  const starBtns = form ? Array.from(form.querySelectorAll('.rev-star-btn')) : [];
+  const paintStars = (val) => {
+    starBtns.forEach((b) => {
+      const n = Number(b.dataset.star);
+      b.style.opacity = n <= val ? '1' : '0.35';
+    });
+  };
+  paintStars(selectedRating);
+  starBtns.forEach((btn) =>
+    btn.addEventListener('click', () => {
+      selectedRating = Number(btn.dataset.star);
+      paintStars(selectedRating);
     })
-      .then(() => {
-        toast('Avaliação enviada com sucesso! Obrigado pelo feedback.', 'success');
-        state.reviews.unshift({ client_name: clientName, rating: 5, comment });
-        renderReviewsTab();
-      })
-      .catch((err) => toast(err.message, 'error'));
+  );
+  openBtn?.addEventListener('click', () => {
+    openBtn.classList.add('hidden');
+    form?.classList.remove('hidden');
+    document.getElementById('rev-name')?.focus();
+  });
+  document.getElementById('rev-cancel')?.addEventListener('click', () => {
+    form?.classList.add('hidden');
+    openBtn?.classList.remove('hidden');
+  });
+  form?.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const clientName = document.getElementById('rev-name')?.value.trim();
+    const comment = document.getElementById('rev-comment')?.value.trim();
+    if (!clientName || !comment) {
+      toast('Preencha seu nome e comentário.', 'error');
+      return;
+    }
+    const submitBtn = document.getElementById('rev-submit');
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      await api.post('/api/public/reviews', {
+        shop_slug: state.shop?.slug || 'nova-barbearia',
+        client_name: clientName,
+        rating: selectedRating,
+        comment,
+      });
+      toast('Avaliação enviada com sucesso! Obrigado pelo feedback.', 'success');
+      state.reviews.unshift({ client_name: clientName, rating: selectedRating, comment });
+      renderReviewsTab();
+    } catch (err) {
+      toast(err.message, 'error');
+      if (submitBtn) submitBtn.disabled = false;
+    }
   });
 }
 

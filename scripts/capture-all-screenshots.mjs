@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,13 +34,22 @@ for (let i = 0; i < 30; i++) {
 }
 console.log('Servidor pronto para captura.');
 
-// 2. Inicia o Firefox headless com remote-debugging-port (WebDriver BiDi)
+// 2. Inicia o Firefox headless com remote-debugging-port (WebDriver BiDi) e perfil isolado
+const ffProfile = mkdtempSync(resolve(tmpdir(), 'gb-ff-shots-'));
 const ff = spawn('firefox', [
   '--headless',
+  '--no-remote',
+  '--profile', ffProfile,
   '--remote-debugging-port', '9222',
 ], { stdio: 'ignore' });
 
-await new Promise((r) => setTimeout(r, 2500));
+for (let i = 0; i < 30; i++) {
+  try {
+    const res = await fetch('http://127.0.0.1:9222/json/version');
+    if (res.ok || res.status === 404) break;
+  } catch {}
+  await new Promise((r) => setTimeout(r, 250));
+}
 
 try {
   const ws = new WebSocket('ws://127.0.0.1:9222/session');
@@ -61,8 +71,18 @@ try {
 
   function send(method, params = {}) {
     const currentId = id++;
-    return new Promise((res) => {
-      pending.set(currentId, res);
+    return new Promise((res, rej) => {
+      const timer = setTimeout(() => {
+        pending.delete(currentId);
+        rej(new Error(`Timeout em ${method}`));
+      }, 15000);
+      pending.set(currentId, (msg) => {
+        clearTimeout(timer);
+        if (msg.type === 'error') {
+          console.error(`[BiDi error em ${method}]`, msg.error, msg.message);
+        }
+        res(msg);
+      });
       ws.send(JSON.stringify({ id: currentId, method, params }));
     });
   }
@@ -114,6 +134,13 @@ try {
       dpr: 2,
       waitMs: 2000,
     },
+    {
+      name: 'apresentacao.png',
+      url: `http://127.0.0.1:${PORT}/apresentacao`,
+      viewport: { width: 1440, height: 900 },
+      dpr: 1,
+      waitMs: 2000,
+    },
   ];
 
   for (const target of targets) {
@@ -146,5 +173,6 @@ try {
 } finally {
   ff.kill();
   server.kill();
+  rmSync(ffProfile, { recursive: true, force: true });
 }
 console.log('Todas as capturas concluidas.');

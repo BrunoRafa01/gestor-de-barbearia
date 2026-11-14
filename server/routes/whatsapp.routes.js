@@ -209,7 +209,8 @@ export const whatsappRoutes = [
       const appSecret = process.env.WHATSAPP_APP_SECRET;
       if (appSecret) {
         const sigHeader = String(req.headers['x-hub-signature-256'] || '');
-        const expected = 'sha256=' + createHmac('sha256', appSecret).update(JSON.stringify(body || {})).digest('hex');
+        const rawPayload = typeof req.rawBody === 'string' ? req.rawBody : JSON.stringify(body || {});
+        const expected = 'sha256=' + createHmac('sha256', appSecret).update(rawPayload).digest('hex');
         const a = Buffer.from(sigHeader);
         const b = Buffer.from(expected);
         if (a.length !== b.length || !timingSafeEqual(a, b)) {

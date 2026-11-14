@@ -58,10 +58,14 @@ Landing page com transição atmosférica **Preto → Azul Elétrico → Branco 
 * **Fluxo técnico em 4 colunas:** diagramas isométricos em SVG responsivos ao hover.
 * **Telemetria interativa:** seletor `7d | 30d | 90d`, mapa de calor por horário (*dot-matrix*) e resumo clicável de bancada.
 * **Galeria de Estúdio:** fotografias editoriais em `public/img/barber-chair-studio.jpg` e `public/img/barber-craft-tools.jpg`.
+![Apresentação cinética do sistema](docs/screenshots/apresentacao.png)
 
 ### 4. Agenda, Financeiro, Clientes & Páginas LGPD
-* **Agenda & Relatórios:** grade por barbeiro, fechamento de caixa e cálculo automático de comissões sobre atendimentos concluídos (`docs/screenshots/agenda.png`, `docs/screenshots/relatorios.png`).
+* **Agenda & Relatórios:** grade por barbeiro, fechamento de caixa e cálculo automático de comissões sobre atendimentos concluídos.
+* **QR Code & Divulgação:** gerador SVG ISO/IEC 18004 escaneável diretamente no painel (`Divulgação & QR`) para link da bio e balcão.
 * **Páginas Legais & DSR:** `/compliance.html`, `/privacidade.html`, `/termos.html`, `/cookies.html`, `/transparencia.html` e banner de cookies unificados no tema escuro Preto + Azul.
+![Agenda semanal e diária](docs/screenshots/agenda.png)
+![Relatórios financeiros e comissões](docs/screenshots/relatorios.png)
 
 ---
 
@@ -217,7 +221,7 @@ npm run test:turso
 # Testes de responsividade mobile e conformidade de viewport (10 asserções)
 npm run test:responsive
 
-# Teste de carga e concorrência (50 conexões simultâneas)
+# Teste de carga e concorrência (50 usuários simultâneos, 200 reqs, ~1490 req/s)
 npm run test:stress
 
 # Auditoria dos 40 requisitos de Segurança & LGPD

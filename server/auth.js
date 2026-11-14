@@ -35,7 +35,8 @@ export function passwordIssue(password) {
   const value = String(password ?? '');
   if (value.length < 8) return 'A senha deve ter ao menos 8 caracteres.';
   if (value.length > 128) return 'A senha deve ter no maximo 128 caracteres.';
-  if (!/[A-Za-z]/.test(value)) return 'A senha deve conter ao menos uma letra.';
+  if (!/[A-Z]/.test(value)) return 'A senha deve conter ao menos uma letra maiuscula.';
+  if (!/[a-z]/.test(value)) return 'A senha deve conter ao menos uma letra minuscula.';
   if (!/\d/.test(value)) return 'A senha deve conter ao menos um numero.';
   return null;
 }
@@ -129,7 +130,7 @@ export function endSession(res, { secure = false } = {}) {
 }
 
 export function isAuthenticated(req) {
-  if (process.env.DEMO_AUTO_AUTH === '1') return true;
+  if (process.env.NODE_ENV !== 'production' && process.env.DEMO_AUTO_AUTH === '1') return true;
   const cookies = parseCookies(req);
   return verifySessionToken(cookies[SESSION_COOKIE]);
 }

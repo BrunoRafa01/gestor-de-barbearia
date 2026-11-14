@@ -102,11 +102,16 @@ const PAGE_ALIASES = {
 
 function validateOrigin(request) {
   if (['GET', 'HEAD', 'OPTIONS'].includes(request.method || '')) return true;
+  const pathname = String(request.url || '').split('?')[0];
+  if (pathname === '/api/whatsapp/webhook') return true;
   const origin = request.headers.origin || request.headers.referer;
-  if (!origin) return true;
+  if (!origin) {
+    return process.env.NODE_ENV !== 'production';
+  }
   try {
     const originUrl = new URL(origin);
-    const rawHost = request.headers['x-forwarded-host'] || request.headers.host;
+    const trustProxy = process.env.TRUST_PROXY === 'true';
+    const rawHost = (trustProxy ? request.headers['x-forwarded-host'] : null) || request.headers.host;
     const hostHeader = typeof rawHost === 'string' ? rawHost.split(',')[0].trim() : '';
     if (hostHeader) {
       const expectedHost = hostHeader.toLowerCase().split(':')[0];

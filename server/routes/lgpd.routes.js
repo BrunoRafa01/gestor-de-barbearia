@@ -148,6 +148,12 @@ export const lgpdRoutes = [
     path: '/api/lgpd/consent',
     auth: false,
     handler: async ({ req, body }) => {
+      const ip = clientIp(req);
+      const limitCheck = dsrLimiter.check(ip);
+      if (!limitCheck.allowed) {
+        throw new HttpError(429, limitCheck.message);
+      }
+
       const payload = body || {};
       const { necessary, analytics, marketing, userToken } = payload;
 

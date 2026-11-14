@@ -63,6 +63,7 @@ export function readJsonBody(req, limitBytes = 1024 * 512) {
         return;
       }
       const raw = Buffer.concat(chunks).toString('utf8');
+      req.rawBody = raw;
       try {
         resolvePromise(raw ? JSON.parse(raw) : {});
       } catch {

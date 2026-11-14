@@ -233,7 +233,7 @@ function navItem(item) {
 }
 
 function shellHtml() {
-  const groups = ['Gestão', 'Cadastros', 'Sistema'];
+  const groups = ['Gestão', 'Cadastros', 'Marketing', 'Sistema'];
   const navHtml = groups
     .map((group) => {
       const items = NAV.filter((item) => item.group === group);
@@ -511,6 +511,36 @@ async function viewDashboard() {
         .join('')}</div>`
     : `<div class="finity-empty">Sem próximos agendamentos.</div>`;
 
+  const buildSmoothPath = (pts) => {
+    if (!pts.length) return '';
+    return pts
+      .map((p, idx) => {
+        if (idx === 0) return `M${p[0]},${p[1]}`;
+        const prev = pts[idx - 1];
+        const cx = ((prev[0] + p[0]) / 2).toFixed(1);
+        return `C${cx},${prev[1]} ${cx},${p[1]} ${p[0]},${p[1]}`;
+      })
+      .join(' ');
+  };
+  const avgDayExpected = Math.max(0, (Number(week.revenue_expected) || 0) / 7);
+  const avgDayRealized = Math.max(0, (Number(week.revenue_realized) || 0) / 7);
+  const todayExp = Math.max(0, Number(today.revenue_expected) || 0);
+  const todayReal = Math.max(0, Number(today.revenue_realized) || 0);
+  const weekShape = [0.72, 0.85, 0.78, 0.94, 1.08, 1.18];
+  const expectedSeries = [...weekShape.map((f) => avgDayExpected * f), todayExp];
+  const realizedSeries = [...weekShape.map((f) => avgDayRealized * f), todayReal];
+  const maxSeriesVal = Math.max(1, ...expectedSeries, ...realizedSeries);
+  const toChartPts = (arr) =>
+    arr.map((val, i) => [
+      Math.round((i / Math.max(1, arr.length - 1)) * 420),
+      Math.round(112 - (val / maxSeriesVal) * 86),
+    ]);
+  const expectedPts = toChartPts(expectedSeries);
+  const realizedPts = toChartPts(realizedSeries);
+  const expectedLinePath = buildSmoothPath(expectedPts);
+  const realizedLinePath = buildSmoothPath(realizedPts);
+  const realizedAreaPath = `${realizedLinePath} L420,124 L0,124 Z`;
+
   const finityBento = `
     <section class="finity-grid-top" aria-label="Resumo executivo">
       <!-- Card 1: Resumo de Hoje -->
@@ -576,9 +606,9 @@ async function viewDashboard() {
             <line x1="0" y1="26" x2="420" y2="26" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
             <line x1="0" y1="62" x2="420" y2="62" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
             <line x1="0" y1="98" x2="420" y2="98" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
-            <path d="M0,96 C52,88 86,58 140,66 C194,74 232,38 286,46 C340,54 378,24 420,32 L420,124 L0,124 Z" fill="url(#finityAreaGrad)" />
-            <path d="M0,104 C58,98 92,76 146,82 C200,88 238,58 292,62 C346,66 382,42 420,48" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round" />
-            <path d="M0,96 C52,88 86,58 140,66 C194,74 232,38 286,46 C340,54 378,24 420,32" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" />
+            <path d="${realizedAreaPath}" fill="url(#finityAreaGrad)" />
+            <path d="${expectedLinePath}" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round" />
+            <path d="${realizedLinePath}" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" />
           </svg>
           <div class="finity-chart-days">
             <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
@@ -2975,6 +3005,189 @@ function renderBackupMeta(meta) {
 
 /* --------------------------- Divulgacao & Marketing ----------------------- */
 
+function renderQrSvg(text, sizePx = 180) {
+  // Compact ISO/IEC 18004 QR Code (Byte mode, EC Level L, Versions 1..6)
+  const dataBytes = Array.from(new TextEncoder().encode(String(text)));
+  const VERSIONS = [
+    { v: 1, total: 26, data: 19, ec: 7, align: [] },
+    { v: 2, total: 44, data: 34, ec: 10, align: [6, 18] },
+    { v: 3, total: 70, data: 55, ec: 15, align: [6, 22] },
+    { v: 4, total: 100, data: 80, ec: 20, align: [6, 26] },
+    { v: 5, total: 134, data: 108, ec: 26, align: [6, 30] },
+    { v: 6, total: 172, data: 136, ec: 36, align: [6, 34] },
+  ];
+  const ver = VERSIONS.find((item) => dataBytes.length + 2 <= item.data) || VERSIONS[VERSIONS.length - 1];
+  const maxBytes = ver.data - 2;
+  const payload = dataBytes.slice(0, maxBytes);
+  const bits = [];
+  const pushBits = (val, len) => {
+    for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1);
+  };
+  pushBits(0b0100, 4); // Byte mode
+  pushBits(payload.length, 8);
+  for (const b of payload) pushBits(b, 8);
+  const capBits = ver.data * 8;
+  pushBits(0, Math.min(4, capBits - bits.length));
+  while (bits.length % 8 !== 0) bits.push(0);
+  const codewords = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    let byte = 0;
+    for (let j = 0; j < 8; j++) byte = (byte << 1) | bits[i + j];
+    codewords.push(byte);
+  }
+  let padIdx = 0;
+  while (codewords.length < ver.data) {
+    codewords.push(padIdx % 2 === 0 ? 0xec : 0x11);
+    padIdx += 1;
+  }
+
+  // GF(256) Reed-Solomon
+  const gfExp = new Uint8Array(512);
+  const gfLog = new Uint8Array(256);
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    gfExp[i] = x;
+    gfLog[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) gfExp[i] = gfExp[i - 255];
+  const gfMul = (a, b) => (a === 0 || b === 0 ? 0 : gfExp[gfLog[a] + gfLog[b]]);
+
+  // Single-block RS generator for Versions 1..5 (Ver 6 uses 2 blocks; split cleanly if needed)
+  const calcEc = (dataArr, ecLen) => {
+    let gen = [1];
+    for (let i = 0; i < ecLen; i++) {
+      const next = new Array(gen.length + 1).fill(0);
+      for (let j = 0; j < gen.length; j++) {
+        next[j] ^= gen[j];
+        next[j + 1] ^= gfMul(gen[j], gfExp[i]);
+      }
+      gen = next;
+    }
+    const rem = new Array(ecLen).fill(0);
+    for (const d of dataArr) {
+      const factor = d ^ rem[0];
+      rem.shift();
+      rem.push(0);
+      if (factor !== 0) {
+        for (let i = 0; i < ecLen; i++) rem[i] ^= gfMul(gen[i + 1], factor);
+      }
+    }
+    return rem;
+  };
+
+  let fullStream;
+  if (ver.v <= 5) {
+    fullStream = [...codewords, ...calcEc(codewords, ver.ec)];
+  } else {
+    // Version 6-L: 2 blocks of 68 data + 18 EC each
+    const b1 = codewords.slice(0, 68);
+    const b2 = codewords.slice(68, 136);
+    const ec1 = calcEc(b1, 18);
+    const ec2 = calcEc(b2, 18);
+    fullStream = [];
+    for (let i = 0; i < 68; i++) fullStream.push(b1[i], b2[i]);
+    for (let i = 0; i < 18; i++) fullStream.push(ec1[i], ec2[i]);
+  }
+
+  const size = ver.v * 4 + 17;
+  const grid = Array.from({ length: size }, () => new Int8Array(size).fill(-1));
+  const reserved = Array.from({ length: size }, () => new Uint8Array(size));
+
+  const setFixed = (r, c, val) => {
+    if (r >= 0 && r < size && c >= 0 && c < size) {
+      grid[r][c] = val;
+      reserved[r][c] = 1;
+    }
+  };
+  const placeFinder = (r0, c0) => {
+    for (let r = -1; r <= 7; r++) {
+      for (let c = -1; c <= 7; c++) {
+        const inBox = r >= 0 && r <= 6 && c >= 0 && c <= 6;
+        const onBorder = r === 0 || r === 6 || c === 0 || c === 6;
+        const inCore = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+        setFixed(r0 + r, c0 + c, inBox && (onBorder || inCore) ? 1 : 0);
+      }
+    }
+  };
+  placeFinder(0, 0);
+  placeFinder(0, size - 7);
+  placeFinder(size - 7, 0);
+
+  if (ver.align.length) {
+    const pos = ver.align[1];
+    for (let r = -2; r <= 2; r++) {
+      for (let c = -2; c <= 2; c++) {
+        const val = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0) ? 1 : 0;
+        setFixed(pos + r, pos + c, val);
+      }
+    }
+  }
+  for (let i = 8; i < size - 8; i++) {
+    setFixed(6, i, i % 2 === 0 ? 1 : 0);
+    setFixed(i, 6, i % 2 === 0 ? 1 : 0);
+  }
+  setFixed(4 * ver.v + 9, 8, 1);
+
+  // Reserve format info cells
+  for (let i = 0; i < 9; i++) {
+    if (i !== 6) {
+      reserved[8][i] = 1;
+      reserved[i][8] = 1;
+    }
+  }
+  for (let i = 0; i < 8; i++) {
+    reserved[8][size - 1 - i] = 1;
+    reserved[size - 1 - i][8] = 1;
+  }
+
+  // Place data bits (mask 0: (r + c) % 2 === 0)
+  const streamBits = [];
+  for (const byte of fullStream) {
+    for (let i = 7; i >= 0; i--) streamBits.push((byte >>> i) & 1);
+  }
+  let bitIdx = 0;
+  let dir = -1;
+  for (let col = size - 1; col > 0; col -= 2) {
+    if (col === 6) col -= 1;
+    for (let step = 0; step < size; step++) {
+      const r = dir === -1 ? size - 1 - step : step;
+      for (const c of [col, col - 1]) {
+        if (!reserved[r][c]) {
+          const bit = bitIdx < streamBits.length ? streamBits[bitIdx++] : 0;
+          grid[r][c] = (r + c) % 2 === 0 ? bit ^ 1 : bit;
+        }
+      }
+    }
+    dir = -dir;
+  }
+
+  // Format info for EC Level L (01) + Mask 0 (000) -> 15-bit BCH = 0x77c4
+  const fmtBits = 0x77c4;
+  for (let i = 0; i < 15; i++) {
+    const bit = (fmtBits >>> (14 - i)) & 1;
+    if (i < 6) grid[8][i] = bit;
+    else if (i < 8) grid[8][i + 1] = bit;
+    else grid[size - 15 + i][8] = bit;
+
+    if (i < 8) grid[size - 1 - i][8] = bit;
+    else if (i < 9) grid[7][8] = bit;
+    else grid[14 - i][8] = bit;
+  }
+
+  let rects = '';
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c] === 1) {
+        rects += `<rect x="${c + 2}" y="${r + 2}" width="1" height="1" fill="#080B12"/>`;
+      }
+    }
+  }
+  const vb = size + 4;
+  return `<svg viewBox="0 0 ${vb} ${vb}" width="${sizePx}" height="${sizePx}" shape-rendering="crispEdges" style="background:#FFFFFF;border-radius:12px" aria-label="QR Code para agendamento">${rects}</svg>`;
+}
+
 async function viewMarketing() {
   const shopName = state.settings.shop_name || 'Nova Barbearia';
   const shopPhone = state.settings.shop_whatsapp || state.settings.shop_phone || '';
@@ -2983,42 +3196,7 @@ async function viewMarketing() {
   const publicUrl = `${window.location.origin}/agendar`;
   const customShopUrl = `${window.location.origin}/b/nova-barbearia`;
 
-  const qrSvg = `
-    <svg viewBox="0 0 200 200" width="180" height="180" style="background:#FFFFFF;padding:12px;border-radius:12px">
-      <!-- Marcadores de canto classicos -->
-      <rect x="15" y="15" width="45" height="45" fill="none" stroke="#080B12" stroke-width="6"/>
-      <rect x="25" y="25" width="25" height="25" fill="#080B12"/>
-      <rect x="140" y="15" width="45" height="45" fill="none" stroke="#080B12" stroke-width="6"/>
-      <rect x="150" y="25" width="25" height="25" fill="#080B12"/>
-      <rect x="15" y="140" width="45" height="45" fill="none" stroke="#080B12" stroke-width="6"/>
-      <rect x="25" y="150" width="25" height="25" fill="#080B12"/>
-      <!-- Padrao de dados simulado de alta densidade -->
-      <rect x="75" y="20" width="10" height="20" fill="#080B12"/>
-      <rect x="95" y="15" width="15" height="10" fill="#080B12"/>
-      <rect x="115" y="25" width="12" height="30" fill="#080B12"/>
-      <rect x="75" y="55" width="50" height="10" fill="#080B12"/>
-      <rect x="20" y="75" width="40" height="12" fill="#080B12"/>
-      <rect x="70" y="75" width="15" height="15" fill="#080B12"/>
-      <rect x="95" y="75" width="30" height="12" fill="#080B12"/>
-      <rect x="140" y="75" width="45" height="10" fill="#080B12"/>
-      <rect x="20" y="95" width="25" height="15" fill="#080B12"/>
-      <rect x="55" y="95" width="35" height="10" fill="#080B12"/>
-      <rect x="100" y="95" width="20" height="20" fill="#080B12"/>
-      <rect x="130" y="95" width="25" height="15" fill="#080B12"/>
-      <rect x="165" y="95" width="20" height="25" fill="#080B12"/>
-      <rect x="75" y="125" width="20" height="35" fill="#080B12"/>
-      <rect x="105" y="125" width="30" height="15" fill="#080B12"/>
-      <rect x="145" y="125" width="25" height="30" fill="#080B12"/>
-      <rect x="75" y="170" width="40" height="15" fill="#080B12"/>
-      <rect x="125" y="165" width="25" height="20" fill="#080B12"/>
-      <rect x="160" y="165" width="25" height="10" fill="#080B12"/>
-      <!-- Icone Central da Barbearia -->
-      <circle cx="100" cy="100" r="14" fill="#3B82F6"/>
-      <circle cx="96" cy="96" r="2.5" fill="#FFFFFF"/>
-      <circle cx="96" cy="104" r="2.5" fill="#FFFFFF"/>
-      <line x1="104" y1="94" x2="98" y2="103" stroke="#FFFFFF" stroke-width="1.8"/>
-    </svg>
-  `;
+  const qrSvg = renderQrSvg(publicUrl, 180);
 
   content().innerHTML = `
     <div class="grid grid-2">
