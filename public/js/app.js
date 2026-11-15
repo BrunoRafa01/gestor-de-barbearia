@@ -181,6 +181,7 @@ function renderLogin() {
   const root = document.getElementById('app');
   const oauthError = readOAuthErrorFromHash();
   const googleEnabled = Boolean(state.me?.oauth_providers?.google);
+  const demoMode = Boolean(state.me?.demo);
   root.innerHTML = `
     <div class="page-centered">
       <form class="auth-card" id="login-form">
@@ -201,12 +202,17 @@ function renderLogin() {
           </div>
         </div>
         <h1>Acesso ao painel</h1>
-        <p class="auth-sub">Entre com sua conta Google autorizada ou com seu acesso do painel.</p>
+        <p class="auth-sub">Entre com sua conta Google ou com seu acesso do painel.</p>
         ${oauthError ? `<div class="auth-alert" role="alert">${esc(oauthError)}</div>` : ''}
         ${
           googleEnabled
-            ? `<a class="btn-oauth" href="/api/auth/oauth/google">${googleIconSvg()}<span>Entrar com Google</span></a>`
-            : `<button class="btn-oauth is-disabled" type="button" id="google-oauth-hint">${googleIconSvg()}<span>Entrar com Google (não configurado)</span></button>`
+            ? `<a class="btn-oauth" href="/api/auth/oauth/google">${googleIconSvg()}<span>Continuar com Google</span></a>`
+            : `<button class="btn-oauth is-disabled" type="button" id="google-oauth-hint">${googleIconSvg()}<span>Continuar com Google (configurar .env)</span></button>`
+        }
+        ${
+          demoMode
+            ? `<a class="btn-oauth" href="/api/auth/demo-session" style="margin-top:8px">${icon('sparkles')}<span>Entrar em Modo Dev Local</span></a>`
+            : ''
         }
         <div class="auth-divider">ou</div>
         <div class="field">

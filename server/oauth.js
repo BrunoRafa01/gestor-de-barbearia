@@ -3,6 +3,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { get, run } from './db.js';
 import { HttpError } from './http.js';
+import { setShopPlan } from './plans.js';
 import { isSecureRequest } from './security.js';
 
 const GOOGLE_AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -138,7 +139,27 @@ export async function authorizeGoogleUser({ email, name }) {
   }
 
   const allowedEmails = getAllowedAdminEmails();
-  if (!allowedEmails.includes(normalizedEmail)) {
+  const safeName = String(name || normalizedEmail.split('@')[0]).slice(0, 120);
+
+  if (allowedEmails.includes(normalizedEmail)) {
+    const info = await run(
+      'INSERT INTO users (shop_id, email, name, password_hash, role, active) VALUES (?, ?, ?, ?, ?, 1)',
+      [1, normalizedEmail, safeName, '!oauth-only', 'owner']
+    );
+    return {
+      allowed: true,
+      user: {
+        id: Number(info.lastInsertRowid),
+        shop_id: 1,
+        email: normalizedEmail,
+        name: safeName,
+        role: 'owner',
+      },
+    };
+  }
+
+  const allowSignup = /^(1|true|yes)$/i.test(String(process.env.OAUTH_ALLOW_SIGNUP || '').trim());
+  if (!allowSignup) {
     return {
       allowed: false,
       status: 403,
@@ -146,17 +167,32 @@ export async function authorizeGoogleUser({ email, name }) {
     };
   }
 
-  const safeName = String(name || normalizedEmail.split('@')[0]).slice(0, 120);
-  const info = await run(
-    'INSERT INTO users (shop_id, email, name, password_hash, role, active) VALUES (?, ?, ?, ?, ?, 1)',
-    [1, normalizedEmail, safeName, '!oauth-only', 'owner']
+  const shopName = `Barbearia ${safeName}`.slice(0, 120);
+  const baseSlug =
+    shopName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'barbearia';
+  const slug = `${baseSlug}-${randomBytes(3).toString('hex')}`;
+
+  const shopInfo = await run(
+    'INSERT INTO barbershops (slug, name, company, active) VALUES (?, ?, ?, 1)',
+    [slug, shopName, shopName]
   );
+  const shopId = Number(shopInfo.lastInsertRowid);
+  const userInfo = await run(
+    'INSERT INTO users (shop_id, email, name, password_hash, role, active) VALUES (?, ?, ?, ?, ?, 1)',
+    [shopId, normalizedEmail, safeName, '!oauth-only', 'owner']
+  );
+  await setShopPlan(shopId, 'free', { provider: 'oauth-google' });
 
   return {
     allowed: true,
     user: {
-      id: Number(info.lastInsertRowid),
-      shop_id: 1,
+      id: Number(userInfo.lastInsertRowid),
+      shop_id: shopId,
       email: normalizedEmail,
       name: safeName,
       role: 'owner',

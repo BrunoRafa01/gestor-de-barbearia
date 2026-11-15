@@ -54,3 +54,5 @@ services:
         sync: false
       - key: ADMIN_ALLOWED_EMAILS
         sync: false
+      - key: OAUTH_ALLOW_SIGNUP
+        value: "false"

@@ -263,7 +263,12 @@ export const authRoutes = [
       if (!isDemoMode() || process.env.NODE_ENV === 'production') {
         throw new HttpError(403, 'Apenas em modo demonstracao.');
       }
-      startSession(res, { secure: isSecureRequest(req) });
+      startSession(res, {
+        secure: isSecureRequest(req),
+        sub: 'demo@novaruntime.local',
+        shopId: 1,
+        role: 'owner',
+      });
       const view = query.view || 'dashboard';
       res.writeHead(302, { Location: `/#${view}` });
       res.end();
