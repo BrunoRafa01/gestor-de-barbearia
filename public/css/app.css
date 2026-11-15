@@ -3688,6 +3688,31 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   margin-bottom: 10px;
 }
 
+.booking-body .shop-bio-text,
+.booking-body .shop-profile-meta,
+.booking-body .service-desc,
+.booking-body .section-sub {
+  color: #A1AAB8;
+}
+
+.booksy-steps-guide {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: #CBD5E1;
+}
+
+.booksy-steps-guide li {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .booksy-aside-empty,
 .booksy-aside-addr {
   font-size: 13px;

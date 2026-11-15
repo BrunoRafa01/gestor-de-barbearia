@@ -127,6 +127,27 @@ function formatHeaderHours(hours = []) {
   return openSummary ? `Hoje fechado · ${openSummary}` : 'Fechado hoje';
 }
 
+function renderCategoryPills() {
+  const counts = { all: state.services.length, cortes: 0, barba: 0, combos: 0 };
+  for (const s of state.services) {
+    const cat = serviceCategoryOf(s);
+    counts[cat] = (counts[cat] || 0) + 1;
+  }
+  const defs = [
+    { id: 'all', label: 'Todos' },
+    { id: 'cortes', label: 'Cortes' },
+    { id: 'barba', label: 'Barba' },
+    { id: 'combos', label: 'Combos' },
+  ];
+  return defs
+    .filter((d) => d.id === 'all' || counts[d.id] >= 2)
+    .map(
+      (d) =>
+        `<button type="button" class="booksy-cat-pill${state.serviceCategory === d.id ? ' active' : ''}" data-cat="${d.id}">${d.label}</button>`
+    )
+    .join('');
+}
+
 function skeletonHtml() {
   const shopName = state.shop?.name || 'Barbearia';
   const shopAddr = state.shop?.address || 'Atendimento com hora marcada';
@@ -146,10 +167,7 @@ function skeletonHtml() {
             <input type="search" id="service-search" class="booksy-search-input" placeholder="Buscar serviço..." value="${esc(state.serviceSearch)}" aria-label="Buscar serviço" />
           </div>
           <div class="booksy-cat-pills" role="tablist" aria-label="Categorias de serviços">
-            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'all' ? ' active' : ''}" data-cat="all">Todos</button>
-            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'cortes' ? ' active' : ''}" data-cat="cortes">Cortes</button>
-            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'barba' ? ' active' : ''}" data-cat="barba">Barba</button>
-            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'combos' ? ' active' : ''}" data-cat="combos">Combos</button>
+            ${renderCategoryPills()}
           </div>
         </div>
 
@@ -159,31 +177,6 @@ function skeletonHtml() {
           </div>
         </div>
         <div class="choice-list booksy-services-list" id="service-grid"></div>
-
-        <div class="cuts-showcase-strip" id="cuts-showcase" style="margin-top:24px">
-          <div class="cuts-showcase-head">
-            <span class="cuts-showcase-label">Portfólio · Exemplos de cortes</span>
-            <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver todos →</button>
-          </div>
-          <div class="cuts-showcase-grid">
-            <button type="button" class="cut-mini-card" data-open-tab="cuts">
-              <img class="cut-mini-img" src="/img/cuts/cut-degrade.jpg" alt="Degradê Navalhado" loading="lazy" />
-              <span class="cut-mini-title">Degradê</span>
-            </button>
-            <button type="button" class="cut-mini-card" data-open-tab="cuts">
-              <img class="cut-mini-img" src="/img/cuts/cut-social.jpg" alt="Corte Social" loading="lazy" />
-              <span class="cut-mini-title">Social</span>
-            </button>
-            <button type="button" class="cut-mini-card" data-open-tab="cuts">
-              <img class="cut-mini-img" src="/img/cuts/cut-barboterapia.jpg" alt="Barboterapia" loading="lazy" />
-              <span class="cut-mini-title">Barboterapia</span>
-            </button>
-            <button type="button" class="cut-mini-card" data-open-tab="cuts">
-              <img class="cut-mini-img" src="/img/cuts/cut-platinado.jpg" alt="Texturizado &amp; Fade" loading="lazy" />
-              <span class="cut-mini-title">Texturizado</span>
-            </button>
-          </div>
-        </div>
       </div>
 
       <div class="card booking-card hidden" id="sec-barber">
@@ -246,7 +239,11 @@ function skeletonHtml() {
       <div class="booksy-aside-card">
         <div class="booksy-aside-section" id="booksy-aside-summary">
           <span class="booksy-aside-kicker">Sua reserva</span>
-          <p class="booksy-aside-empty">Selecione um serviço ao lado para iniciar seu agendamento.</p>
+          <ol class="booksy-steps-guide">
+            <li>1. Escolha o serviço</li>
+            <li>2. Escolha o profissional</li>
+            <li>3. Escolha dia e horário</li>
+          </ol>
         </div>
         <div class="booksy-aside-divider"></div>
         <div class="booksy-aside-section">
@@ -387,7 +384,11 @@ function updateBooksyChrome() {
     if (!selectedService) {
       asideSummary.innerHTML = `
         <span class="booksy-aside-kicker">Sua reserva</span>
-        <p class="booksy-aside-empty">Selecione um serviço ao lado para ver horários livres em tempo real.</p>`;
+        <ol class="booksy-steps-guide">
+          <li>1. Escolha o serviço</li>
+          <li>2. Escolha o profissional</li>
+          <li>3. Escolha dia e horário</li>
+        </ol>`;
     } else {
       const barberLabel = state.isAnyBarber
         ? 'Qualquer profissional'
@@ -939,14 +940,16 @@ function applyShop(config) {
       const handle = String(config.shop.instagram).replace(/^@/, '');
       actionBtns.push(
         `<a class="shop-action-btn insta" href="https://instagram.com/${esc(encodeURIComponent(handle))}" target="_blank" rel="noopener">
-          ${icon('link')} @${esc(handle)}
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          @${esc(handle)}
         </a>`
       );
     }
     if (config.shop.address) {
       actionBtns.push(
         `<a class="shop-action-btn address" href="https://maps.google.com/?q=${encodeURIComponent(config.shop.address)}" target="_blank" rel="noopener">
-          ${icon('calendar')} Como Chegar
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Como Chegar
         </a>`
       );
     }
