@@ -25,7 +25,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Barbearia" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/css/app.css?v=20261114d" />
+    <link rel="stylesheet" href="/css/app.css?v=20261115d" />
   </head>
   <body class="booking-body">
     <div class="booking-page">
@@ -33,7 +33,7 @@
         <div class="booking-top-nav">
           <div class="brand">
             <div class="brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 32 32" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 32 32" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="8" r="3"/>
                 <circle cx="8" cy="24" r="3"/>
                 <line x1="26" y1="6" x2="10.5" y2="21.5"/>
@@ -44,42 +44,47 @@
             </div>
             <div class="brand-text">
               <strong id="shop-name">Nova Barbearia</strong>
-              <span id="shop-company">Barbearia &amp; Grooming</span>
+              <span id="shop-company">Tradição &amp; Corte de Precisão</span>
             </div>
           </div>
-          <span class="booking-open-pill"><span class="booking-open-dot" aria-hidden="true"></span>Agenda online</span>
+          <span class="booking-open-pill"><span class="booking-open-dot" aria-hidden="true"></span>Reserva Direta</span>
         </div>
 
-        <!-- Apresentacao Publica Estilo Booksy -->
+        <!-- Apresentação Editorial com Fotos Reais do Estúdio -->
         <div class="shop-presentation-card booksy-hero-card" id="shop-presentation">
-          <div class="shop-cover-banner">
-            <div class="shop-cover-pattern"></div>
-            <div class="booksy-rating-badge" aria-label="Avaliação 4.9 de 5">
-              <span class="booksy-rating-score">4.9 ★</span>
-              <span class="booksy-rating-count">128 avaliações</span>
+          <div class="booksy-photo-mosaic" aria-label="Fotos reais do ambiente e atendimentos da barbearia">
+            <figure class="mosaic-main">
+              <img src="/img/barber-studio-hero.jpg?v=20261115d" alt="Ambiente clássico da barbearia com cadeiras de couro e bancada completa" loading="eager" />
+              <figcaption class="mosaic-caption">Salão Principal · Cadeiras Clássicas</figcaption>
+            </figure>
+            <div class="mosaic-side">
+              <figure class="mosaic-sub">
+                <img src="/img/cuts/cut-degrade.jpg?v=20261115d" alt="Barbeiro executando acabamento degradê na navalha" loading="eager" />
+                <figcaption class="mosaic-caption">Acabamento na Navalha</figcaption>
+              </figure>
+              <figure class="mosaic-sub">
+                <img src="/img/cuts/cut-barboterapia.jpg?v=20261115d" alt="Barboterapia tradicional com espuma morna e toalha quente" loading="eager" />
+                <figcaption class="mosaic-caption">Barboterapia &amp; Toalha Quente</figcaption>
+              </figure>
             </div>
           </div>
+
           <div class="shop-profile-row">
-            <div class="shop-avatar-logo" id="shop-logo">
-              <svg viewBox="0 0 32 32" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="8" cy="8" r="3"/>
-                <circle cx="8" cy="24" r="3"/>
-                <line x1="26" y1="6" x2="10.5" y2="21.5"/>
-                <line x1="18.5" y1="18.5" x2="26" y2="26"/>
-                <line x1="10.5" y1="10.5" x2="15" y2="15"/>
-              </svg>
-            </div>
             <div class="shop-profile-info">
-              <h2 class="shop-profile-name">
+              <div class="shop-kicker-row">
+                <span class="shop-verified-tag">Estabelecimento Verificado</span>
+                <span class="shop-rating-inline" aria-label="Nota 4.9 de 5 estrelas"><strong>4.9</strong> ★ <span>(128 avaliações reais)</span></span>
+              </div>
+              <h1 class="shop-profile-name">
                 <span id="shop-hero-name">Nova Barbearia</span>
-              </h2>
+              </h1>
               <div class="shop-profile-meta">
                 <span id="shop-hours-pill">Horários de atendimento</span>
               </div>
             </div>
           </div>
           <p class="shop-bio-text" id="shop-bio">
-            Corte, barba e acabamento de precisão. Escolha seu serviço, barbeiro e horário sem fila.
+            Corte clássico na tesoura, degradê navalhado e barboterapia com toalha quente. Pontualidade rigorosa e atendimento com hora marcada.
           </p>
           <div class="shop-quick-actions" id="shop-actions"></div>
         </div>
@@ -162,7 +167,7 @@
       <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90</div>
     </footer>
 
-    <script type="module" src="/js/agendar.js?v=20261114"></script>
-    <script src="/js/consent.js?v=20261114"></script>
+    <script type="module" src="/js/agendar.js?v=20261115d"></script>
+    <script src="/js/consent.js?v=20261115d"></script>
   </body>
 </html>

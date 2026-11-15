@@ -160,6 +160,35 @@ function skeletonHtml() {
   return `
   <div class="booksy-layout-grid">
     <div class="booksy-main-col">
+      <div class="cuts-showcase-strip" aria-label="Demonstração real de serviços">
+        <div class="cuts-showcase-head">
+          <span class="cuts-showcase-label">Demonstração de Trabalhos Reais</span>
+          <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver portfólio completo &rarr;</button>
+        </div>
+        <div class="cuts-showcase-grid">
+          <button type="button" class="cut-mini-card" data-demo-keyword="degrad">
+            <img class="cut-mini-img" src="/img/cuts/cut-degrade.jpg?v=20261115d" alt="Corte Degradê Navalhado" loading="eager" />
+            <span class="cut-mini-title">Degradê Navalhado</span>
+            <span class="cut-mini-sub">Acabamento na lâmina</span>
+          </button>
+          <button type="button" class="cut-mini-card" data-demo-keyword="barba">
+            <img class="cut-mini-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115d" alt="Barboterapia Tradicional" loading="eager" />
+            <span class="cut-mini-title">Barboterapia Quente</span>
+            <span class="cut-mini-sub">Toalha quente &amp; navalha</span>
+          </button>
+          <button type="button" class="cut-mini-card" data-demo-keyword="corte">
+            <img class="cut-mini-img" src="/img/cuts/cut-platinado.jpg?v=20261115d" alt="Corte na Tesoura e Visagismo" loading="eager" />
+            <span class="cut-mini-title">Corte na Tesoura</span>
+            <span class="cut-mini-sub">Alinhamento clássico</span>
+          </button>
+          <button type="button" class="cut-mini-card" data-demo-keyword="combo">
+            <img class="cut-mini-img" src="/img/cuts/cut-social.jpg?v=20261115d" alt="Combo Corte e Barba" loading="eager" />
+            <span class="cut-mini-title">Combo Completo</span>
+            <span class="cut-mini-sub">Cabelo, barba &amp; acabamento</span>
+          </button>
+        </div>
+      </div>
+
       <div class="card booking-card booksy-services-card" id="sec-service">
         <div class="booksy-toolbar">
           <div class="booksy-search-wrap">
@@ -341,12 +370,23 @@ async function loadSlots() {
 
 function servicePhoto(name = '') {
   const n = String(name).toLowerCase();
-  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg';
-  if (n.includes('social') || n.includes('clássico') || n.includes('classico')) return '/img/cuts/cut-social.jpg';
+  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115d';
+  if (n.includes('social') || n.includes('clássico') || n.includes('classico')) return '/img/cuts/cut-platinado.jpg?v=20261115d';
+  if (n.includes('combo') || n.includes('+')) return '/img/cuts/cut-social.jpg?v=20261115d';
   if (n.includes('platinado') || n.includes('pigment') || n.includes('luzes') || n.includes('textur')) {
-    return '/img/cuts/cut-platinado.jpg';
+    return '/img/cuts/cut-platinado.jpg?v=20261115d';
   }
-  return '/img/cuts/cut-degrade.jpg';
+  return '/img/cuts/cut-degrade.jpg?v=20261115d';
+}
+
+function barberPhoto(barber = {}, index = 0) {
+  const photos = [
+    '/img/barber-1.jpg?v=20261115d',
+    '/img/barber-2.jpg?v=20261115d',
+    '/img/barber-3.jpg?v=20261115d',
+  ];
+  const idx = Math.abs(Number(barber.id || index + 1) - 1) % photos.length;
+  return photos[idx];
 }
 
 function serviceCategoryOf(service = {}) {
@@ -429,6 +469,24 @@ function wireBooksyToolbar() {
       renderServices();
     });
   });
+  document.querySelectorAll('[data-demo-keyword]').forEach((card) => {
+    if (card.dataset.wired) return;
+    card.dataset.wired = '1';
+    card.addEventListener('click', () => {
+      const kw = String(card.dataset.demoKeyword || '').toLowerCase();
+      const match =
+        state.services.find((s) => String(s.name || '').toLowerCase().includes(kw)) ||
+        state.services[0];
+      if (match) {
+        const btn = document.querySelector(`[data-service="${match.id}"]`);
+        if (btn) {
+          btn.click();
+          return;
+        }
+      }
+      document.getElementById('sec-service')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
 }
 
 function renderServices() {
@@ -497,12 +555,12 @@ function renderBarbers() {
 
   const anyCard = `
     <button type="button" class="choice barber-choice${isAnySelected ? ' selected' : ''}" data-barber="any">
-      <div class="barber-avatar-box" style="background:var(--primary);color:#FFFFFF;font-size:18px">
-        ⚡
+      <div class="barber-avatar-box barber-avatar-any">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
       </div>
       <div class="barber-meta">
-        <strong class="barber-name">Qualquer profissional disponível</strong>
-        <span class="barber-spec">Maior agilidade • Primeiro horário livre na agenda</span>
+        <strong class="barber-name">Primeiro profissional disponível</strong>
+        <span class="barber-spec">Menor tempo de espera • Horário mais próximo na agenda</span>
       </div>
       <div class="selection-pill" aria-hidden="true">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
@@ -512,17 +570,17 @@ function renderBarbers() {
 
   const barbersList = state.barbers
     .map(
-      (barber) => `
+      (barber, idx) => `
       <button type="button" class="choice barber-choice${!isAnySelected && String(state.barberId) === String(barber.id) ? ' selected' : ''}" data-barber="${barber.id}">
         <div class="barber-avatar-box">
-          ${esc(initials(barber.name))}
+          <img class="barber-avatar-img" src="${esc(barberPhoto(barber, idx))}" alt="${esc(barber.name)}" loading="lazy" />
         </div>
         <div class="barber-meta">
           <strong class="barber-name">${esc(barber.name)}</strong>
           <span class="barber-spec">${esc(barber.specialties || 'Mestre Barbeiro')}</span>
           <div style="font-size:11px;color:#F59E0B;margin-top:2px;display:flex;align-items:center;gap:4px">
             <span>★ ${Number(barber.rating || 4.9).toFixed(1)}</span>
-            <span style="color:var(--text-dim)">• Verificado</span>
+            <span style="color:var(--text-dim)">• Profissional da casa</span>
           </div>
         </div>
         <div class="selection-pill" aria-hidden="true">
@@ -1085,10 +1143,10 @@ function renderBookingTab() {
 
 function renderCutsTab() {
   const defaultCuts = [
-    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: '/img/cuts/cut-degrade.jpg' },
-    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: '/img/cuts/cut-barboterapia.jpg' },
-    { tag: 'Clássico', title: 'Corte Social na Tesoura', desc: 'Corte alinhado clássico com finalização em pomada matte.', img: '/img/cuts/cut-social.jpg' },
-    { tag: 'Estilo', title: 'Texturizado / Platinado', desc: 'Acabamento moderno com textura e degradê limpo nas laterais.', img: '/img/cuts/cut-platinado.jpg' },
+    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: '/img/cuts/cut-degrade.jpg?v=20261115d' },
+    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: '/img/cuts/cut-barboterapia.jpg?v=20261115d' },
+    { tag: 'Clássico', title: 'Corte Social na Tesoura', desc: 'Corte alinhado clássico com finalização em pomada matte.', img: '/img/cuts/cut-platinado.jpg?v=20261115d' },
+    { tag: 'Combo', title: 'Cabelo, Barba & Acabamento', desc: 'Atendimento completo com bancada de precisão e produtos profissionais.', img: '/img/cuts/cut-social.jpg?v=20261115d' },
   ];
   const rawCuts = state.shop?.cuts_gallery?.length ? state.shop.cuts_gallery : defaultCuts;
   const cuts = rawCuts.map((cut, idx) => ({
@@ -1145,10 +1203,10 @@ function renderTeamTab() {
       <div class="team-list">
         ${state.barbers
           .map(
-            (barber) => `
+            (barber, idx) => `
           <div class="barber-rich-card">
             <div class="barber-rich-avatar">
-              ${esc(initials(barber.name))}
+              <img class="barber-avatar-img" src="${esc(barberPhoto(barber, idx))}" alt="${esc(barber.name)}" loading="lazy" />
             </div>
             <div class="barber-rich-info">
               <div class="barber-rich-name-row">

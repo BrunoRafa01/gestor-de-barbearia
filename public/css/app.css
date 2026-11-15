@@ -3688,12 +3688,155 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   background: transparent;
   box-shadow: none;
   border-radius: 0;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.booking-body .shop-cover-banner {
+.booksy-photo-mosaic {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 8px;
   border-radius: 14px;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0C0E13;
+}
+
+.booksy-photo-mosaic figure {
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  background: #111319;
+}
+
+.booksy-photo-mosaic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 240ms var(--ease);
+}
+
+.booksy-photo-mosaic figure:hover img {
+  transform: scale(1.02);
+}
+
+.mosaic-main {
+  height: 256px;
+}
+
+.mosaic-side {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  height: 256px;
+}
+
+.mosaic-sub {
+  height: 100%;
+}
+
+.mosaic-caption {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(9, 11, 16, 0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F1F5F9;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+  .booksy-photo-mosaic {
+    grid-template-columns: 1fr;
+  }
+  .mosaic-main {
+    height: 188px;
+  }
+  .mosaic-side {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    height: 108px;
+  }
+}
+
+.shop-kicker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.shop-verified-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.shop-rating-inline {
+  font-size: 12.5px;
+  color: #F59E0B;
+  font-variant-numeric: tabular-nums;
+}
+
+.shop-rating-inline strong {
+  color: #F8FAFC;
+  font-weight: 700;
+}
+
+.shop-rating-inline span {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.cut-mini-sub {
+  display: block;
+  padding: 0 8px 8px;
+  font-size: 10.5px;
+  color: #94A3B8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barber-avatar-box,
+.barber-rich-avatar {
+  overflow: hidden;
+  padding: 0;
+}
+
+.barber-avatar-any {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60A5FA;
+}
+
+.barber-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.booking-body .shop-action-btn.whats,
+.booking-body .shop-action-btn.insta,
+.booking-body .shop-action-btn.address {
+  background: #0F131B;
+  color: #E2E8F0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.booking-body .shop-action-btn:hover {
+  background: #161C28;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .booking-body .shop-profile-row {
