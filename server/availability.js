@@ -10,6 +10,7 @@ import { all, get, getSetting } from './db.js';
 import { HttpError } from './http.js';
 import {
   ACTIVE_STATUSES,
+  addDays,
   hhmmToMinutes,
   minutesToHHMM,
   nowMinutes,
@@ -220,7 +221,9 @@ export async function computeAvailabilityRange({
   const step = Math.max(5, Number(getSetting('slot_interval', '15')) || 15);
   const minAdvance = Math.max(0, Number(getSetting('min_advance_minutes', '0')) || 0);
   const today = todayISO(now);
-  const threshold = nowMinutes(now) + minAdvance;
+  const totalThresholdMin = nowMinutes(now) + minAdvance;
+  const cutoffDate = addDays(today, Math.floor(totalThresholdMin / 1440));
+  const cutoffMin = totalThresholdMin % 1440;
 
   const sorted = [...dates].sort();
   const [business, barberDays, closureMap] = await Promise.all([
@@ -254,13 +257,18 @@ export async function computeAvailabilityRange({
       continue;
     }
 
+    if (date < cutoffDate) {
+      results.set(date, { ...base, open: false, slots: [], reason: 'Antecedencia minima nao atingida.' });
+      continue;
+    }
+
     const taken = booked.get(date) || [];
-    const isToday = date === today;
+    const isCutoffDay = date === cutoffDate;
     const slots = [];
 
     for (const [windowStart, windowEnd] of windows) {
       for (let start = windowStart; start + duration <= windowEnd; start += step) {
-        if (isToday && start < threshold) continue;
+        if (isCutoffDay && start < cutoffMin) continue;
         const end = start + duration;
         if (taken.some((item) => overlaps(start, end, item.start, item.end))) continue;
         slots.push(minutesToHHMM(start));

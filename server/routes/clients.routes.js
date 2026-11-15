@@ -132,6 +132,13 @@ export const clientRoutes = [
       const id = requiredId(params.id, 'cliente');
       const existing = await get('SELECT id FROM clients WHERE id = ?', [id]);
       if (!existing) throw new HttpError(404, 'Cliente nao encontrado.');
+      const used = await get('SELECT COUNT(*) AS total FROM appointments WHERE client_id = ?', [id]);
+      if (Number(used?.total || 0) > 0) {
+        throw new HttpError(
+          409,
+          'Nao e possivel excluir cliente com agendamentos registrados para preservar o historico financeiro.'
+        );
+      }
       await run('DELETE FROM clients WHERE id = ?', [id]);
       return { status: 200, body: { deleted: true, id } };
     },

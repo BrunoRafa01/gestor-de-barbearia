@@ -280,6 +280,17 @@ function printBanner() {
 }
 
 async function bootstrap() {
+  if (process.env.NODE_ENV === 'production') {
+    if (isDemoMode()) {
+      throw new Error('DEMO_MODE=1 nao e permitido em producao.');
+    }
+    if (!process.env.TURSO_DATABASE_URL && process.env.ALLOW_EPHEMERAL_SQLITE !== '1') {
+      throw new Error(
+        'TURSO_DATABASE_URL e obrigatoria em producao para evitar perda de dados (ou defina ALLOW_EPHEMERAL_SQLITE=1).'
+      );
+    }
+  }
+
   await initDatabase({ path: DATABASE_PATH });
 
   const initialPassword = process.env.ADMIN_PASSWORD;

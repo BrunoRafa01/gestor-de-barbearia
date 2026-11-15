@@ -249,7 +249,7 @@ export const publicRoutes = [
             phone: appointment.client_phone,
             message: messages.confirmation,
             link: waLink(appointment.client_phone, messages.confirmation),
-            whatsapp_automated: Boolean(whatsappDelivery?.clientResult?.success),
+            whatsapp_automated: Boolean(whatsappDelivery?.client?.success),
           },
           whatsapp: whatsappDelivery,
           shop: await shopPayload(),

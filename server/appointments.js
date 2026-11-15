@@ -11,7 +11,7 @@
 // de defesa no proprio banco.
 
 import { randomBytes } from 'node:crypto';
-import { all, get, run } from './db.js';
+import { all, get, getSetting, run } from './db.js';
 import { HttpError } from './http.js';
 import { assertSlotAvailable, endTimeFor } from './availability.js';
 import {
@@ -21,7 +21,7 @@ import {
   requiredId,
   requiredTime,
 } from './validate.js';
-import { ACTIVE_STATUSES, isValidStatus } from './time.js';
+import { ACTIVE_STATUSES, addDays, isValidStatus, todayISO } from './time.js';
 
 const APPOINTMENT_SELECT = `
   SELECT a.id, a.client_id, a.barber_id, a.service_id, a.date, a.start_time, a.end_time,
@@ -92,16 +92,30 @@ export async function listAppointments(filters = {}) {
   return rows.map(mapRow);
 }
 
-async function loadService(serviceId) {
+async function loadService(serviceId, { requireActive = false } = {}) {
   const service = await get('SELECT * FROM services WHERE id = ?', [serviceId]);
   if (!service) throw new HttpError(404, 'Servico nao encontrado.');
+  if (requireActive && !service.active) {
+    throw new HttpError(409, 'Este servico esta inativo.');
+  }
   return service;
 }
 
-async function loadBarber(barberId) {
+async function loadBarber(barberId, { requireActive = false } = {}) {
   const barber = await get('SELECT * FROM barbers WHERE id = ?', [barberId]);
   if (!barber) throw new HttpError(404, 'Profissional nao encontrado.');
+  if (requireActive && !barber.active) {
+    throw new HttpError(409, 'Este profissional esta inativo.');
+  }
   return barber;
+}
+
+function parsePrice(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new HttpError(400, 'Informe um preco valido.');
+  }
+  return Math.round(parsed * 100) / 100;
 }
 
 async function loadClient(clientId) {
@@ -159,14 +173,25 @@ export async function createAppointment(input, now = new Date()) {
   const source = input.source === 'public' ? 'public' : 'admin';
   const notes = optionalString(input.notes, 'observacoes', 500);
 
-  await Promise.all([loadClient(clientId), loadBarber(barberId)]);
+  if (source === 'public') {
+    const maxDays = Math.max(1, Number(getSetting('max_advance_days', '30')) || 30);
+    if (date > addDays(todayISO(now), maxDays)) {
+      throw new HttpError(400, `Agendamentos disponiveis apenas para os proximos ${maxDays} dias.`);
+    }
+  }
+
+  await Promise.all([
+    loadClient(clientId),
+    loadBarber(barberId, { requireActive: true }),
+    loadService(serviceId, { requireActive: true }),
+  ]);
 
   const availability = await assertSlotAvailable({ barberId, serviceId, date, startTime, now });
   const endTime = endTimeFor(startTime, availability.duration);
   const price =
     input.price === undefined || input.price === null || input.price === ''
       ? availability.price
-      : Number(input.price);
+      : parsePrice(input.price);
 
   const cancelToken = input.cancel_token || randomBytes(16).toString('hex');
 
@@ -214,7 +239,8 @@ export async function updateAppointment(id, input, now = new Date()) {
     input.notes === undefined ? current.notes : optionalString(input.notes, 'observacoes', 500);
 
   await loadClient(clientId);
-  const service = await loadService(serviceId);
+  await loadBarber(barberId, { requireActive: barberId !== current.barber_id });
+  const service = await loadService(serviceId, { requireActive: serviceId !== current.service_id });
   const isCancelled = status === 'cancelled' || status === 'no_show';
 
   if (!isCancelled) {
@@ -232,7 +258,7 @@ export async function updateAppointment(id, input, now = new Date()) {
   const hasExplicitPrice = input.price !== undefined && input.price !== null && input.price !== '';
   const serviceChanged = serviceId !== current.service_id;
   const price = hasExplicitPrice
-    ? Number(input.price)
+    ? parsePrice(input.price)
     : serviceChanged
       ? Number(service.price)
       : Number(current.price);
@@ -324,26 +350,22 @@ export async function deleteAppointment(id) {
   return { deleted: true, id: Number(id) };
 }
 
-/** Cria/reaproveita o cliente pelo telefone (usado no agendamento publico). */
+/** Cria/reaproveita o cliente pelo telefone de forma atomica (usado no agendamento publico). */
 export async function upsertClientByPhone({ name, phone, email = null }) {
   const digits = String(phone || '').replace(/\D/g, '');
   if (!digits) throw new HttpError(400, 'Informe um telefone valido.');
 
-  const existing = await get('SELECT * FROM clients WHERE phone = ?', [digits]);
-  if (existing) {
-    // Nao sobrescreve o nome ja cadastrado pelo telefone no formulario publico;
-    // preenche apenas campos vazios (ex.: e-mail).
-    if (!existing.email && email) {
-      await run('UPDATE clients SET email = ? WHERE id = ?', [email, existing.id]);
-      return get('SELECT * FROM clients WHERE id = ?', [existing.id]);
-    }
-    return existing;
-  }
-
-  const info = await run('INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)', [
-    name,
-    digits,
-    email,
-  ]);
-  return get('SELECT * FROM clients WHERE id = ?', [Number(info.lastInsertRowid)]);
+  // Nao sobrescreve o nome ja cadastrado pelo telefone no formulario publico;
+  // preenche apenas campos vazios (ex.: e-mail).
+  await run(
+    `INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)
+     ON CONFLICT(phone) DO UPDATE SET
+       email = CASE
+         WHEN (clients.email IS NULL OR clients.email = '') AND excluded.email IS NOT NULL
+         THEN excluded.email
+         ELSE clients.email
+       END`,
+    [name, digits, email]
+  );
+  return get('SELECT * FROM clients WHERE phone = ?', [digits]);
 }

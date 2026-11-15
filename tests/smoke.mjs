@@ -628,6 +628,54 @@ async function run() {
   const afterImport = await call('/api/appointments?limit=200');
   check('dados continuam acessiveis apos importar', Array.isArray(afterImport.body));
 
+  /* ---------------------- 14.0 Estabilizacao Fase 1 ----------------------- */
+  const delUsedClient = await call(`/api/clients/${clientId}`, { method: 'DELETE' });
+  check('nao permite excluir cliente com agendamentos (409)', delUsedClient.status === 409, `status ${delUsedClient.status}`);
+
+  const farFuture = await call('/api/public/appointments', {
+    method: 'POST',
+    auth: false,
+    body: {
+      name: 'Cliente Futuro',
+      phone: '11944443333',
+      barber_id: barberId,
+      service_id: serviceId,
+      date: '2028-12-15',
+      start_time: '10:00',
+    },
+  });
+  check('agendamento publico alem de max_advance_days responde 400', farFuture.status === 400, `status ${farFuture.status}`);
+
+  const inactiveBarber = await call('/api/barbers', {
+    method: 'POST',
+    body: { name: 'Barbeiro Inativo', active: false },
+  });
+  check('barbeiro inativo criado', inactiveBarber.status === 201);
+  const bookInactive = await call('/api/public/appointments', {
+    method: 'POST',
+    auth: false,
+    body: {
+      name: 'Teste Inativo',
+      phone: '11933332222',
+      barber_id: inactiveBarber.body?.id,
+      service_id: serviceId,
+      date: targetDate,
+      start_time: '11:00',
+    },
+  });
+  check('agendamento com barbeiro inativo responde 409', bookInactive.status === 409, `status ${bookInactive.status}`);
+
+  await call('/api/settings', { method: 'PUT', body: { min_advance_minutes: 10080 } });
+  const blockedAdvance = await call(
+    `/api/availability?barber_id=${barberId}&service_id=${serviceId}&date=${targetDate}`
+  );
+  check(
+    'min_advance_minutes bloqueia tambem dias seguintes dentro da janela',
+    blockedAdvance.status === 200 && blockedAdvance.body?.open === false,
+    JSON.stringify(blockedAdvance.body)
+  );
+  await call('/api/settings', { method: 'PUT', body: { min_advance_minutes: 0 } });
+
   /* ---------------------- 14.1 Troca de senha e revogacao ------------------- */
   const oldCookie = cookie;
   const passChange = await call('/api/settings/password', {

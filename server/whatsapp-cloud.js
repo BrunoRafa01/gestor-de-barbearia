@@ -5,7 +5,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import { all, get, getSetting, run } from './db.js';
 import { buildMessages, normalizePhone } from './whatsapp.js';
-import { formatDateBR } from './time.js';
+import { addDays, formatDateBR, minutesToHHMM, nowMinutes, todayISO } from './time.js';
 
 /** Carrega as configuracoes ativas (banco + variaveis de ambiente). */
 export function getWhatsAppConfig() {
@@ -448,9 +448,15 @@ export async function processAppointmentReminders() {
   }
 
   const hours = config.reminderHours;
+  const today = todayISO();
+  const nowMin = nowMinutes();
+  const startDT = `${today} ${minutesToHHMM(nowMin)}`;
+  const endTotalMin = nowMin + Math.max(1, Number(hours) || 24) * 60;
+  const endDate = addDays(today, Math.floor(endTotalMin / 1440));
+  const endDT = `${endDate} ${minutesToHHMM(endTotalMin % 1440)}`;
 
   // Busca agendamentos com status pending ou confirmed cuja data/hora
-  // esta entre AGORA e AGORA + X HORAS
+  // esta entre AGORA e AGORA + X HORAS (no fuso America/Sao_Paulo)
   const appointments = await all(
     `SELECT a.id, a.client_id, a.barber_id, a.service_id, a.date, a.start_time,
             c.name AS client_name, c.phone AS client_phone,
@@ -461,10 +467,10 @@ export async function processAppointmentReminders() {
        JOIN barbers b ON b.id = a.barber_id
   LEFT JOIN services s ON s.id = a.service_id
       WHERE a.status IN ('pending', 'confirmed')
-        AND datetime(a.date || ' ' || a.start_time) >= datetime('now', 'localtime')
-        AND datetime(a.date || ' ' || a.start_time) <= datetime('now', 'localtime', '+' || ? || ' hours')
+        AND (a.date || ' ' || a.start_time) >= ?
+        AND (a.date || ' ' || a.start_time) <= ?
       ORDER BY a.date ASC, a.start_time ASC`,
-    [hours]
+    [startDT, endDT]
   );
 
   let sentCount = 0;
