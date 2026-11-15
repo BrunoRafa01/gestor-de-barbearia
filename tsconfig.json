@@ -13,5 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["server/types.ts"]
+  "include": ["server/types.ts", "src/motion/gsap-motion.ts"]
 }

@@ -17,6 +17,17 @@ import {
   todayISO,
   WEEKDAYS_SHORT,
 } from './ui.js';
+import {
+  animateBookingBoot,
+  animateBookingSectionReveal,
+  animateBookingSuccess,
+  animateDayStrip,
+  animateLookbookCards,
+  animateServicesList,
+  animateSlotsGrid,
+  animateStickyBarPrice,
+  initGsapMotion,
+} from './gsap-motion.js';
 
 const state = {
   shop: null,
@@ -78,8 +89,9 @@ function currentStep() {
 /** Mostra a próxima seção e, no celular, rola suavemente até ela. */
 function revealSection(id) {
   const element = document.getElementById(id);
-  if (!element.classList.contains('hidden')) return;
+  if (!element || !element.classList.contains('hidden')) return;
   element.classList.remove('hidden');
+  animateBookingSectionReveal(element);
   if (window.matchMedia('(max-width: 860px)').matches) {
     setTimeout(() => element.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
   }
@@ -421,9 +433,11 @@ function updateBooksyChrome() {
   if (stickyBar && stickyPrice && stickyMeta && stickyCta) {
     if (!selectedService || state.currentTab !== 'booking') {
       stickyBar.classList.add('hidden');
+      delete stickyBar.dataset.gsapShown;
     } else {
       stickyBar.classList.remove('hidden');
       stickyPrice.textContent = money(selectedService.price);
+      animateStickyBarPrice(Number(selectedService.price), stickyBar, stickyPrice);
       const parts = [selectedService.name, `${Number(selectedService.duration_min)} min`];
       if (state.time) parts.push(`${formatDateBR(state.date)} · ${state.time}`);
       stickyMeta.textContent = parts.join(' · ');
@@ -581,6 +595,7 @@ function renderServices() {
   );
 
   updateBooksyChrome();
+  animateServicesList(grid);
 }
 
 function renderBarbers() {
@@ -671,6 +686,7 @@ function renderDays() {
       setStep(currentStep());
     })
   );
+  animateDayStrip(strip);
 }
 
 function renderSlots() {
@@ -703,6 +719,7 @@ function renderSlots() {
       setStep(4);
     })
   );
+  animateSlotsGrid(area);
 }
 
 function renderSummary() {
@@ -1021,6 +1038,7 @@ async function submit() {
       start_time: state.time,
     });
     content().innerHTML = successHtml(result);
+    animateBookingSuccess(content());
     setStep(4);
 
     document.getElementById('pk-copy-manage')?.addEventListener('click', async () => {
@@ -1238,6 +1256,7 @@ function renderCutsTab() {
       document.querySelector('[data-tab="booking"]')?.click();
     });
   });
+  animateLookbookCards(content());
 }
 
 function renderTeamTab() {
@@ -1281,6 +1300,7 @@ function renderTeamTab() {
       document.querySelector('[data-tab="booking"]')?.click();
     });
   });
+  animateLookbookCards(content());
 }
 
 function renderReviewsTab() {
@@ -1401,6 +1421,7 @@ function renderReviewsTab() {
       if (submitBtn) submitBtn.disabled = false;
     }
   });
+  animateLookbookCards(content());
 }
 
 function setupTabs() {
@@ -1429,6 +1450,7 @@ function setupTabs() {
 }
 
 async function boot() {
+  initGsapMotion();
   try {
     const params = new URLSearchParams(window.location.search);
     const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -1478,6 +1500,7 @@ async function boot() {
 
     content().innerHTML = skeletonHtml();
     renderServices();
+    animateBookingBoot();
     document.getElementById('pk-confirm').addEventListener('click', submit);
     document.getElementById('booksy-sticky-cta')?.addEventListener('click', () => {
       const targetId = state.time ? 'sec-form' : state.barberId ? 'sec-date' : 'sec-barber';

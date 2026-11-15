@@ -36,6 +36,13 @@ import {
   WEEKDAYS_SHORT,
 } from './ui.js';
 import { openAppointmentDetails, openAppointmentForm } from './appointments-ui.js';
+import {
+  animateAuthScreen,
+  animatePanelView,
+  animateShellBoot,
+  animateSidebarMobileOpen,
+  initGsapMotion,
+} from './gsap-motion.js';
 
 /* --------------------------------- Estado -------------------------------- */
 
@@ -277,6 +284,7 @@ function renderLogin() {
   const form = document.getElementById('login-form');
   const emailInput = document.getElementById('login-email');
   const passwordInput = document.getElementById('login-password');
+  animateAuthScreen(root);
   passwordInput.focus();
 
   form.addEventListener('submit', async (event) => {
@@ -388,8 +396,9 @@ function wireShell() {
   };
 
   document.getElementById('menu-toggle').addEventListener('click', () => {
-    sidebar.classList.toggle('open');
+    const isOpen = sidebar.classList.toggle('open');
     backdrop.classList.toggle('open');
+    if (isOpen) animateSidebarMobileOpen();
   });
   backdrop.addEventListener('click', closeSidebar);
   document.querySelectorAll('.nav-item[data-view]').forEach((element) => {
@@ -435,6 +444,18 @@ function wireShell() {
 
   if (state.me?.password_is_default && !state.me?.demo) {
     renderForcePasswordScreen();
+    return;
+  }
+
+  const contentEl = document.getElementById('content');
+  if (contentEl && typeof MutationObserver !== 'undefined') {
+    let rafId = 0;
+    const observer = new MutationObserver(() => {
+      if (contentEl.querySelector('.spinner')) return;
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => animatePanelView(contentEl));
+    });
+    observer.observe(contentEl, { childList: true });
   }
 }
 
@@ -4048,10 +4069,12 @@ async function startApp() {
   state.date = todayISO();
   root.innerHTML = shellHtml();
   wireShell();
+  animateShellBoot();
   await navigate(currentViewFromHash());
 }
 
 function boot() {
+  initGsapMotion();
   const root = document.getElementById('app');
   root.innerHTML = `<div class="boot-screen"><div class="spinner"></div><span>Carregando o Gestor de Barbearia...</span></div>`;
   api

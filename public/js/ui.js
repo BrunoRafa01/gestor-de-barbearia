@@ -1,5 +1,7 @@
 // Utilitários de interface: formatação, ícones Lucide, modais, avisos e elementos.
 
+import { animateModalClose, animateModalOpen, animateToastIn } from './gsap-motion.js';
+
 /* -------------------------------- Ícones Lucide -------------------------- */
 
 const SVG = {
@@ -223,6 +225,7 @@ export function toast(message, type = 'ok') {
       : icon('check');
   node.innerHTML = `<span class="toast-icon">${toastIcon}</span><span>${esc(message)}</span>`;
   toastStack().appendChild(node);
+  animateToastIn(node);
   setTimeout(() => node.remove(), 4600);
 }
 
@@ -252,12 +255,16 @@ export function openModal({ title, body = '', footer = null, narrow = false, onC
 
   const closeHandlers = [];
   if (typeof onClose === 'function') closeHandlers.push(onClose);
+  let closing = false;
   function close() {
-    if (!backdrop.isConnected) return;
-    backdrop.remove();
-    if (!document.querySelector('.modal-backdrop')) document.body.style.overflow = '';
-    closeHandlers.forEach((handler) => handler());
-    if (triggerEl && triggerEl.isConnected) triggerEl.focus();
+    if (!backdrop.isConnected || closing) return;
+    closing = true;
+    animateModalClose(backdrop, modal, () => {
+      backdrop.remove();
+      if (!document.querySelector('.modal-backdrop')) document.body.style.overflow = '';
+      closeHandlers.forEach((handler) => handler());
+      if (triggerEl && triggerEl.isConnected) triggerEl.focus();
+    });
   }
 
   function setFooter(nodes) {
@@ -290,6 +297,7 @@ export function openModal({ title, body = '', footer = null, narrow = false, onC
 
   document.body.style.overflow = 'hidden';
   document.body.appendChild(backdrop);
+  animateModalOpen(backdrop, modal);
 
   const firstField = bodyElement.querySelector('input, select, textarea');
   if (firstField) setTimeout(() => firstField.focus(), 60);
