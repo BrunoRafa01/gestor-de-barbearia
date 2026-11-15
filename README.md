@@ -158,7 +158,7 @@ O sistema implementa **controles técnicos alinhados à LGPD (Lei nº 13.709/201
    ```
 
 4. **Acesse as interfaces:**
-   * **Painel Administrativo:** [http://localhost:3000/](http://localhost:3000/) *(Senha padrão inicial: `admin123`)*
+   * **Painel Administrativo:** [http://localhost:3000/](http://localhost:3000/) *(Se `ADMIN_PASSWORD` não for definida no `.env`, uma senha provisória aleatória é exibida no terminal no primeiro boot e sua troca é exigida no primeiro acesso)*
    * **Página Pública de Agendamento:** [http://localhost:3000/agendar](http://localhost:3000/agendar)
    * **Agendamento Multi-barbearia:** [http://localhost:3000/b/nova-barbearia](http://localhost:3000/b/nova-barbearia)
    * **Página Institucional:** [http://localhost:3000/apresentacao](http://localhost:3000/apresentacao)

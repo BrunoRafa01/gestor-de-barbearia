@@ -15,11 +15,12 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hhmmToMinutes, nowMinutes, todayISO } from '../server/time.js';
+import { isWeakInitialPassword } from '../server/auth.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.TEST_PORT || 3411);
 const BASE = `http://127.0.0.1:${PORT}`;
-const PASSWORD = 'teste-senha-123';
+const PASSWORD = 'TesteSenha123';
 
 let passed = 0;
 const failures = [];
@@ -179,6 +180,9 @@ async function run() {
   check('antecedencia minima bloqueia 23:50 no mesmo dia', hhmmToMinutes('23:50') < nowMinutes(brtLateNight) + 60);
   if (prevTz === undefined) delete process.env.TZ;
   else process.env.TZ = prevTz;
+
+  check('senha inicial vazia ou comum e considerada fraca', isWeakInitialPassword('') && isWeakInitialPassword('admin123'));
+  check('senha inicial forte e aceita', !isWeakInitialPassword('SenhaForte123'));
 
   /* --------------------------- 4. Autenticacao ---------------------------- */
   const anonymous = await call('/api/clients', { auth: false });

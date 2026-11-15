@@ -283,14 +283,16 @@ async function bootstrap() {
   await initDatabase({ path: DATABASE_PATH });
 
   const initialPassword = process.env.ADMIN_PASSWORD;
-  const { created, generatedPassword } = await ensureAdminPassword(initialPassword, {
+  const { created, generatedPassword, weakPassword } = await ensureAdminPassword(initialPassword, {
     isDefault: !initialPassword,
   });
   if (created) {
     console.log(
-      initialPassword
-        ? '[setup] Senha inicial do painel criada a partir da variavel ADMIN_PASSWORD.'
-        : `[setup] Senha inicial provisoria gerada: ${generatedPassword} (troca obrigatoria no primeiro acesso).`
+      generatedPassword
+        ? `[setup] Senha inicial provisoria gerada: ${generatedPassword} (troca obrigatoria no primeiro acesso).`
+        : weakPassword
+          ? '[setup] ADMIN_PASSWORD fraca detectada: troca obrigatoria sera exigida no primeiro acesso.'
+          : '[setup] Senha inicial do painel criada a partir da variavel ADMIN_PASSWORD.'
     );
   }
 

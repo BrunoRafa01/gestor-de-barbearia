@@ -47,15 +47,47 @@ export function passwordIssue(password) {
  * informado), o que faz o painel avisar que ela precisa ser trocada.
  * @returns {Promise<boolean>} true se a senha acabou de ser criada.
  */
+const COMMON_WEAK_PASSWORDS = new Set([
+  'admin123',
+  '12345678',
+  '123456789',
+  'password',
+  'barbearia',
+  'qwerty123',
+]);
+
+export function isWeakInitialPassword(password) {
+  const value = String(password ?? '');
+  if (!value) return true;
+  if (COMMON_WEAK_PASSWORDS.has(value.toLowerCase())) return true;
+  return passwordIssue(value) !== null;
+}
+
+/**
+ * Cria a senha inicial do painel caso ainda nao exista.
+ * Sem `initialPassword`, gera uma senha provisoria aleatoria (`isDefault = true`).
+ * Se `initialPassword` for fraca/comum: em producao recusa iniciar; em dev marca como provisoria.
+ */
 export async function ensureAdminPassword(initialPassword, { isDefault = false } = {}) {
   if (!getSetting('admin_password_hash')) {
+    if (initialPassword && isWeakInitialPassword(initialPassword)) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'ADMIN_PASSWORD fraca ou comum nao e permitida em producao. Use 8+ caracteres com maiuscula, minuscula e numero.'
+        );
+      }
+      await setSetting('admin_password_hash', hashPassword(initialPassword));
+      await setSetting('admin_password_default', '1');
+      return { created: true, generatedPassword: null, weakPassword: true };
+    }
+
     const generated = initialPassword ? null : `Gb1${randomBytes(8).toString('base64url')}`;
     const secret = initialPassword || generated;
     await setSetting('admin_password_hash', hashPassword(secret));
-    await setSetting('admin_password_default', isDefault ? '1' : '0');
-    return { created: true, generatedPassword: generated };
+    await setSetting('admin_password_default', isDefault || !initialPassword ? '1' : '0');
+    return { created: true, generatedPassword: generated, weakPassword: false };
   }
-  return { created: false, generatedPassword: null };
+  return { created: false, generatedPassword: null, weakPassword: false };
 }
 
 /** Indica se o painel ainda usa a senha inicial (nunca trocada). */
