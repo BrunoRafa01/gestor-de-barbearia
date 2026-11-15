@@ -167,7 +167,7 @@ function skeletonHtml() {
         </div>
         <div class="figma-lookbook-grid">
           <button type="button" class="figma-lookbook-card" data-demo-keyword="degrad">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.jpg?v=20261115e" alt="Degradê Navalhado" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.jpg?v=20261115f" alt="Degradê Navalhado" loading="eager" />
             <span class="figma-lookbook-tag">Mais pedido</span>
             <div class="figma-lookbook-caption">
               <strong>Degradê Navalhado</strong>
@@ -175,27 +175,27 @@ function skeletonHtml() {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="barba">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115e" alt="Barboterapia Tradicional" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115f" alt="Barboterapia Tradicional" loading="eager" />
             <span class="figma-lookbook-tag">Barba</span>
             <div class="figma-lookbook-caption">
               <strong>Barboterapia</strong>
-              <span>Tesoura &amp; toalha quente</span>
+              <span>Toalha quente &amp; navalha</span>
             </div>
           </button>
-          <button type="button" class="figma-lookbook-card" data-demo-keyword="corte">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.jpg?v=20261115e" alt="Corte Texturizado" loading="eager" />
-            <span class="figma-lookbook-tag">Visagismo</span>
+          <button type="button" class="figma-lookbook-card" data-demo-keyword="social">
+            <img class="figma-lookbook-img" src="/img/cuts/cut-social.jpg?v=20261115f" alt="Corte Clássico na Tesoura" loading="eager" />
+            <span class="figma-lookbook-tag">Clássico</span>
             <div class="figma-lookbook-caption">
-              <strong>Corte &amp; Textura</strong>
-              <span>Estilo executivo moderno</span>
+              <strong>Corte Clássico</strong>
+              <span>Tesoura &amp; pente tradicional</span>
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="combo">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-social.jpg?v=20261115e" alt="Combo Cabelo e Barba" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.jpg?v=20261115f" alt="Acabamento e Barba" loading="eager" />
             <span class="figma-lookbook-tag">Completo</span>
             <div class="figma-lookbook-caption">
-              <strong>Cabelo + Barba</strong>
-              <span>Alinhamento completo</span>
+              <strong>Acabamento &amp; Barba</strong>
+              <span>Topete, fade &amp; alinhamento</span>
             </div>
           </button>
         </div>
@@ -382,20 +382,21 @@ async function loadSlots() {
 
 function servicePhoto(name = '') {
   const n = String(name).toLowerCase();
-  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115e';
-  if (n.includes('social') || n.includes('clássico') || n.includes('classico')) return '/img/cuts/cut-platinado.jpg?v=20261115e';
-  if (n.includes('combo') || n.includes('+')) return '/img/cuts/cut-social.jpg?v=20261115e';
-  if (n.includes('platinado') || n.includes('pigment') || n.includes('luzes') || n.includes('textur')) {
-    return '/img/cuts/cut-platinado.jpg?v=20261115e';
+  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115f';
+  if (n.includes('social') || n.includes('clássico') || n.includes('classico') || n.includes('tesoura')) {
+    return '/img/cuts/cut-social.jpg?v=20261115f';
   }
-  return '/img/cuts/cut-degrade.jpg?v=20261115e';
+  if (n.includes('platinado') || n.includes('textur') || n.includes('combo') || n.includes('+') || n.includes('visagismo')) {
+    return '/img/cuts/cut-platinado.jpg?v=20261115f';
+  }
+  return '/img/cuts/cut-degrade.jpg?v=20261115f';
 }
 
 function barberPhoto(barber = {}, index = 0) {
   const photos = [
-    '/img/barber-1.jpg?v=20261115e',
-    '/img/barber-2.jpg?v=20261115e',
-    '/img/barber-3.jpg?v=20261115e',
+    '/img/barber-1.jpg?v=20261115f',
+    '/img/barber-2.jpg?v=20261115f',
+    '/img/barber-3.jpg?v=20261115f',
   ];
   const idx = Math.abs(Number(barber.id || index + 1) - 1) % photos.length;
   return photos[idx];
@@ -488,11 +489,16 @@ function wireBooksyToolbar() {
       const kw = String(card.dataset.demoKeyword || '').toLowerCase();
       const match =
         state.services.find((s) => String(s.name || '').toLowerCase().includes(kw)) ||
+        (kw === 'social' && state.services.find((s) => /corte|tesoura|social|cl[aá]ssico/i.test(s.name || ''))) ||
+        (kw === 'combo' && state.services.find((s) => /combo|\+|barba/i.test(s.name || ''))) ||
         state.services[0];
       if (match) {
         const btn = document.querySelector(`[data-service="${match.id}"]`);
         if (btn) {
           btn.click();
+          setTimeout(() => {
+            document.getElementById('sec-barber')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 90);
           return;
         }
       }
@@ -522,23 +528,39 @@ function renderServices() {
     return;
   }
 
+  const catLabels = { cortes: 'Corte', barba: 'Barba', combos: 'Combo' };
+
   grid.innerHTML = filtered
     .map(
-      (service) => {
+      (service, idx) => {
         const isSelected = String(state.serviceId) === String(service.id);
+        const cat = serviceCategoryOf(service);
+        const isPopular = idx === 0 || /degrad/i.test(service.name || '');
+        const badgeHtml = isPopular
+          ? '<span class="service-popular-badge">Popular</span>'
+          : `<span class="service-cat-badge">${esc(catLabels[cat] || 'Serviço')}</span>`;
+        const descText =
+          service.description ||
+          (cat === 'barba'
+            ? 'Alinhamento preciso na navalha e hidratação com toalha quente.'
+            : cat === 'combos'
+            ? 'Corte completo, acabamento na lâmina e alinhamento de barba.'
+            : 'Acabamento técnico na tesoura ou máquina com finalização profissional.');
         return `
       <button type="button" class="choice service-choice booksy-service-row${isSelected ? ' selected' : ''}" data-service="${service.id}">
-        <img class="service-thumb" src="${esc(servicePhoto(service.name))}" alt="${esc(service.name)}" loading="lazy" />
         <div class="service-left">
           <div class="service-title-row">
             <strong class="service-name">${esc(service.name)}</strong>
-            <span class="service-duration-badge">${Number(service.duration_min)} min</span>
+            ${badgeHtml}
           </div>
-          ${service.description ? `<p class="service-desc">${esc(service.description)}</p>` : ''}
+          <p class="service-desc">${esc(descText)}</p>
         </div>
         <div class="service-right">
-          <span class="service-price">${esc(money(service.price))}</span>
-          <span class="booksy-reserve-btn">${isSelected ? 'Selecionado' : 'Reservar'}</span>
+          <div class="service-price-col">
+            <span class="service-price">${esc(money(service.price))}</span>
+            <span class="service-duration-mono">${Number(service.duration_min)} min</span>
+          </div>
+          <span class="booksy-reserve-btn">${isSelected ? '✓ Selecionado' : 'Reservar'}</span>
         </div>
       </button>`;
       }
@@ -588,12 +610,11 @@ function renderBarbers() {
           <img class="barber-avatar-img" src="${esc(barberPhoto(barber, idx))}" alt="${esc(barber.name)}" loading="lazy" />
         </div>
         <div class="barber-meta">
-          <strong class="barber-name">${esc(barber.name)}</strong>
-          <span class="barber-spec">${esc(barber.specialties || 'Mestre Barbeiro')}</span>
-          <div style="font-size:11px;color:#F59E0B;margin-top:2px;display:flex;align-items:center;gap:4px">
-            <span>★ ${Number(barber.rating || 4.9).toFixed(1)}</span>
-            <span style="color:var(--text-dim)">• Profissional da casa</span>
+          <div class="barber-name-row">
+            <strong class="barber-name">${esc(barber.name)}</strong>
+            <span class="barber-rating-badge">★ ${Number(barber.rating || 4.9).toFixed(1)}</span>
           </div>
+          <span class="barber-spec">${esc(barber.specialties || 'Mestre Barbeiro · Degradê & Barba')}</span>
         </div>
         <div class="selection-pill" aria-hidden="true">
           <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
@@ -1154,17 +1175,33 @@ function renderBookingTab() {
 }
 
 function renderCutsTab() {
+  const distinctPhotos = [
+    '/img/cuts/cut-degrade.jpg?v=20261115f',
+    '/img/cuts/cut-barboterapia.jpg?v=20261115f',
+    '/img/cuts/cut-social.jpg?v=20261115f',
+    '/img/cuts/cut-platinado.jpg?v=20261115f',
+  ];
   const defaultCuts = [
-    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: '/img/cuts/cut-degrade.jpg?v=20261115e' },
-    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: '/img/cuts/cut-barboterapia.jpg?v=20261115e' },
-    { tag: 'Visagismo', title: 'Corte & Textura Moderna', desc: 'Corte alinhado clássico com finalização em pomada matte.', img: '/img/cuts/cut-platinado.jpg?v=20261115e' },
-    { tag: 'Combo', title: 'Cabelo, Barba & Acabamento', desc: 'Atendimento completo com bancada de precisão e produtos profissionais.', img: '/img/cuts/cut-social.jpg?v=20261115e' },
+    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: distinctPhotos[0] },
+    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: distinctPhotos[1] },
+    { tag: 'Clássico', title: 'Corte Clássico na Tesoura', desc: 'Corte social tradicional na tesoura e pente com caimento natural.', img: distinctPhotos[2] },
+    { tag: 'Completo', title: 'Acabamento, Topete & Barba', desc: 'Finalização estruturada com fade moderno e barba desenhada.', img: distinctPhotos[3] },
   ];
   const rawCuts = state.shop?.cuts_gallery?.length ? state.shop.cuts_gallery : defaultCuts;
-  const cuts = rawCuts.map((cut, idx) => ({
-    ...cut,
-    img: cut.img || servicePhoto(cut.title || cut.tag) || defaultCuts[idx % defaultCuts.length].img,
-  }));
+  const usedPhotos = new Set();
+  const cuts = rawCuts.map((cut, idx) => {
+    const candidate = cut.img
+      ? `${String(cut.img).split('?')[0]}?v=20261115f`
+      : servicePhoto(`${cut.title || ''} ${cut.tag || ''}`);
+    const finalImg = !usedPhotos.has(candidate)
+      ? candidate
+      : distinctPhotos[idx % distinctPhotos.length];
+    usedPhotos.add(finalImg);
+    return {
+      ...cut,
+      img: finalImg,
+    };
+  });
 
   content().innerHTML = `
     <div class="card booking-card">

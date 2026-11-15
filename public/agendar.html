@@ -25,7 +25,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Barbearia" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/css/app.css?v=20261115e" />
+    <link rel="stylesheet" href="/css/app.css?v=20261115f" />
   </head>
   <body class="booking-body">
     <div class="booking-page">
@@ -53,11 +53,14 @@
         <!-- Hero Cinematográfico (Figma Editorial) -->
         <div class="shop-presentation-card figma-hero-card" id="shop-presentation">
           <div class="figma-hero-banner">
-            <img class="figma-hero-bg" src="/img/barber-studio-hero.jpg?v=20261115e" alt="Interior clássico da barbearia" loading="eager" />
+            <img class="figma-hero-bg" src="/img/barber-studio-hero.jpg?v=20261115f" alt="Barbeiros profissionais atendendo clientes na barbearia" loading="eager" />
             <div class="figma-hero-overlay">
               <div class="shop-kicker-row">
-                <span class="shop-verified-pill">✓ Estúdio Verificado</span>
-                <span class="shop-rating-inline" aria-label="Nota 4.9 de 5 estrelas"><strong>4.9</strong> ★ <span>(128 avaliações)</span></span>
+                <div class="shop-kicker-badges">
+                  <span class="shop-verified-pill"><span class="shop-open-dot" aria-hidden="true"></span>Aberto hoje</span>
+                  <span class="shop-studio-pill">✓ Estúdio Verificado</span>
+                </div>
+                <span class="shop-rating-inline" aria-label="Nota 4.9 de 5 estrelas"><span class="star-amber">★</span> <strong>4.9</strong> <span>(128 avaliações)</span></span>
               </div>
               <h1 class="shop-profile-name">
                 <span id="shop-hero-name">Nova Barbearia</span>
@@ -71,7 +74,15 @@
             <p class="shop-bio-text" id="shop-bio">
               Corte clássico na tesoura, degradê na navalha e barboterapia tradicional. Escolha seu estilo abaixo e reserve sem fila.
             </p>
-            <div class="shop-quick-actions" id="shop-actions"></div>
+            <div class="shop-info-bar">
+              <div class="shop-amenities-row" aria-label="Comodidades da barbearia">
+                <span class="shop-amenity-tag">Café Espresso</span>
+                <span class="shop-amenity-tag">Toalha Quente</span>
+                <span class="shop-amenity-tag">Wi-Fi &amp; Climatizado</span>
+                <span class="shop-amenity-tag">Hora Marcada</span>
+              </div>
+              <div class="shop-quick-actions" id="shop-actions"></div>
+            </div>
           </div>
         </div>
 
@@ -153,7 +164,7 @@
       <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90</div>
     </footer>
 
-    <script type="module" src="/js/agendar.js?v=20261115e"></script>
-    <script src="/js/consent.js?v=20261115e"></script>
+    <script type="module" src="/js/agendar.js?v=20261115f"></script>
+    <script src="/js/consent.js?v=20261115f"></script>
   </body>
 </html>

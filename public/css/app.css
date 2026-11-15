@@ -2247,7 +2247,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   height: 176px;
   background:
     linear-gradient(180deg, rgba(7, 8, 11, 0.12) 0%, rgba(14, 16, 21, 0.92) 100%),
-    url('/img/barber-studio-hero.jpg?v=20261114b') center 48% / cover no-repeat;
+    url('/img/barber-studio-hero.jpg?v=20261115f') center 28% / cover no-repeat;
   border-bottom: 1px solid var(--border);
   position: relative;
   display: flex;
@@ -2847,69 +2847,40 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .booksy-service-row {
-  gap: 14px;
-  padding: 12px 14px;
-}
-
-.service-thumb {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  object-fit: cover;
-  object-position: center 20%;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: var(--surface-2);
+  gap: 16px;
+  padding: 16px 14px;
 }
 
 .booksy-reserve-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 6px;
-  padding: 5px 12px;
-  border-radius: 7px;
-  font-size: 11.5px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
   font-weight: 600;
   background: var(--accent);
   color: #FFFFFF;
   border: 1px solid transparent;
-  transition: background-color 150ms var(--ease), border-color 150ms var(--ease);
+  white-space: nowrap;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), transform 120ms var(--ease);
 }
 
 .service-choice:hover .booksy-reserve-btn {
-  background: var(--accent-hover, #2563EB);
+  background: var(--accent-pressed, #2563EB);
 }
 
 .service-choice.selected .booksy-reserve-btn {
-  background: rgba(59, 130, 246, 0.16);
-  border-color: rgba(59, 130, 246, 0.5);
-  color: #93C5FD;
-}
-
-@media (max-width: 480px) {
-  .booksy-service-row {
-    gap: 10px;
-    padding: 12px;
-  }
-  .service-thumb {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-  }
-  .service-left {
-    padding-right: 6px;
-  }
-  .booksy-reserve-btn {
-    padding: 4px 10px;
-    font-size: 11px;
-  }
+  background: rgba(52, 211, 153, 0.14);
+  border-color: rgba(52, 211, 153, 0.45);
+  color: #34D399;
 }
 
 .service-left {
   flex: 1;
   min-width: 0;
-  padding-right: 14px;
+  padding-right: 12px;
 }
 
 .service-title-row {
@@ -2917,13 +2888,40 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .service-name {
-  font-size: 14.5px;
+  font-family: var(--font);
+  font-size: 15px;
   font-weight: 600;
-  color: #FFFFFF;
+  letter-spacing: -0.01em;
+  color: #F4F4F5;
+}
+
+.service-popular-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(59, 130, 246, 0.30);
+  color: #93C5FD;
+}
+
+.service-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #A1A1AA;
 }
 
 .service-duration-badge {
@@ -2940,32 +2938,61 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   border-radius: var(--radius-sm);
 }
 
-.service-duration-badge svg {
-  width: 11px;
-  height: 11px;
-  color: var(--text-faint);
-}
-
 .service-desc {
-  font-size: 12px;
-  color: var(--text-faint);
-  margin: 3px 0 0;
-  line-height: 1.4;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 2px 0 0;
+  line-height: 1.45;
+  max-width: 60ch;
 }
 
 .service-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-shrink: 0;
+}
+
+.service-price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .service-price {
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
-  color: #60A5FA;
+  color: #F4F4F5;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.service-duration-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+  .booksy-service-row {
+    gap: 12px;
+    padding: 14px 8px;
+  }
+  .service-left {
+    padding-right: 4px;
+  }
+  .service-right {
+    gap: 10px;
+  }
+  .booksy-reserve-btn {
+    padding: 6px 11px;
+    font-size: 12px;
+    min-height: 34px;
+  }
 }
 
 .selection-pill {
@@ -3019,15 +3046,15 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .barber-avatar-box {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #1C2029;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #181B23;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   display: grid;
   place-items: center;
-  font-size: 12px;
-  font-weight: 650;
+  font-size: 13px;
+  font-weight: 600;
   color: #FFFFFF;
   flex-shrink: 0;
 }
@@ -3037,18 +3064,40 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   min-width: 0;
 }
 
+.barber-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .barber-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  color: #FFFFFF;
-  display: block;
+  color: #F4F4F5;
+  letter-spacing: -0.01em;
+}
+
+.barber-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  padding: 1px 7px;
+  border-radius: 999px;
 }
 
 .barber-spec {
-  font-size: 11.5px;
-  color: #64748B;
+  font-size: 12.5px;
+  color: var(--text-dim);
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 /* Faixa de Dias Horizontal */
@@ -3684,28 +3733,28 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .booking-body .shop-presentation-card {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0B0E15;
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: #0F1115;
+  box-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.78);
   border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .figma-hero-banner {
   position: relative;
-  height: 224px;
+  height: 256px;
   overflow: hidden;
-  background: #080B12;
+  background: #09090B;
 }
 
 .figma-hero-bg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center 28%;
   display: block;
-  filter: brightness(0.84) contrast(1.04);
+  filter: brightness(0.98) contrast(1.03);
 }
 
 .figma-hero-overlay {
@@ -3714,47 +3763,126 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 20px;
+  padding: 22px 24px 18px;
   background: linear-gradient(
     180deg,
-    rgba(8, 11, 18, 0.08) 0%,
-    rgba(8, 11, 18, 0.58) 52%,
-    rgba(11, 14, 21, 0.96) 100%
+    rgba(9, 9, 11, 0.10) 0%,
+    rgba(9, 9, 11, 0.55) 55%,
+    rgba(15, 17, 21, 0.98) 100%
   );
 }
 
+.figma-hero-overlay .shop-profile-name {
+  font-family: var(--font);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: #FAFAFA;
+  margin: 0 0 4px;
+}
+
 .figma-hero-body {
-  padding: 14px 20px 16px;
+  padding: 16px 24px 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #0F1115;
 }
 
 .figma-hero-body .shop-bio-text {
-  padding: 0 0 12px;
+  padding: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-width: 65ch;
+}
+
+.shop-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.shop-amenities-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.shop-amenity-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #A1A1AA;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .figma-hero-body .shop-quick-actions {
   padding: 0;
+  gap: 8px;
+}
+
+.shop-kicker-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .shop-verified-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
+  gap: 6px;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.14);
-  border: 1px solid rgba(16, 185, 129, 0.28);
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.34);
   color: #34D399;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
+}
+
+.shop-open-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34D399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.22);
+  animation: bookingDotPulse 2.4s ease-in-out infinite;
+}
+
+.shop-studio-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(9, 9, 11, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #E4E4E7;
+  font-size: 11px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.star-amber {
+  color: #F59E0B;
 }
 
 /* Figma Lookbook Portrait Cards */
 .figma-lookbook-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .figma-lookbook-card {
@@ -3762,17 +3890,21 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   aspect-ratio: 4 / 5;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  background: #0F131C;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: #131518;
   padding: 0;
   cursor: pointer;
   text-align: left;
-  transition: border-color 160ms var(--ease), transform 160ms var(--ease);
+  transition: border-color 180ms var(--ease), transform 180ms var(--ease);
 }
 
 .figma-lookbook-card:hover {
   border-color: rgba(96, 165, 250, 0.55);
   transform: translateY(-2px);
+}
+
+.figma-lookbook-card:active {
+  transform: scale(0.98);
 }
 
 .figma-lookbook-img {
@@ -3781,11 +3913,11 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   object-fit: cover;
   object-position: center 22%;
   display: block;
-  transition: transform 260ms var(--ease);
+  transition: transform 240ms var(--ease);
 }
 
 .figma-lookbook-card:hover .figma-lookbook-img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .figma-lookbook-tag {
@@ -3794,11 +3926,12 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   left: 8px;
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(8, 11, 18, 0.78);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #E2E8F0;
-  font-size: 10px;
+  background: rgba(9, 9, 11, 0.72);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #F4F4F5;
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -3808,38 +3941,46 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 28px 10px 10px;
-  background: linear-gradient(180deg, transparent 0%, rgba(8, 11, 18, 0.92) 72%, rgba(8, 11, 18, 0.98) 100%);
+  padding: 32px 12px 12px;
+  background: linear-gradient(180deg, transparent 0%, rgba(9, 9, 11, 0.88) 68%, rgba(9, 9, 11, 0.98) 100%);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .figma-lookbook-caption strong {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  color: #F8FAFC;
-  line-height: 1.2;
+  color: #FAFAFA;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .figma-lookbook-caption span {
-  font-size: 10.5px;
-  color: #94A3B8;
+  font-size: 11px;
+  color: #A1A1AA;
+  line-height: 1.3;
 }
 
 @media (max-width: 640px) {
   .figma-hero-banner {
-    height: 184px;
+    height: 204px;
   }
   .figma-hero-overlay {
-    padding: 14px 16px;
+    padding: 16px;
+  }
+  .figma-hero-overlay .shop-profile-name {
+    font-size: 22px;
   }
   .figma-hero-body {
-    padding: 12px 16px 14px;
+    padding: 14px 16px 16px;
+  }
+  .shop-studio-pill {
+    display: none;
   }
   .figma-lookbook-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 10px;
   }
 }
 
