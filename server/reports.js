@@ -51,14 +51,15 @@ export async function buildReport(query = {}) {
     ),
     all(
       `SELECT b.id AS barber_id, b.name AS name, b.commission AS commission,
-              COUNT(*) AS total,
-              COALESCE(SUM(a.price), 0) AS revenue,
-              COALESCE(SUM(a.price), 0) AS realized,
-              COUNT(*) AS completed
+              COUNT(*) AS total_appointments,
+              COALESCE(SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END), 0) AS total,
+              COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS revenue,
+              COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS realized,
+              COALESCE(SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed
          FROM appointments a JOIN barbers b ON b.id = a.barber_id
-        WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}
+        WHERE a.date BETWEEN ? AND ?${barberFilter}
         GROUP BY a.barber_id
-        ORDER BY revenue DESC, total DESC`,
+        ORDER BY revenue DESC, completed DESC, total_appointments DESC`,
       [from, to, ...barberParams]
     ),
     all(
@@ -76,7 +77,8 @@ export async function buildReport(query = {}) {
               COALESCE(SUM(CASE WHEN a.status = 'cancelled' THEN 1 ELSE 0 END), 0) AS cancelled,
               COALESCE(SUM(CASE WHEN a.status = 'no_show' THEN 1 ELSE 0 END), 0) AS no_show,
               COALESCE(SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed,
-              COALESCE(SUM(CASE WHEN a.status IN ('pending', 'confirmed', 'completed') THEN a.price ELSE 0 END), 0) AS revenue
+              COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS revenue,
+              COALESCE(SUM(CASE WHEN a.status IN ('pending', 'confirmed', 'completed') THEN a.price ELSE 0 END), 0) AS revenue_expected
          FROM appointments a
         WHERE a.date BETWEEN ? AND ?${barberFilter}
         GROUP BY a.date
@@ -114,6 +116,8 @@ export async function buildReport(query = {}) {
     cancelled: Number(row.cancelled),
     no_show: Number(row.no_show),
     revenue: Number(row.revenue || 0),
+    revenue_realized: Number(row.revenue || 0),
+    revenue_expected: Number(row.revenue_expected || 0),
   }));
 
   const byWeekday = WEEKDAY_LABELS.map((label, index) => {
@@ -123,6 +127,7 @@ export async function buildReport(query = {}) {
       label,
       total: rows.reduce((sum, row) => sum + row.total, 0),
       revenue: rows.reduce((sum, row) => sum + row.revenue, 0),
+      revenue_expected: rows.reduce((sum, row) => sum + row.revenue_expected, 0),
     };
   });
 
@@ -152,11 +157,14 @@ export async function buildReport(query = {}) {
       total: Number(row.total),
       revenue: Number(row.revenue || 0),
     })),
-    by_barber: barberRows.map((row) => ({
-      barber_id: Number(row.barber_id),
-      name: row.name,
-      total: Number(row.total),
-      completed: Number(row.completed),
+    by_barber: barberRows
+      .filter((row) => Number(row.completed) > 0)
+      .map((row) => ({
+        barber_id: Number(row.barber_id),
+        name: row.name,
+        total: Number(row.total),
+        total_appointments: Number(row.total_appointments || row.total),
+        completed: Number(row.completed),
       revenue: Number(row.revenue || 0),
       realized: Number(row.realized || 0),
       commission_percent: Number(row.commission || 0),

@@ -206,8 +206,8 @@ const server = createServer(async (request, response) => {
       return;
     }
 
-    // Rotas de barbearias multi-tenant (/b/:slug)
-    if (pathname.startsWith('/b/')) {
+    // Rotas de barbearias multi-tenant (/b/:slug) e autoatendimento (/agendamento/:token)
+    if (pathname.startsWith('/b/') || /^\/agendamento\/[a-f0-9]{16,64}$/i.test(pathname)) {
       if (serveStatic(request, response, PUBLIC_DIR, 'agendar.html')) return;
     }
 

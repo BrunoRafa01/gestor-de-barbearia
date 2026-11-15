@@ -62,6 +62,7 @@ export const dashboardRoutes = [
       const weekAppointments = (await listAppointments({ from: weekStart, to: weekEnd })).filter(
         (item) => ['pending', 'confirmed', 'completed'].includes(item.status)
       );
+      const completedWeek = weekAppointments.filter((item) => item.status === 'completed');
 
       const { start: monthStart, end: monthEnd } = monthRange(date);
       const monthAppointments = (await listAppointments({ from: monthStart, to: monthEnd })).filter(
@@ -70,8 +71,8 @@ export const dashboardRoutes = [
       const completedMonth = monthAppointments.filter((item) => item.status === 'completed');
 
       const newClients = await get(
-        'SELECT COUNT(*) AS total FROM clients WHERE date(created_at) >= ?',
-        [monthStart]
+        'SELECT COUNT(*) AS total FROM clients WHERE date(created_at) BETWEEN ? AND ?',
+        [monthStart, monthEnd]
       );
 
       const upcoming = (await listAppointments({ from: today }))
@@ -121,6 +122,8 @@ export const dashboardRoutes = [
             start: weekStart,
             end: weekEnd,
             total: weekAppointments.length,
+            completed: completedWeek.length,
+            revenue_realized: sumBy(completedWeek, () => true),
             revenue_expected: sumBy(weekAppointments, () => true),
           },
           month: {
@@ -132,7 +135,7 @@ export const dashboardRoutes = [
             revenue_expected: sumBy(monthAppointments, () => true),
             new_clients: Number(newClients?.total || 0),
             average_ticket: completedMonth.length
-              ? Number(sumBy(completedMonth, () => true) / completedMonth.length)
+              ? Number((sumBy(completedMonth, () => true) / completedMonth.length).toFixed(2))
               : 0,
           },
           upcoming,

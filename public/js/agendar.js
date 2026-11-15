@@ -752,7 +752,18 @@ function renderManageAppointment(token, appt) {
       ${
         canCancel
           ? `
-        <div id="cancel-section" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--c-border)">
+        <div id="reschedule-section" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--c-border)">
+          <h4 style="font-size:14px">Deseja reagendar para outro dia ou horário?</h4>
+          <div class="field" style="margin-top:10px">
+            <label for="pk-reschedule-date">Nova data</label>
+            <input id="pk-reschedule-date" type="date" value="${esc(appt.date)}" />
+          </div>
+          <div id="pk-reschedule-slots" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+          <button class="btn btn-primary btn-block" id="btn-do-reschedule" type="button" style="margin-top:12px" disabled>
+            Confirmar novo horário
+          </button>
+        </div>
+        <div id="cancel-section" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--c-border)">
           <h4 style="font-size:14px">Precisa cancelar este horário?</h4>
           <p class="muted" style="font-size:12.5px;margin-top:4px">
             Ao cancelar, o horário ficará livre para outro cliente.
@@ -774,6 +785,74 @@ function renderManageAppointment(token, appt) {
     </div>`;
 
   if (canCancel) {
+    const dateInput = document.getElementById('pk-reschedule-date');
+    const slotsWrap = document.getElementById('pk-reschedule-slots');
+    const rescheduleBtn = document.getElementById('btn-do-reschedule');
+    let selectedSlot = '';
+
+    async function loadRescheduleSlots(date) {
+      selectedSlot = '';
+      if (rescheduleBtn) rescheduleBtn.disabled = true;
+      if (!slotsWrap) return;
+      slotsWrap.innerHTML = '<span class="muted" style="font-size:12.5px">Buscando horários livres...</span>';
+      try {
+        const res = await api.get(
+          `/api/public/availability${query({
+            barber_id: appt.barber_id,
+            service_id: appt.service_id,
+            date,
+          })}`
+        );
+        const slots = Array.isArray(res?.slots) ? res.slots : [];
+        if (!res?.open || !slots.length) {
+          slotsWrap.innerHTML = `<span class="muted" style="font-size:12.5px">${esc(res?.reason || 'Sem horários livres nesta data.')}</span>`;
+          return;
+        }
+        slotsWrap.innerHTML = slots
+          .map(
+            (slot) =>
+              `<button type="button" class="btn btn-sm btn-ghost pk-slot-btn" data-slot="${esc(slot)}">${esc(slot)}</button>`
+          )
+          .join('');
+      } catch (err) {
+        slotsWrap.innerHTML = `<span class="danger" style="font-size:12.5px">${esc(err.message)}</span>`;
+      }
+    }
+
+    if (appt.barber_id && appt.service_id) {
+      loadRescheduleSlots(appt.date);
+      dateInput?.addEventListener('change', () => {
+        if (dateInput.value) loadRescheduleSlots(dateInput.value);
+      });
+      slotsWrap?.addEventListener('click', (event) => {
+        const btn = event.target.closest('.pk-slot-btn');
+        if (!btn) return;
+        selectedSlot = btn.dataset.slot || '';
+        slotsWrap.querySelectorAll('.pk-slot-btn').forEach((item) => {
+          item.classList.toggle('btn-primary', item === btn);
+          item.classList.toggle('btn-ghost', item !== btn);
+        });
+        if (rescheduleBtn) rescheduleBtn.disabled = !selectedSlot;
+      });
+      rescheduleBtn?.addEventListener('click', async () => {
+        if (!selectedSlot || !dateInput?.value) return;
+        rescheduleBtn.disabled = true;
+        rescheduleBtn.textContent = 'Reagendando...';
+        try {
+          const updated = await api.post(`/api/public/appointments/${encodeURIComponent(token)}/reschedule`, {
+            date: dateInput.value,
+            start_time: selectedSlot,
+          });
+          toast('Agendamento reagendado com sucesso.', 'success');
+          renderManageAppointment(token, updated.appointment);
+        } catch (err) {
+          toast(err.message, 'error');
+          rescheduleBtn.disabled = false;
+          rescheduleBtn.textContent = 'Confirmar novo horário';
+        }
+      });
+    }
+
     const cancelBtn = document.getElementById('btn-do-cancel');
     cancelBtn?.addEventListener('click', async () => {
       const reasonInput = document.getElementById('pk-cancel-reason');
@@ -1245,14 +1324,17 @@ function setupTabs() {
 async function boot() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const manageToken = params.get('manage') || params.get('cancel') || params.get('token');
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const pathManageToken =
+      pathParts[0] === 'agendamento' && pathParts[1] ? pathParts[1] : null;
+    const manageToken =
+      pathManageToken || params.get('manage') || params.get('cancel') || params.get('token');
     if (manageToken) {
       return await bootManage(manageToken);
     }
 
     // Identifica o estabelecimento / barbearia ativa (multi-tenant)
     let shopSlug = params.get('shop') || '';
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
     if (pathParts[0] === 'b' && pathParts[1]) {
       shopSlug = pathParts[1];
     }

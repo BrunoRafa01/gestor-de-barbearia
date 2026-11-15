@@ -40,6 +40,7 @@ const SVG = {
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   'shield-check': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
   clipboard: '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  printer: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>',
 };
 
 export function icon(name, extra = '') {
@@ -186,7 +187,7 @@ export const STATUS_META = {
 
 export function statusPill(status) {
   const meta = STATUS_META[status] || { label: status, className: 'pill pill-neutral' };
-  return `<span class="${meta.className}">${meta.label}</span>`;
+  return `<span class="${meta.className}">${esc(meta.label)}</span>`;
 }
 
 export function initials(name) {
@@ -228,12 +229,14 @@ export function toast(message, type = 'ok') {
 /* --------------------------------- Modais -------------------------------- */
 
 export function openModal({ title, body = '', footer = null, narrow = false, onClose = null }) {
+  const triggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const titleId = `modal-title-${Math.random().toString(36).slice(2, 8)}`;
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   backdrop.innerHTML = `
-    <div class="modal${narrow ? ' narrow' : ''}" role="dialog" aria-modal="true">
+    <div class="modal${narrow ? ' narrow' : ''}" role="dialog" aria-modal="true" aria-labelledby="${titleId}">
       <div class="modal-header">
-        <h3></h3>
+        <h3 id="${titleId}"></h3>
         <span class="spacer"></span>
         <button type="button" class="icon-btn" data-close aria-label="Fechar modal">${icon('x')}</button>
       </div>
@@ -248,11 +251,13 @@ export function openModal({ title, body = '', footer = null, narrow = false, onC
   else bodyElement.innerHTML = body || '';
 
   const closeHandlers = [];
+  if (typeof onClose === 'function') closeHandlers.push(onClose);
   function close() {
     if (!backdrop.isConnected) return;
     backdrop.remove();
     if (!document.querySelector('.modal-backdrop')) document.body.style.overflow = '';
     closeHandlers.forEach((handler) => handler());
+    if (triggerEl && triggerEl.isConnected) triggerEl.focus();
   }
 
   function setFooter(nodes) {

@@ -593,6 +593,55 @@ async function run() {
   });
   check('cancelar agendamento ja cancelado e idempotente (200)', publicCancelAgain.status === 200 && publicCancelAgain.body?.cancelled === true);
 
+  const rescheduleCancelled = await call(`/api/public/appointments/${cancelToken}/reschedule`, {
+    method: 'POST',
+    auth: false,
+    body: { date: targetDate, start_time: publicSlot },
+  });
+  check('reagendar agendamento cancelado responde 409', rescheduleCancelled.status === 409);
+
+  const pageTokenRes = await fetch(`${BASE}/agendamento/${cancelToken}`);
+  check('rota amigavel /agendamento/:token responde 200', pageTokenRes.status === 200);
+
+  const availForReschedule = await call(
+    `/api/public/availability?barber_id=${barberId}&service_id=${serviceId}&date=${targetDate}`,
+    { auth: false }
+  );
+  const reschedSlot1 = availForReschedule.body?.slots?.[0];
+  const reschedSlot2 = availForReschedule.body?.slots?.[1];
+  const toReschedule = await call('/api/public/appointments', {
+    method: 'POST',
+    auth: false,
+    body: {
+      name: 'Cliente Reagendar',
+      phone: '11922221111',
+      barber_id: barberId,
+      service_id: serviceId,
+      date: targetDate,
+      start_time: reschedSlot1,
+    },
+  });
+  check('agendamento para reagendar criado', toReschedule.status === 201);
+  const reschedToken = toReschedule.body?.cancel_token;
+  const doReschedule = await call(`/api/public/appointments/${reschedToken}/reschedule`, {
+    method: 'POST',
+    auth: false,
+    body: { date: targetDate, start_time: reschedSlot2 },
+  });
+  check(
+    'reagendamento publico altera horario com sucesso (200)',
+    doReschedule.status === 200 && doReschedule.body?.appointment?.start_time === reschedSlot2
+  );
+  const pastMonthDash = await call('/api/dashboard?date=2020-01-15');
+  check(
+    'dashboard em mes passado limita new_clients ao intervalo do mes',
+    pastMonthDash.status === 200 && pastMonthDash.body?.month?.new_clients === 0
+  );
+  check(
+    'dashboard traz revenue_realized semanal',
+    typeof pastMonthDash.body?.week?.revenue_realized === 'number'
+  );
+
   const publicBadPhone = await call('/api/public/appointments', {
     method: 'POST',
     auth: false,

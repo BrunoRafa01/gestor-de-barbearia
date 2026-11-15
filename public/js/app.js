@@ -426,6 +426,10 @@ async function navigate(view) {
       renderLogin();
       return;
     }
+    if (error.status === 403 && String(error.message || '').toLowerCase().includes('senha')) {
+      renderForcePasswordScreen();
+      return;
+    }
     content().innerHTML = emptyBlock('Nao foi possivel carregar esta tela', error.message);
   }
 }
@@ -1977,16 +1981,16 @@ function renderWhatsAppHistoryTable(messages) {
       <tbody>
         ${messages.map((msg) => `
           <tr>
-            <td class="mono" style="font-size:12px; white-space:nowrap">${formatDateTimeBR(msg.created_at)}</td>
+            <td class="mono" style="font-size:12px; white-space:nowrap">${esc(formatDateTimeBR(msg.created_at))}</td>
             <td><strong>${esc(typeLabels[msg.message_type] || msg.message_type)}</strong></td>
             <td>
               <div>${esc(msg.recipient_name || 'Destinatário')}</div>
-              <div class="mono muted" style="font-size:11px">${formatPhone(msg.recipient_phone)}</div>
+              <div class="mono muted" style="font-size:11px">${esc(formatPhone(msg.recipient_phone))}</div>
             </td>
             <td>
               ${msg.appointment_id ? `
-                <div style="font-size:12px">#${msg.appointment_id} - ${esc(msg.client_name || '')}</div>
-                <div class="muted" style="font-size:11px">${msg.appointment_date ? formatDateBR(msg.appointment_date) : ''} ${msg.appointment_time || ''}</div>
+                <div style="font-size:12px">#${esc(msg.appointment_id)} - ${esc(msg.client_name || '')}</div>
+                <div class="muted" style="font-size:11px">${msg.appointment_date ? esc(formatDateBR(msg.appointment_date)) : ''} ${esc(msg.appointment_time || '')}</div>
               ` : '<span class="muted">-</span>'}
             </td>
             <td>${statusBadges[msg.status] || `<span class="pill pill-neutral">${esc(msg.status)}</span>`}</td>
@@ -2452,7 +2456,7 @@ async function viewSettings() {
     const confirm = plain('confirm_password').value;
     if (!current || !next) return toast('Preencha a senha atual e a nova senha.', 'error');
     if (next !== confirm) return toast('A confirmação da nova senha não confere.', 'error');
-    if (next.length < 6) return toast('A nova senha deve ter ao menos 6 caracteres.', 'error');
+    if (next.length < 8) return toast('A nova senha deve ter ao menos 8 caracteres (maiúscula, minúscula e número).', 'error');
     setBusy(event.currentTarget, true);
     try {
       await api.post('/api/settings/password', { current_password: current, new_password: next });
@@ -2615,7 +2619,7 @@ async function viewSettings() {
     });
   });
 
-  content().addEventListener('click', async (e) => {
+  plain('whatsapp-history-wrap')?.addEventListener('click', async (e) => {
     const resendBtn = e.target.closest('.resend-wa-btn');
     if (!resendBtn) return;
     const msgId = resendBtn.dataset.id;
@@ -3362,10 +3366,10 @@ async function viewMarketing() {
         <div class="field">
           <label>Legenda para Post / Stories no Instagram</label>
           <textarea class="control" id="mkt-post-text" rows="5" readonly style="font-size:13px;line-height:1.5">Fala galera! 💈✂️
-Para sua comodidade, agora você pode agendar seu horário na ${shopName} em menos de 1 minuto diretamente pelo celular, sem precisar baixar nada!
+Para sua comodidade, agora você pode agendar seu horário na ${esc(shopName)} em menos de 1 minuto diretamente pelo celular, sem precisar baixar nada!
 
 👉 Basta acessar o link da nossa bio:
-${publicUrl}
+${esc(publicUrl)}
 
 Escolha seu barbeiro, o melhor horário e receba a confirmação na hora! Te esperamos na cadeira. 🔥</textarea>
           <button class="btn btn-sm" id="btn-copy-post" type="button" style="margin-top:8px">
@@ -3384,25 +3388,29 @@ Escolha seu barbeiro, o melhor horário e receba a confirmação na hora! Te esp
   `;
 
   document.getElementById('btn-copy-url')?.addEventListener('click', () => {
-    navigator.clipboard.writeText(publicUrl).then(() => toast('Link público copiado!', 'ok'));
+    navigator.clipboard.writeText(publicUrl).then(() => toast('Link público copiado!', 'ok')).catch(() => toast('Não foi possível copiar automaticamente.', 'error'));
   });
 
   document.getElementById('btn-copy-tenant')?.addEventListener('click', () => {
-    navigator.clipboard.writeText(customShopUrl).then(() => toast('Link personalizado copiado!', 'ok'));
+    navigator.clipboard.writeText(customShopUrl).then(() => toast('Link personalizado copiado!', 'ok')).catch(() => toast('Não foi possível copiar automaticamente.', 'error'));
   });
 
   document.getElementById('btn-copy-post')?.addEventListener('click', () => {
     const text = document.getElementById('mkt-post-text').value;
-    navigator.clipboard.writeText(text).then(() => toast('Texto para Instagram copiado!', 'ok'));
+    navigator.clipboard.writeText(text).then(() => toast('Texto para Instagram copiado!', 'ok')).catch(() => toast('Não foi possível copiar automaticamente.', 'error'));
   });
 
   document.getElementById('btn-share-wa')?.addEventListener('click', () => {
     const text = encodeURIComponent(`Olá! Agende seu horário na ${shopName} pelo link: ${publicUrl}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener');
   });
 
   document.getElementById('btn-print-qr')?.addEventListener('click', () => {
     const printWin = window.open('', '_blank');
+    if (!printWin) {
+      toast('Permita pop-ups neste site para imprimir o display de balcão.', 'warn');
+      return;
+    }
     printWin.document.write(`
       <!DOCTYPE html>
       <html>

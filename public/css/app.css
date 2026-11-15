@@ -29,7 +29,7 @@
   /* Tipografia com Alto Contraste */
   --text: #F4F4F5;
   --text-dim: #A1A1AA;
-  --text-faint: #71717A;
+  --text-faint: #94A3B8;
 
   /* Acento Único Intencional: Crisp Blue */
   --accent: #3B82F6;
@@ -1547,8 +1547,8 @@ table.data .actions { text-align: right; white-space: nowrap; }
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(229, 169, 60, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--ring);
 }
 
 .field .hint { font-size: 11px; color: var(--text-faint); }
@@ -1598,8 +1598,8 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .search-input input:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(229, 169, 60, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--ring);
 }
 
 .search-input svg {
@@ -3135,21 +3135,40 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .booking-legal-links a:hover {
   color: var(--text);
 }
-}
 
-/* Modal Bottom Sheet para iOS Safari / PWA */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(9, 9, 11, 0.82);
-  z-index: 999;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+/* Modal Bottom Sheet apenas em telas pequenas (iOS Safari / PWA) */
+@media (max-width: 640px) {
+  .modal-backdrop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    z-index: 999;
+  }
 }
 
 .modal-backdrop.hidden {
   display: none;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.hours-head,
+.hours-row {
+  display: grid;
+  grid-template-columns: 110px 70px 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.hours-head {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
 }
 
 .ios-install-sheet {

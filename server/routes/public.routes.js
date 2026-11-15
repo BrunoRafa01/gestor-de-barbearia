@@ -3,6 +3,7 @@ import {
   createAppointment,
   getAppointmentByCancelToken,
   setAppointmentStatus,
+  updateAppointment,
   upsertClientByPhone,
 } from '../appointments.js';
 import { all, get, getSetting, getShopBySlug, getShopReviews, addReview, run } from '../db.js';
@@ -13,6 +14,7 @@ import { buildMessages, waLink } from '../whatsapp.js';
 import {
   notifyAppointmentCancelled,
   notifyAppointmentCreatedOrConfirmed,
+  notifyAppointmentRescheduled,
 } from '../whatsapp-cloud.js';
 import { addDays, isValidDate, todayISO } from '../time.js';
 import {
@@ -284,8 +286,10 @@ export const publicRoutes = [
           start_time: appointment.start_time,
           end_time: appointment.end_time,
           status: appointment.status,
+          service_id: appointment.service_id,
           service_name: appointment.service_name,
           service_duration: appointment.service_duration,
+          barber_id: appointment.barber_id,
           barber_name: appointment.barber_name,
           barber_color: appointment.barber_color,
           price: appointment.price,
@@ -326,8 +330,8 @@ export const publicRoutes = [
         };
       }
 
-      if (appointment.status === 'completed') {
-        throw new HttpError(400, 'Agendamentos já concluídos não podem ser cancelados.');
+      if (appointment.status === 'completed' || appointment.status === 'no_show') {
+        throw new HttpError(409, 'Agendamentos concluídos ou marcados como falta não podem ser cancelados.');
       }
 
       const reason = optionalString(body?.reason, 'motivo', 300);
@@ -358,6 +362,60 @@ export const publicRoutes = [
             status: 'cancelled',
             cancellation_reason: reason || null,
           },
+        },
+      };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/public/appointments/:token/reschedule',
+    auth: false,
+    handler: async ({ req, res, params, body }) => {
+      enforceLimit(req, res, publicBookingLimiter, 'public-appointment-reschedule');
+      assertPublicBookingEnabled();
+
+      const token = String(params.token || '').trim();
+      if (!/^[a-f0-9]{16,64}$/i.test(token)) {
+        throw new HttpError(400, 'Código de agendamento inválido.');
+      }
+
+      const appointment = await getAppointmentByCancelToken(token);
+      if (!appointment) {
+        throw new HttpError(404, 'Agendamento não encontrado ou link expirado.');
+      }
+      if (todayISO() > addDays(appointment.date, 7)) {
+        throw new HttpError(410, 'Este link de gerenciamento expirou. Entre em contato com a barbearia.');
+      }
+      if (['cancelled', 'completed', 'no_show'].includes(appointment.status)) {
+        throw new HttpError(409, 'Este agendamento não pode mais ser reagendado online.');
+      }
+
+      const date = requiredDate(body?.date);
+      const startTime = requiredTime(body?.start_time, 'horario');
+      const barberId = body?.barber_id ? requiredId(body.barber_id, 'profissional') : appointment.barber_id;
+      const maxDays = Math.max(1, Number(getSetting('max_advance_days', '30')) || 30);
+      if (date > addDays(todayISO(), maxDays)) {
+        throw new HttpError(400, `Agendamentos disponiveis apenas para os proximos ${maxDays} dias.`);
+      }
+
+      const updated = await updateAppointment(appointment.id, {
+        date,
+        start_time: startTime,
+        barber_id: barberId,
+      });
+
+      try {
+        await notifyAppointmentRescheduled(updated, appointment.date, appointment.start_time);
+      } catch (err) {
+        console.error('[WhatsApp Cloud] Erro ao disparar reagendamento público:', err);
+      }
+
+      return {
+        status: 200,
+        body: {
+          rescheduled: true,
+          message: 'Seu agendamento foi reagendado com sucesso.',
+          appointment: updated,
         },
       };
     },
