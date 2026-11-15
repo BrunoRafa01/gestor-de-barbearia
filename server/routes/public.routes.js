@@ -69,6 +69,7 @@ async function shopPayload(slug) {
   );
 
   return {
+    id: shopRow?.id ? Number(shopRow.id) : 1,
     slug: shopRow?.slug || 'nova-barbearia',
     name: shopRow?.name || getSetting('shop_name', 'Gestor de Barbearia'),
     company: shopRow?.company || getSetting('shop_company', 'Nova Runtime'),
@@ -94,10 +95,10 @@ async function shopPayload(slug) {
   };
 }
 
-async function activeServices() {
+async function activeServices(shopId = 1) {
   const rows = await all(
-    'SELECT id, name, description, duration_min, price, category FROM services WHERE active = 1 ORDER BY category ASC, name COLLATE NOCASE',
-    []
+    'SELECT id, name, description, duration_min, price, category FROM services WHERE shop_id = ? AND active = 1 ORDER BY category ASC, name COLLATE NOCASE',
+    [shopId]
   );
   return rows.map((row) => ({
     ...row,
@@ -108,10 +109,10 @@ async function activeServices() {
   }));
 }
 
-async function activeBarbers() {
+async function activeBarbers(shopId = 1) {
   const rows = await all(
-    'SELECT id, name, color, specialties, bio, rating, avatar_url FROM barbers WHERE active = 1 ORDER BY name COLLATE NOCASE',
-    []
+    'SELECT id, name, color, specialties, bio, rating, avatar_url FROM barbers WHERE shop_id = ? AND active = 1 ORDER BY name COLLATE NOCASE',
+    [shopId]
   );
   return rows.map((row) => ({
     id: Number(row.id),
@@ -132,10 +133,11 @@ export const publicRoutes = [
     handler: async ({ req, res, query }) => {
       enforceLimit(req, res, publicReadLimiter, 'public-config');
       const shopSlug = query?.shop || 'nova-barbearia';
-      const [shop, services, barbers, reviews] = await Promise.all([
-        shopPayload(shopSlug),
-        activeServices(),
-        activeBarbers(),
+      const shop = await shopPayload(shopSlug);
+      const shopId = Number(shop?.id) || 1;
+      const [services, barbers, reviews] = await Promise.all([
+        activeServices(shopId),
+        activeBarbers(shopId),
         getShopReviews(shopSlug),
       ]);
       return { status: 200, body: { shop, services, barbers, reviews } };

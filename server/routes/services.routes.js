@@ -16,26 +16,28 @@ export const serviceRoutes = [
   {
     method: 'GET',
     path: '/api/services',
-    handler: async ({ query }) => {
-      const where = [];
+    handler: async ({ query, shopId = 1 }) => {
+      const where = ['shop_id = ?'];
+      const params = [shopId];
       if (query.active === '1') where.push('active = 1');
-      const sql = `SELECT * FROM services ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+      const sql = `SELECT * FROM services WHERE ${where.join(' AND ')}
                    ORDER BY active DESC, name COLLATE NOCASE ASC`;
-      const rows = await all(sql, []);
+      const rows = await all(sql, params);
       return { status: 200, body: rows.map(mapService) };
     },
   },
   {
     method: 'POST',
     path: '/api/services',
-    handler: async ({ body }) => {
+    handler: async ({ body, shopId = 1 }) => {
       const name = requiredString(body.name, 'nome do servico', { max: 120 });
       const duration = requiredNumber(body.duration_min, 'duracao', { min: 5, max: 600 });
       const price = requiredNumber(body.price, 'preco', { min: 0, max: 100000 });
 
       const info = await run(
-        'INSERT INTO services (name, description, duration_min, price, active) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO services (shop_id, name, description, duration_min, price, active) VALUES (?, ?, ?, ?, ?, ?)',
         [
+          shopId,
           name,
           optionalString(body.description, 'descricao', 300),
           Math.round(duration),

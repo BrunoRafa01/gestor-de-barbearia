@@ -182,6 +182,23 @@ async function bookedByDate({ barberId, from, to, excludeId = null }) {
     });
     map.set(row.date, list);
   }
+
+  const blockRows = await all(
+    `SELECT id, date, start_time, end_time FROM barber_blocks
+      WHERE date >= ? AND date <= ? AND (barber_id = ? OR barber_id IS NULL)`,
+    [from, to, Number(barberId)]
+  );
+  for (const block of blockRows) {
+    const list = map.get(block.date) || [];
+    list.push({
+      id: Number(block.id),
+      start: hhmmToMinutes(block.start_time),
+      end: hhmmToMinutes(block.end_time),
+      block: true,
+    });
+    map.set(block.date, list);
+  }
+
   return map;
 }
 

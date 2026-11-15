@@ -105,11 +105,18 @@ function sign(payload, secret) {
   return createHmac('sha256', secret).update(payload).digest('base64url');
 }
 
-export function createSessionToken() {
+export function createSessionToken({ sub = 'admin', shopId = 1, role = 'owner' } = {}) {
   const secret = process.env.SESSION_SECRET || getSetting('session_secret');
   const ver = Number(getSetting('session_version', '1')) || 1;
   const payload = base64url(
-    JSON.stringify({ sub: 'admin', ver, iat: Date.now(), exp: Date.now() + SESSION_TTL_MS })
+    JSON.stringify({
+      sub,
+      shopId: Number(shopId) || 1,
+      role,
+      ver,
+      iat: Date.now(),
+      exp: Date.now() + SESSION_TTL_MS,
+    })
   );
   return `${payload}.${sign(payload, secret)}`;
 }
@@ -128,34 +135,57 @@ export async function revokeAllSessions() {
   return nextVer;
 }
 
-export function verifySessionToken(token) {
-  if (!token || typeof token !== 'string') return false;
+export function parseSessionToken(token) {
+  if (!token || typeof token !== 'string') return null;
   const separator = token.lastIndexOf('.');
-  if (separator <= 0) return false;
+  if (separator <= 0) return null;
 
   const payload = token.slice(0, separator);
   const signature = token.slice(separator + 1);
   const secret = process.env.SESSION_SECRET || getSetting('session_secret');
-  if (!secret) return false;
+  if (!secret) return null;
 
   const expected = sign(payload, secret);
   const provided = Buffer.from(signature);
   const wanted = Buffer.from(expected);
-  if (provided.length !== wanted.length || !timingSafeEqual(provided, wanted)) return false;
+  if (provided.length !== wanted.length || !timingSafeEqual(provided, wanted)) return null;
 
   try {
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
     const currentVer = Number(getSetting('session_version', '1')) || 1;
-    if (data.ver !== undefined && Number(data.ver) !== currentVer) return false;
-    return typeof data.exp === 'number' && data.exp > Date.now();
+    if (data.ver !== undefined && Number(data.ver) !== currentVer) return null;
+    if (typeof data.exp !== 'number' || data.exp <= Date.now()) return null;
+    return {
+      sub: data.sub || 'admin',
+      shopId: Number(data.shopId) || 1,
+      role: data.role || 'owner',
+      ver: Number(data.ver) || 1,
+      exp: data.exp,
+    };
   } catch {
-    return false;
+    return null;
   }
 }
 
+export function verifySessionToken(token) {
+  return parseSessionToken(token) !== null;
+}
+
+export function getSessionPayload(req) {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.DEMO_MODE === '1' &&
+    process.env.DEMO_AUTO_AUTH === '1'
+  ) {
+    return { sub: 'demo', shopId: 1, role: 'owner' };
+  }
+  const cookies = parseCookies(req);
+  return parseSessionToken(cookies[SESSION_COOKIE]);
+}
+
 /** Cria a sessao. `secure` marca o cookie como exclusivo de HTTPS. */
-export function startSession(res, { secure = false } = {}) {
-  const token = createSessionToken();
+export function startSession(res, { secure = false, sub = 'admin', shopId = 1, role = 'owner' } = {}) {
+  const token = createSessionToken({ sub, shopId, role });
   setCookie(res, SESSION_COOKIE, token, {
     maxAge: SESSION_TTL_MS,
     secure,

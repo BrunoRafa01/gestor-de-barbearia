@@ -4,9 +4,11 @@ import { HttpError } from '../http.js';
 import {
   boolFlag,
   optionalEmail,
+  optionalId,
   optionalNumber,
   optionalString,
   optionalTime,
+  requiredDate,
   requiredId,
   requiredString,
   requiredTime,
@@ -59,12 +61,13 @@ export const barberRoutes = [
   {
     method: 'GET',
     path: '/api/barbers',
-    handler: async ({ query }) => {
-      const where = [];
+    handler: async ({ query, shopId = 1 }) => {
+      const where = ['shop_id = ?'];
+      const params = [shopId];
       if (query.active === '1') where.push('active = 1');
-      const sql = `SELECT * FROM barbers ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+      const sql = `SELECT * FROM barbers WHERE ${where.join(' AND ')}
                    ORDER BY active DESC, name COLLATE NOCASE ASC`;
-      const barbers = (await all(sql, [])).map(mapBarber);
+      const barbers = (await all(sql, params)).map(mapBarber);
       return {
         status: 200,
         body: await Promise.all(
@@ -76,12 +79,13 @@ export const barberRoutes = [
   {
     method: 'POST',
     path: '/api/barbers',
-    handler: async ({ body }) => {
+    handler: async ({ body, shopId = 1 }) => {
       const name = requiredString(body.name, 'nome do profissional', { max: 120 });
 
       const info = await run(
-        'INSERT INTO barbers (name, phone, email, color, commission, active) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO barbers (shop_id, name, phone, email, color, commission, active) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
+          shopId,
           name,
           optionalString(body.phone, 'telefone', 30),
           optionalEmail(body.email),
@@ -220,6 +224,70 @@ export const barberRoutes = [
       invalidateBarberHours(id);
 
       return { status: 200, body: await hoursFor(id) };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/blocks',
+    handler: async ({ query, shopId = 1 }) => {
+      const where = ['b.shop_id = ?'];
+      const params = [shopId];
+      if (query.barber_id) {
+        where.push('b.barber_id = ?');
+        params.push(requiredId(query.barber_id, 'profissional'));
+      }
+      if (query.from) {
+        where.push('b.date >= ?');
+        params.push(requiredDate(query.from));
+      }
+      if (query.to) {
+        where.push('b.date <= ?');
+        params.push(requiredDate(query.to));
+      }
+      const rows = await all(
+        `SELECT b.*, r.name AS barber_name
+           FROM barber_blocks b
+      LEFT JOIN barbers r ON r.id = b.barber_id
+          WHERE ${where.join(' AND ')}
+          ORDER BY b.date ASC, b.start_time ASC`,
+        params
+      );
+      return { status: 200, body: rows };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/blocks',
+    handler: async ({ body, shopId = 1 }) => {
+      const barberId = optionalId(body.barber_id, 'profissional');
+      if (barberId) {
+        const barber = await get('SELECT id FROM barbers WHERE id = ? AND shop_id = ?', [barberId, shopId]);
+        if (!barber) throw new HttpError(404, 'Profissional nao encontrado.');
+      }
+      const date = requiredDate(body.date);
+      const startTime = requiredTime(body.start_time, 'horario inicial');
+      const endTime = requiredTime(body.end_time, 'horario final');
+      if (endTime <= startTime) {
+        throw new HttpError(400, 'O horario final do bloqueio deve ser maior que o inicial.');
+      }
+      const reason = optionalString(body.reason, 'motivo', 200);
+      const info = await run(
+        'INSERT INTO barber_blocks (shop_id, barber_id, date, start_time, end_time, reason) VALUES (?, ?, ?, ?, ?, ?)',
+        [shopId, barberId, date, startTime, endTime, reason]
+      );
+      const created = await get('SELECT * FROM barber_blocks WHERE id = ?', [Number(info.lastInsertRowid)]);
+      return { status: 201, body: created };
+    },
+  },
+  {
+    method: 'DELETE',
+    path: '/api/blocks/:id',
+    handler: async ({ params, shopId = 1 }) => {
+      const id = requiredId(params.id, 'bloqueio');
+      const existing = await get('SELECT id FROM barber_blocks WHERE id = ? AND shop_id = ?', [id, shopId]);
+      if (!existing) throw new HttpError(404, 'Bloqueio nao encontrado.');
+      await run('DELETE FROM barber_blocks WHERE id = ? AND shop_id = ?', [id, shopId]);
+      return { status: 200, body: { deleted: true, id } };
     },
   },
 ];

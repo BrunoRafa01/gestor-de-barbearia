@@ -33,9 +33,9 @@ export const clientRoutes = [
   {
     method: 'GET',
     path: '/api/clients',
-    handler: async ({ query }) => {
-      const where = [];
-      const params = [];
+    handler: async ({ query, shopId = 1 }) => {
+      const where = ['c.shop_id = ?'];
+      const params = [shopId];
       if (query.search) {
         where.push("(c.name LIKE ? ESCAPE '\\' OR c.phone LIKE ? ESCAPE '\\' OR c.email LIKE ? ESCAPE '\\')");
         const escaped = String(query.search).replace(/[\\%_]/g, '\\$&');

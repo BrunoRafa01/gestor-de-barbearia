@@ -31,13 +31,15 @@ CREATE TABLE IF NOT EXISTS business_hours (
 );
 
 CREATE TABLE IF NOT EXISTS closures (
-  id     INTEGER PRIMARY KEY AUTOINCREMENT,
-  date   TEXT NOT NULL UNIQUE,
-  reason TEXT
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id INTEGER NOT NULL DEFAULT 1,
+  date    TEXT NOT NULL UNIQUE,
+  reason  TEXT
 );
 
 CREATE TABLE IF NOT EXISTS barbers (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id    INTEGER NOT NULL DEFAULT 1,
   name       TEXT NOT NULL,
   phone      TEXT,
   email      TEXT,
@@ -61,6 +63,7 @@ CREATE TABLE IF NOT EXISTS barber_hours (
 
 CREATE TABLE IF NOT EXISTS services (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id      INTEGER NOT NULL DEFAULT 1,
   name         TEXT NOT NULL,
   description  TEXT,
   duration_min INTEGER NOT NULL DEFAULT 30,
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS services (
 
 CREATE TABLE IF NOT EXISTS clients (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id    INTEGER NOT NULL DEFAULT 1,
   name       TEXT NOT NULL,
   phone      TEXT NOT NULL UNIQUE,
   email      TEXT,
@@ -81,6 +85,7 @@ CREATE TABLE IF NOT EXISTS clients (
 
 CREATE TABLE IF NOT EXISTS appointments (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id    INTEGER NOT NULL DEFAULT 1,
   client_id  INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
   barber_id  INTEGER NOT NULL REFERENCES barbers(id) ON DELETE CASCADE,
   service_id INTEGER NOT NULL REFERENCES services(id),
@@ -166,6 +171,34 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE INDEX IF NOT EXISTS idx_reviews_shop ON reviews(shop_slug);
+
+-- Bloqueios parciais de horario (por profissional ou barbearia)
+CREATE TABLE IF NOT EXISTS barber_blocks (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id    INTEGER NOT NULL DEFAULT 1,
+  barber_id  INTEGER REFERENCES barbers(id) ON DELETE CASCADE,
+  date       TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  end_time   TEXT NOT NULL,
+  reason     TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_barber_blocks_date ON barber_blocks(shop_id, date, barber_id);
+
+-- Usuarios multi-tenant (donos / equipe por barbearia)
+CREATE TABLE IF NOT EXISTS users (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id       INTEGER NOT NULL DEFAULT 1 REFERENCES barbershops(id) ON DELETE CASCADE,
+  email         TEXT NOT NULL UNIQUE,
+  name          TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  role          TEXT NOT NULL DEFAULT 'owner',
+  active        INTEGER NOT NULL DEFAULT 1,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_shop ON users(shop_id);
 `;
 
 export const DEFAULT_SETTINGS = {
@@ -329,6 +362,11 @@ async function createTursoDriver(url, authToken) {
   }
 
   const client = createClient({ url, authToken });
+  try {
+    await client.execute('PRAGMA foreign_keys = ON');
+  } catch {
+    /* opcional em conexoes HTTP */
+  }
 
   return {
     kind: 'turso',
@@ -465,6 +503,18 @@ export async function initDatabase(options = {}) {
     }
   } catch {
     /* coluna ja existente */
+  }
+
+  for (const tbl of ['closures', 'barbers', 'services', 'clients', 'appointments']) {
+    try {
+      const cols = await driver.all(`PRAGMA table_info(${tbl})`, []);
+      const names = cols.map((col) => col.name);
+      if (!names.includes('shop_id')) {
+        await driver.exec(`ALTER TABLE ${tbl} ADD COLUMN shop_id INTEGER NOT NULL DEFAULT 1`);
+      }
+    } catch {
+      /* coluna ja existente */
+    }
   }
 
   await seedDefaults();

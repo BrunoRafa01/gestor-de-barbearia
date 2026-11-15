@@ -8,7 +8,7 @@ import { networkInterfaces } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { assertAuthenticated, ensureAdminPassword, isUsingDefaultPassword } from './auth.js';
+import { assertAuthenticated, ensureAdminPassword, getSessionPayload, isUsingDefaultPassword } from './auth.js';
 import { closeDatabase, driverKind, driverLabel, initDatabase } from './db.js';
 import { isDemoMode, seedDemoData } from './demo.js';
 import { HttpError, readJsonBody, sendError, sendJson, serveStatic } from './http.js';
@@ -186,6 +186,9 @@ const server = createServer(async (request, response) => {
         : {};
       const query = Object.fromEntries(url.searchParams.entries());
 
+      const session = getSessionPayload(request);
+      const shopId = Number(session?.shopId) || 1;
+
       const handler = /** @type {(ctx: any) => Promise<any>} */ (match.route.handler);
       const result = await handler({
         req: request,
@@ -193,6 +196,8 @@ const server = createServer(async (request, response) => {
         params: match.params,
         query,
         body,
+        session,
+        shopId,
       });
 
       if (response.writableEnded) return;

@@ -671,6 +671,59 @@ async function run() {
   });
   check('horario de funcionamento invalido (29:99) responde 400', badBusinessHour.status === 400);
 
+  /* ---------------- 13.5 Bloqueios parciais e Multi-Tenant ---------------- */
+  const blockCreate = await call('/api/blocks', {
+    method: 'POST',
+    body: { barber_id: barberId, date: targetDate, start_time: '14:00', end_time: '15:00', reason: 'Reuniao' },
+  });
+  check('bloqueio parcial criado (201)', blockCreate.status === 201);
+  const availBlocked = await call(
+    `/api/availability?barber_id=${barberId}&service_id=${serviceId}&date=${targetDate}`
+  );
+  check(
+    'disponibilidade exclui horarios dentro do bloqueio',
+    availBlocked.status === 200 && !availBlocked.body?.slots?.includes('14:00')
+  );
+  const bookInBlock = await call('/api/appointments', {
+    method: 'POST',
+    body: { client_id: clientId, barber_id: barberId, service_id: serviceId, date: targetDate, start_time: '14:00' },
+  });
+  check('agendamento dentro de bloqueio parcial responde 409', bookInBlock.status === 409);
+  const blockDelete = await call(`/api/blocks/${blockCreate.body?.id}`, { method: 'DELETE' });
+  check('remocao de bloqueio parcial responde 200', blockDelete.status === 200);
+
+  const tenant1Cookie = cookie;
+  const regShop = await call('/api/auth/register-shop', {
+    method: 'POST',
+    auth: false,
+    body: {
+      shop_name: 'Barbearia Tenant Dois',
+      name: 'Dono Dois',
+      email: 'dono2@novaruntime.dev',
+      password: 'Tenant2Password',
+    },
+  });
+  check('register-shop cria nova barbearia SaaS (201)', regShop.status === 201);
+  const tenant2Slug = regShop.body?.shop?.slug;
+  const tenant2BarbersBefore = await call('/api/barbers');
+  check(
+    'tenant 2 inicia isolado sem profissionais do tenant 1',
+    tenant2BarbersBefore.status === 200 && tenant2BarbersBefore.body?.length === 0
+  );
+  const tenant2Barber = await call('/api/barbers', {
+    method: 'POST',
+    body: { name: 'Barbeiro Exclusivo T2' },
+  });
+  check('tenant 2 cria seu proprio profissional (201)', tenant2Barber.status === 201);
+  const pubTenant2 = await call(`/api/public/config?shop=${encodeURIComponent(tenant2Slug)}`, { auth: false });
+  check(
+    'config publico por slug retorna apenas profissionais do tenant 2',
+    pubTenant2.status === 200 &&
+      pubTenant2.body?.barbers?.length === 1 &&
+      pubTenant2.body?.barbers?.[0]?.name === 'Barbeiro Exclusivo T2'
+  );
+  cookie = tenant1Cookie;
+
   /* ------------------------------ 14. Backup ------------------------------ */
   const backup = await call('/api/backup');
   check('exportar backup responde 200', backup.status === 200);
