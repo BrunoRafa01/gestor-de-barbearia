@@ -25,7 +25,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Barbearia" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/css/app.css?v=20261115d" />
+    <link rel="stylesheet" href="/css/app.css?v=20261115e" />
   </head>
   <body class="booking-body">
     <div class="booking-page">
@@ -50,30 +50,14 @@
           <span class="booking-open-pill"><span class="booking-open-dot" aria-hidden="true"></span>Reserva Direta</span>
         </div>
 
-        <!-- Apresentação Editorial com Fotos Reais do Estúdio -->
-        <div class="shop-presentation-card booksy-hero-card" id="shop-presentation">
-          <div class="booksy-photo-mosaic" aria-label="Fotos reais do ambiente e atendimentos da barbearia">
-            <figure class="mosaic-main">
-              <img src="/img/barber-studio-hero.jpg?v=20261115d" alt="Ambiente clássico da barbearia com cadeiras de couro e bancada completa" loading="eager" />
-              <figcaption class="mosaic-caption">Salão Principal · Cadeiras Clássicas</figcaption>
-            </figure>
-            <div class="mosaic-side">
-              <figure class="mosaic-sub">
-                <img src="/img/cuts/cut-degrade.jpg?v=20261115d" alt="Barbeiro executando acabamento degradê na navalha" loading="eager" />
-                <figcaption class="mosaic-caption">Acabamento na Navalha</figcaption>
-              </figure>
-              <figure class="mosaic-sub">
-                <img src="/img/cuts/cut-barboterapia.jpg?v=20261115d" alt="Barboterapia tradicional com espuma morna e toalha quente" loading="eager" />
-                <figcaption class="mosaic-caption">Barboterapia &amp; Toalha Quente</figcaption>
-              </figure>
-            </div>
-          </div>
-
-          <div class="shop-profile-row">
-            <div class="shop-profile-info">
+        <!-- Hero Cinematográfico (Figma Editorial) -->
+        <div class="shop-presentation-card figma-hero-card" id="shop-presentation">
+          <div class="figma-hero-banner">
+            <img class="figma-hero-bg" src="/img/barber-studio-hero.jpg?v=20261115e" alt="Interior clássico da barbearia" loading="eager" />
+            <div class="figma-hero-overlay">
               <div class="shop-kicker-row">
-                <span class="shop-verified-tag">Estabelecimento Verificado</span>
-                <span class="shop-rating-inline" aria-label="Nota 4.9 de 5 estrelas"><strong>4.9</strong> ★ <span>(128 avaliações reais)</span></span>
+                <span class="shop-verified-pill">✓ Estúdio Verificado</span>
+                <span class="shop-rating-inline" aria-label="Nota 4.9 de 5 estrelas"><strong>4.9</strong> ★ <span>(128 avaliações)</span></span>
               </div>
               <h1 class="shop-profile-name">
                 <span id="shop-hero-name">Nova Barbearia</span>
@@ -83,10 +67,12 @@
               </div>
             </div>
           </div>
-          <p class="shop-bio-text" id="shop-bio">
-            Corte clássico na tesoura, degradê navalhado e barboterapia com toalha quente. Pontualidade rigorosa e atendimento com hora marcada.
-          </p>
-          <div class="shop-quick-actions" id="shop-actions"></div>
+          <div class="figma-hero-body">
+            <p class="shop-bio-text" id="shop-bio">
+              Corte clássico na tesoura, degradê na navalha e barboterapia tradicional. Escolha seu estilo abaixo e reserve sem fila.
+            </p>
+            <div class="shop-quick-actions" id="shop-actions"></div>
+          </div>
         </div>
 
         <!-- Abas de Navegacao Publica -->
@@ -167,7 +153,7 @@
       <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90</div>
     </footer>
 
-    <script type="module" src="/js/agendar.js?v=20261115d"></script>
-    <script src="/js/consent.js?v=20261115d"></script>
+    <script type="module" src="/js/agendar.js?v=20261115e"></script>
+    <script src="/js/consent.js?v=20261115e"></script>
   </body>
 </html>

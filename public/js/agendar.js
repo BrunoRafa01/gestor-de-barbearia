@@ -162,29 +162,41 @@ function skeletonHtml() {
     <div class="booksy-main-col">
       <div class="cuts-showcase-strip" aria-label="Demonstração real de serviços">
         <div class="cuts-showcase-head">
-          <span class="cuts-showcase-label">Demonstração de Trabalhos Reais</span>
-          <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver portfólio completo &rarr;</button>
+          <span class="cuts-showcase-label">Catálogo de Cortes &amp; Barba</span>
+          <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver todos &rarr;</button>
         </div>
-        <div class="cuts-showcase-grid">
-          <button type="button" class="cut-mini-card" data-demo-keyword="degrad">
-            <img class="cut-mini-img" src="/img/cuts/cut-degrade.jpg?v=20261115d" alt="Corte Degradê Navalhado" loading="eager" />
-            <span class="cut-mini-title">Degradê Navalhado</span>
-            <span class="cut-mini-sub">Acabamento na lâmina</span>
+        <div class="figma-lookbook-grid">
+          <button type="button" class="figma-lookbook-card" data-demo-keyword="degrad">
+            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.jpg?v=20261115e" alt="Degradê Navalhado" loading="eager" />
+            <span class="figma-lookbook-tag">Mais pedido</span>
+            <div class="figma-lookbook-caption">
+              <strong>Degradê Navalhado</strong>
+              <span>Acabamento na lâmina</span>
+            </div>
           </button>
-          <button type="button" class="cut-mini-card" data-demo-keyword="barba">
-            <img class="cut-mini-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115d" alt="Barboterapia Tradicional" loading="eager" />
-            <span class="cut-mini-title">Barboterapia Quente</span>
-            <span class="cut-mini-sub">Toalha quente &amp; navalha</span>
+          <button type="button" class="figma-lookbook-card" data-demo-keyword="barba">
+            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115e" alt="Barboterapia Tradicional" loading="eager" />
+            <span class="figma-lookbook-tag">Barba</span>
+            <div class="figma-lookbook-caption">
+              <strong>Barboterapia</strong>
+              <span>Tesoura &amp; toalha quente</span>
+            </div>
           </button>
-          <button type="button" class="cut-mini-card" data-demo-keyword="corte">
-            <img class="cut-mini-img" src="/img/cuts/cut-platinado.jpg?v=20261115d" alt="Corte na Tesoura e Visagismo" loading="eager" />
-            <span class="cut-mini-title">Corte na Tesoura</span>
-            <span class="cut-mini-sub">Alinhamento clássico</span>
+          <button type="button" class="figma-lookbook-card" data-demo-keyword="corte">
+            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.jpg?v=20261115e" alt="Corte Texturizado" loading="eager" />
+            <span class="figma-lookbook-tag">Visagismo</span>
+            <div class="figma-lookbook-caption">
+              <strong>Corte &amp; Textura</strong>
+              <span>Estilo executivo moderno</span>
+            </div>
           </button>
-          <button type="button" class="cut-mini-card" data-demo-keyword="combo">
-            <img class="cut-mini-img" src="/img/cuts/cut-social.jpg?v=20261115d" alt="Combo Corte e Barba" loading="eager" />
-            <span class="cut-mini-title">Combo Completo</span>
-            <span class="cut-mini-sub">Cabelo, barba &amp; acabamento</span>
+          <button type="button" class="figma-lookbook-card" data-demo-keyword="combo">
+            <img class="figma-lookbook-img" src="/img/cuts/cut-social.jpg?v=20261115e" alt="Combo Cabelo e Barba" loading="eager" />
+            <span class="figma-lookbook-tag">Completo</span>
+            <div class="figma-lookbook-caption">
+              <strong>Cabelo + Barba</strong>
+              <span>Alinhamento completo</span>
+            </div>
           </button>
         </div>
       </div>
@@ -370,20 +382,20 @@ async function loadSlots() {
 
 function servicePhoto(name = '') {
   const n = String(name).toLowerCase();
-  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115d';
-  if (n.includes('social') || n.includes('clássico') || n.includes('classico')) return '/img/cuts/cut-platinado.jpg?v=20261115d';
-  if (n.includes('combo') || n.includes('+')) return '/img/cuts/cut-social.jpg?v=20261115d';
+  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115e';
+  if (n.includes('social') || n.includes('clássico') || n.includes('classico')) return '/img/cuts/cut-platinado.jpg?v=20261115e';
+  if (n.includes('combo') || n.includes('+')) return '/img/cuts/cut-social.jpg?v=20261115e';
   if (n.includes('platinado') || n.includes('pigment') || n.includes('luzes') || n.includes('textur')) {
-    return '/img/cuts/cut-platinado.jpg?v=20261115d';
+    return '/img/cuts/cut-platinado.jpg?v=20261115e';
   }
-  return '/img/cuts/cut-degrade.jpg?v=20261115d';
+  return '/img/cuts/cut-degrade.jpg?v=20261115e';
 }
 
 function barberPhoto(barber = {}, index = 0) {
   const photos = [
-    '/img/barber-1.jpg?v=20261115d',
-    '/img/barber-2.jpg?v=20261115d',
-    '/img/barber-3.jpg?v=20261115d',
+    '/img/barber-1.jpg?v=20261115e',
+    '/img/barber-2.jpg?v=20261115e',
+    '/img/barber-3.jpg?v=20261115e',
   ];
   const idx = Math.abs(Number(barber.id || index + 1) - 1) % photos.length;
   return photos[idx];
@@ -1143,10 +1155,10 @@ function renderBookingTab() {
 
 function renderCutsTab() {
   const defaultCuts = [
-    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: '/img/cuts/cut-degrade.jpg?v=20261115d' },
-    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: '/img/cuts/cut-barboterapia.jpg?v=20261115d' },
-    { tag: 'Clássico', title: 'Corte Social na Tesoura', desc: 'Corte alinhado clássico com finalização em pomada matte.', img: '/img/cuts/cut-platinado.jpg?v=20261115d' },
-    { tag: 'Combo', title: 'Cabelo, Barba & Acabamento', desc: 'Atendimento completo com bancada de precisão e produtos profissionais.', img: '/img/cuts/cut-social.jpg?v=20261115d' },
+    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: '/img/cuts/cut-degrade.jpg?v=20261115e' },
+    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: '/img/cuts/cut-barboterapia.jpg?v=20261115e' },
+    { tag: 'Visagismo', title: 'Corte & Textura Moderna', desc: 'Corte alinhado clássico com finalização em pomada matte.', img: '/img/cuts/cut-platinado.jpg?v=20261115e' },
+    { tag: 'Combo', title: 'Cabelo, Barba & Acabamento', desc: 'Atendimento completo com bancada de precisão e produtos profissionais.', img: '/img/cuts/cut-social.jpg?v=20261115e' },
   ];
   const rawCuts = state.shop?.cuts_gallery?.length ? state.shop.cuts_gallery : defaultCuts;
   const cuts = rawCuts.map((cut, idx) => ({

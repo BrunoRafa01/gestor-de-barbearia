@@ -3684,83 +3684,162 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .booking-body .shop-presentation-card {
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
-  margin-bottom: 16px;
-}
-
-.booksy-photo-mosaic {
-  display: grid;
-  grid-template-columns: 1.65fr 1fr;
-  gap: 8px;
-  border-radius: 14px;
-  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0C0E13;
-}
-
-.booksy-photo-mosaic figure {
-  margin: 0;
-  position: relative;
+  background: #0B0E15;
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.75);
+  border-radius: 16px;
   overflow: hidden;
-  background: #111319;
+  margin-bottom: 18px;
 }
 
-.booksy-photo-mosaic img {
+.figma-hero-banner {
+  position: relative;
+  height: 224px;
+  overflow: hidden;
+  background: #080B12;
+}
+
+.figma-hero-bg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 42%;
   display: block;
-  transition: transform 240ms var(--ease);
+  filter: brightness(0.84) contrast(1.04);
 }
 
-.booksy-photo-mosaic figure:hover img {
-  transform: scale(1.02);
-}
-
-.mosaic-main {
-  height: 256px;
-}
-
-.mosaic-side {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 8px;
-  height: 256px;
-}
-
-.mosaic-sub {
-  height: 100%;
-}
-
-.mosaic-caption {
+.figma-hero-overlay {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
-  padding: 4px 9px;
-  border-radius: 6px;
-  background: rgba(9, 11, 16, 0.82);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #F1F5F9;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 11, 18, 0.08) 0%,
+    rgba(8, 11, 18, 0.58) 52%,
+    rgba(11, 14, 21, 0.96) 100%
+  );
+}
+
+.figma-hero-body {
+  padding: 14px 20px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.figma-hero-body .shop-bio-text {
+  padding: 0 0 12px;
+}
+
+.figma-hero-body .shop-quick-actions {
+  padding: 0;
+}
+
+.shop-verified-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #34D399;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+}
+
+/* Figma Lookbook Portrait Cards */
+.figma-lookbook-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.figma-lookbook-card {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: #0F131C;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms var(--ease), transform 160ms var(--ease);
+}
+
+.figma-lookbook-card:hover {
+  border-color: rgba(96, 165, 250, 0.55);
+  transform: translateY(-2px);
+}
+
+.figma-lookbook-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  display: block;
+  transition: transform 260ms var(--ease);
+}
+
+.figma-lookbook-card:hover .figma-lookbook-img {
+  transform: scale(1.04);
+}
+
+.figma-lookbook-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(8, 11, 18, 0.78);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #E2E8F0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.figma-lookbook-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28px 10px 10px;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 11, 18, 0.92) 72%, rgba(8, 11, 18, 0.98) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.figma-lookbook-caption strong {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #F8FAFC;
+  line-height: 1.2;
+}
+
+.figma-lookbook-caption span {
+  font-size: 10.5px;
+  color: #94A3B8;
 }
 
 @media (max-width: 640px) {
-  .booksy-photo-mosaic {
-    grid-template-columns: 1fr;
+  .figma-hero-banner {
+    height: 184px;
   }
-  .mosaic-main {
-    height: 188px;
+  .figma-hero-overlay {
+    padding: 14px 16px;
   }
-  .mosaic-side {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    height: 108px;
+  .figma-hero-body {
+    padding: 12px 16px 14px;
+  }
+  .figma-lookbook-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 }
 
