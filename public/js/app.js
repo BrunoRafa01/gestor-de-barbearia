@@ -531,16 +531,18 @@ function buildSparklineSvg(dailyRows) {
   );
   if (values.length === 1) values.unshift(values[0]);
   const max = Math.max(1, ...values);
-  const w = 120;
-  const h = 34;
+  const w = 68;
+  const h = 24;
   const pts = values.map((v, i) => [
-    Math.round((i / Math.max(1, values.length - 1)) * w),
-    Math.round(h - 4 - (v / max) * (h - 8)),
+    Number(((i / Math.max(1, values.length - 1)) * w).toFixed(1)),
+    Number((h - 3 - (v / max) * (h - 6)).toFixed(1)),
   ]);
-  const d = pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ');
+  const line = pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ');
+  const area = `${line} L${w},${h} L0,${h} Z`;
   return `
-    <svg viewBox="0 0 ${w} ${h}" width="110" height="32" aria-hidden="true" style="flex-shrink:0">
-      <path d="${d}" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true" style="flex-shrink:0;display:block">
+      <path d="${area}" fill="rgba(16, 185, 129, 0.14)" />
+      <path d="${line}" fill="none" stroke="#10B981" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
     </svg>`;
 }
 
@@ -589,21 +591,18 @@ async function viewDashboard() {
   const repeatPct = Math.round(Number(totals.repeat_rate || 0) * 100);
 
   const funnelSteps = [
-    { num: '01', label: 'Agendados no período', count: totals.appointments, pct: totals.appointments > 0 ? 100 : 0 },
+    { label: 'Agendados no período', count: totals.appointments, pct: totals.appointments > 0 ? 100 : 0 },
     {
-      num: '02',
-      label: 'Confirmados + Concluídos',
+      label: 'Confirmados e concluídos',
       count: Number(totals.confirmed || 0) + Number(totals.completed || 0),
       pct: totals.appointments > 0 ? Math.round(((Number(totals.confirmed || 0) + Number(totals.completed || 0)) / totals.appointments) * 100) : 0,
     },
     {
-      num: '03',
       label: 'Atendimentos concluídos',
       count: totals.completed,
       pct: totals.appointments > 0 ? Math.round((totals.completed / totals.appointments) * 100) : 0,
     },
     {
-      num: '04',
       label: 'Clientes recorrentes',
       count: totals.returning_clients || 0,
       pct: totalClientsPeriod > 0 ? repeatPct : 0,
@@ -639,9 +638,8 @@ async function viewDashboard() {
     ${notice}
     <div class="ct-header">
       <div>
-        <div class="ct-live"><span class="ct-live-dot"></span><span>OPERAÇÃO EM TEMPO REAL</span></div>
-        <h2 class="ct-title">Torre de Controle da Barbearia</h2>
-        <p class="ct-sub">Visão executiva unificada · ${esc(state.me?.shop_name || 'Gestor de Barbearia')} · ${esc(range.label)}</p>
+        <h2 class="ct-title">Visão Geral</h2>
+        <p class="ct-sub">${esc(state.me?.shop_name || 'Gestor de Barbearia')} · ${esc(range.label)}</p>
       </div>
       <div class="ct-controls">
         <div class="ct-segmented" role="tablist" aria-label="Período do painel">
@@ -649,7 +647,7 @@ async function viewDashboard() {
             ['today', 'Hoje'],
             ['7d', '7d'],
             ['30d', '30d'],
-            ['month', 'Mês Atual'],
+            ['month', 'Mês atual'],
           ]
             .map(
               ([key, lbl]) =>
@@ -657,21 +655,21 @@ async function viewDashboard() {
             )
             .join('')}
         </div>
-        <button type="button" class="btn btn-sm" id="ct-export-csv"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Exportar .CSV</span></button>
-        <button type="button" class="btn btn-primary btn-sm" id="ct-new-appt">${icon('plus')}<span>Novo Agendamento</span></button>
+        <button type="button" class="btn btn-sm" id="ct-export-csv"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Exportar CSV</span></button>
+        <button type="button" class="btn btn-primary btn-sm" id="ct-new-appt">${icon('plus')}<span>Novo agendamento</span></button>
       </div>
     </div>
 
-    <section class="ct-kpi-grid" aria-label="Indicadores executivos">
+    <section class="ct-kpi-grid" aria-label="Indicadores principais">
       <article class="ct-card">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Receita Prevista</div>
+            <div class="ct-card-label">Receita prevista</div>
             <div class="ct-card-sub">${esc(range.label)}</div>
           </div>
           <span class="ct-pill">${growthPct >= 0 ? `+${growthPct}%` : `${growthPct}%`}</span>
         </div>
-        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+        <div class="ct-spark-row">
           <div class="ct-kpi-val mono">${esc(money(totals.revenue_expected))}</div>
           ${buildSparklineSvg(report?.daily)}
         </div>
@@ -684,10 +682,10 @@ async function viewDashboard() {
       <article class="ct-card ct-card-accent">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Receita Realizada</div>
+            <div class="ct-card-label">Receita realizada</div>
             <div class="ct-card-sub">Atendimentos concluídos</div>
           </div>
-          <span class="ct-pill">Conv. ${realizedRatio}%</span>
+          <span class="ct-pill is-blue">${realizedRatio}% do previsto</span>
         </div>
         <div class="ct-kpi-val mono">${esc(money(totals.revenue_realized))}</div>
         <div class="ct-kpi-foot">
@@ -699,26 +697,26 @@ async function viewDashboard() {
       <article class="ct-card">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Base de Atendimentos</div>
-            <div class="ct-card-sub">${totals.completed} concluídos / ${totals.pending + totals.confirmed} ativos</div>
+            <div class="ct-card-label">Atendimentos</div>
+            <div class="ct-card-sub">${totals.completed} concluídos · ${totals.pending + totals.confirmed} em aberto</div>
           </div>
-          <span class="ct-pill is-blue">Ocup. ${rate === null ? 'Fechado' : `${occupancyPct}%`}</span>
+          <span class="ct-pill ${rate === null ? 'is-muted' : 'is-blue'}">${rate === null ? 'Fechado' : `Ocup. ${occupancyPct}%`}</span>
         </div>
         <div class="ct-kpi-val mono">${totals.appointments}</div>
         <div class="ct-bar-track"><div class="ct-bar-fill" style="width:${rate === null ? 0 : occupancyPct}%"></div></div>
         <div class="ct-kpi-foot">
           <span>Novos clientes: <strong class="mono">${totals.new_clients}</strong></span>
-          <span style="color:#10B981">${barberCapLabel}</span>
+          <span>${esc(barberCapLabel)}</span>
         </div>
       </article>
 
       <article class="ct-card">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Cancelamentos &amp; Faltas</div>
-            <div class="ct-card-sub">Taxa no período</div>
+            <div class="ct-card-label">Cancelamentos e faltas</div>
+            <div class="ct-card-sub">Sobre o total do período</div>
           </div>
-          <span class="ct-pill ${cancelRate <= 8 ? '' : 'is-warn'}">${cancelRate <= 8 ? 'Benchmark seguro' : 'Atenção'}</span>
+          <span class="ct-pill ${cancelRate <= 8 ? 'is-muted' : 'is-warn'}">${cancelRate <= 8 ? 'Normal' : 'Alto'}</span>
         </div>
         <div class="ct-kpi-val mono">${cancelRate}%</div>
         <div class="ct-kpi-foot">
@@ -728,14 +726,13 @@ async function viewDashboard() {
       </article>
     </section>
 
-    <section class="ct-mid-grid" aria-label="Funil, ranking e infraestrutura">
+    <section class="ct-mid-grid" aria-label="Conversão, serviços e sistema">
       <article class="ct-card">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Funil de Atendimento</div>
-            <div class="ct-card-sub">Conversão do agendamento ao retorno</div>
+            <div class="ct-card-label">Conversão no período</div>
+            <div class="ct-card-sub">Do agendamento ao retorno</div>
           </div>
-          <span class="ct-pill is-blue">${esc(range.label)}</span>
         </div>
         <div class="ct-funnel">
           ${funnelSteps
@@ -743,7 +740,7 @@ async function viewDashboard() {
               (step) => `
               <div class="ct-funnel-row">
                 <div class="ct-funnel-top">
-                  <span><strong class="mono" style="color:#60A5FA">${step.num}</strong> ${esc(step.label)}</span>
+                  <span>${esc(step.label)}</span>
                   <strong class="mono">${step.count} (${step.pct}%)</strong>
                 </div>
                 <div class="ct-bar-track"><div class="ct-bar-fill" style="width:${Math.min(100, step.pct)}%"></div></div>
@@ -756,8 +753,8 @@ async function viewDashboard() {
       <article class="ct-card">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Ranking de Serviços &amp; Equipe</div>
-            <div class="ct-card-sub">Mais procurados e faturamento</div>
+            <div class="ct-card-label">Serviços mais pedidos</div>
+            <div class="ct-card-sub">Faturamento por serviço</div>
           </div>
           <a href="#/reports" style="font-size:12px;color:#60A5FA;text-decoration:none">Ver relatório</a>
         </div>
@@ -768,7 +765,7 @@ async function viewDashboard() {
                   .map(
                     (srv, idx) => `
                 <div class="ct-rank-item">
-                  <span><span class="ct-rank-pos">#${idx + 1}</span>${esc(srv.name)}</span>
+                  <span><span class="ct-rank-pos">${idx + 1}.</span>${esc(srv.name)}</span>
                   <strong class="mono">${srv.total} · ${esc(money(srv.revenue))}</strong>
                 </div>`
                   )
@@ -777,7 +774,7 @@ async function viewDashboard() {
           }
           ${
             topBarbers.length
-              ? `<div style="font-size:11px;color:var(--text-faint);margin-top:4px">Equipe em destaque: ${topBarbers
+              ? `<div style="font-size:11.5px;color:var(--text-faint);padding-top:10px">Equipe: ${topBarbers
                   .slice(0, 2)
                   .map((b) => `<strong style="color:var(--text)">${esc(b.name)}</strong> (${esc(money(b.revenue))})`)
                   .join(' · ')}</div>`
@@ -789,15 +786,15 @@ async function viewDashboard() {
       <article class="ct-card">
         <div class="ct-card-head">
           <div>
-            <div class="ct-card-label">Capacidade &amp; Integrações</div>
-            <div class="ct-card-sub">Saúde operacional da plataforma</div>
+            <div class="ct-card-label">Status do sistema</div>
+            <div class="ct-card-sub">Banco, WhatsApp e assinatura</div>
           </div>
-          <span class="ct-pill">${health?.status === 'ok' ? 'Sistema Online' : 'Ativo'}</span>
+          <span class="ct-pill">${health?.status === 'ok' ? 'Online' : 'Ativo'}</span>
         </div>
         <div class="ct-infra-list">
           <div class="ct-infra-item">
             <div>
-              <strong>Banco de Dados</strong>
+              <strong>Banco de dados</strong>
               <span>${esc(dbEngine)}</span>
             </div>
             <span class="ct-pill">Conectado</span>
@@ -805,7 +802,7 @@ async function viewDashboard() {
           <div class="ct-infra-item">
             <div>
               <strong>WhatsApp Cloud API</strong>
-              <span>${waConnected ? 'Disparos e lembretes ativos' : 'Configurar credenciais Meta'}</span>
+              <span>${waConnected ? 'Disparos e lembretes ativos' : 'Credenciais pendentes'}</span>
             </div>
             <span class="ct-pill ${waConnected ? '' : 'is-warn'}">${waConnected ? 'Ativo' : 'Pendente'}</span>
           </div>
@@ -823,8 +820,8 @@ async function viewDashboard() {
     <article class="card ct-table-card">
       <div class="card-header" style="flex-wrap:wrap;gap:12px">
         <div>
-          <h2>Semáforo da Agenda (${esc(formatDateBR(state.date))})</h2>
-          <p class="card-sub">Acompanhamento em tempo real dos horários do dia</p>
+          <h2>Agenda de ${esc(formatDateBR(state.date))}</h2>
+          <p class="card-sub">Horários marcados para o dia selecionado</p>
         </div>
         <span class="spacer"></span>
         <div class="toolbar">
@@ -851,7 +848,7 @@ async function viewDashboard() {
             )
             .join('')}
         </div>
-        <input class="control" type="search" id="ct-search-appt" value="${esc(state.dashSearch)}" placeholder="Buscar cliente, serviço ou profissional..." style="min-width:240px" />
+        <input class="control" type="search" id="ct-search-appt" value="${esc(state.dashSearch)}" placeholder="Buscar na agenda..." style="min-width:220px" />
       </div>
 
       <div id="ct-agenda-body">

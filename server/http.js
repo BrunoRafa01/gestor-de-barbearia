@@ -121,11 +121,11 @@ export function serveStatic(req, res, publicDir, urlPath) {
   if (stats.isDirectory()) return false;
 
   const extension = extname(target).toLowerCase();
-  const isHtml = extension === '.html';
+  const isRevalidated = extension === '.html' || extension === '.js' || extension === '.css';
   res.writeHead(200, {
     'Content-Type': MIME_TYPES[extension] || 'application/octet-stream',
     'Content-Length': stats.size,
-    'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=300',
+    'Cache-Control': isRevalidated ? 'no-cache' : 'public, max-age=300',
   });
   createReadStream(target).pipe(res);
   return true;
