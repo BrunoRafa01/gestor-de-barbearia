@@ -164,7 +164,13 @@ export function endSession(res, { secure = false } = {}) {
 }
 
 export function isAuthenticated(req) {
-  if (process.env.NODE_ENV !== 'production' && process.env.DEMO_AUTO_AUTH === '1') return true;
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.DEMO_MODE === '1' &&
+    process.env.DEMO_AUTO_AUTH === '1'
+  ) {
+    return true;
+  }
   const cookies = parseCookies(req);
   return verifySessionToken(cookies[SESSION_COOKIE]);
 }

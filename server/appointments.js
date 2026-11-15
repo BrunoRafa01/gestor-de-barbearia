@@ -78,8 +78,9 @@ export async function listAppointments(filters = {}) {
     params.push(filters.status);
   }
   if (filters.search) {
-    where.push('(c.name LIKE ? OR c.phone LIKE ? OR s.name LIKE ?)');
-    const term = `%${filters.search}%`;
+    const escaped = String(filters.search).replace(/[\\%_]/g, '\\$&');
+    where.push("(c.name LIKE ? ESCAPE '\\' OR c.phone LIKE ? ESCAPE '\\' OR s.name LIKE ? ESCAPE '\\')");
+    const term = `%${escaped}%`;
     params.push(term, term, term);
   }
 

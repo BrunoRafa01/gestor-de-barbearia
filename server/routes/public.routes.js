@@ -272,6 +272,9 @@ export const publicRoutes = [
       if (!appointment) {
         throw new HttpError(404, 'Agendamento não encontrado ou link expirado.');
       }
+      if (todayISO() > addDays(appointment.date, 7)) {
+        throw new HttpError(410, 'Este link de gerenciamento expirou. Entre em contato com a barbearia.');
+      }
 
       return {
         status: 200,
@@ -307,6 +310,9 @@ export const publicRoutes = [
       const appointment = await getAppointmentByCancelToken(token);
       if (!appointment) {
         throw new HttpError(404, 'Agendamento não encontrado ou link expirado.');
+      }
+      if (todayISO() > addDays(appointment.date, 7)) {
+        throw new HttpError(410, 'Este link de gerenciamento expirou. Entre em contato com a barbearia.');
       }
 
       if (appointment.status === 'cancelled') {

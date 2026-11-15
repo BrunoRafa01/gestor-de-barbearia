@@ -600,6 +600,11 @@ async function run() {
   });
   check('telefone publico invalido responde 400', publicBadPhone.status === 400);
 
+  const renameAttempt = null;
+  void renameAttempt;
+  const searchPercent = await call(`/api/appointments?search=${encodeURIComponent('%')}`);
+  check('busca com % escapado nao retorna todos agendamentos', searchPercent.status === 200 && Array.isArray(searchPercent.body) && searchPercent.body.length === 0);
+
   /* ------------------------------ 14. Backup ------------------------------ */
   const backup = await call('/api/backup');
   check('exportar backup responde 200', backup.status === 200);

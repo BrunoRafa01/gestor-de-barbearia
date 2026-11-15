@@ -778,7 +778,7 @@ async function viewDashboard() {
         <span class="kpi-cell-sub">${today.confirmed} confirmados · ${today.completed} concluídos</span>
       </div>
       <div class="kpi-cell">
-        <span class="kpi-cell-label">Semana / Mês</span>
+        <span class="kpi-cell-label">Previsto (semana) / Realizado (mês)</span>
         <strong class="kpi-cell-val mono">${esc(money(week.revenue_expected))}</strong>
         <span class="kpi-cell-sub mono">Mês realizado: ${esc(money(month.revenue_realized))}</span>
       </div>
@@ -818,7 +818,7 @@ async function viewDashboard() {
     <div class="grid grid-2" style="margin-top:16px">
       <div class="card">
         <div class="card-header">
-          <h2>Serviços mais procurados</h2>
+          <h2>Serviços mais procurados (Top 5)</h2>
           <span class="spacer"></span>
           <span class="card-sub">${esc(formatMonthYear(state.date))}</span>
         </div>

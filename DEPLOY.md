@@ -177,7 +177,7 @@ Na sua maquina, dentro do projeto:
 
 ```bash
 npm install
-npm test              # 121 verificacoes de API, seguranca e regras de negocio
+npm test              # Suite de verificacoes de API, seguranca e regras de negocio
 npm run test:turso    # valida o driver libSQL e a persistencia entre reinicios
 ```
 

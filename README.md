@@ -3,7 +3,7 @@
 > **Produto Comercial de Gestão, Agendamento Online e Crescimento para Barbearias Modernas.**  
 > Desenvolvido pela **Nova Runtime Tecnologia** para transformar barbearias reais em negócios digitais de alta performance e fidelização de clientes.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Tipos_de_Dom%C3%ADnio-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22.5+-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Dual--Database-SQLite%20%7C%20Turso-000000?style=flat&logo=sqlite&logoColor=white)](https://turso.tech/)
 [![Security & LGPD](https://img.shields.io/badge/Controles-LGPD%20%26%20CDC-10B981?style=flat)](/compliance.html)
@@ -175,7 +175,7 @@ O projeto possui cobertura completa de testes automatizados para garantir robust
 # Validação de tipagem estrita com TypeScript
 npm run typecheck
 
-# Teste unitário e de fumaça (138 asserções)
+# Suíte funcional e de segurança (verifique a contagem no terminal)
 npm test
 
 # Testes de integração da Meta WhatsApp Cloud API (35 asserções)
