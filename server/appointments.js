@@ -276,7 +276,7 @@ export async function setAppointmentStatus(id, status) {
 
   if (appointment.status === nextStatus) return appointment;
 
-  // Ao reativar um agendamento cancelado, o horario precisa estar livre novamente.
+  // Ao reativar um agendamento cancelado, o horario precisa estar livre novamente (validacao + UPDATE atomico).
   if (ACTIVE_STATUSES.includes(nextStatus)) {
     await assertSlotAvailable({
       barberId: appointment.barber_id,
@@ -287,10 +287,28 @@ export async function setAppointmentStatus(id, status) {
     });
   }
 
-  await run(
-    `UPDATE appointments SET status = ?, updated_at = datetime('now','localtime') WHERE id = ?`,
-    [nextStatus, appointmentId]
+  const updateInfo = await run(
+    `UPDATE appointments
+        SET status = ?, updated_at = datetime('now','localtime')
+      WHERE id = ?
+        AND (
+          ? NOT IN (${ACTIVE_SQL})
+          OR NOT EXISTS (
+            SELECT 1 FROM appointments a
+             WHERE a.id != ?
+               AND a.barber_id = appointments.barber_id
+               AND a.date = appointments.date
+               AND a.status IN (${ACTIVE_SQL})
+               AND a.start_time < appointments.end_time
+               AND a.end_time   > appointments.start_time
+          )
+        )`,
+    [nextStatus, appointmentId, nextStatus, appointmentId]
   );
+
+  if (updateInfo.changes === 0) {
+    throw new HttpError(409, 'Este horario esta em conflito com outro agendamento.');
+  }
 
   return getAppointmentById(appointmentId);
 }

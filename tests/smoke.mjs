@@ -304,6 +304,38 @@ async function run() {
   check('agendamento duplicado responde 409', duplicate.status === 409, `status ${duplicate.status}`);
   check('mensagem de duplicidade clara', String(duplicate.body?.error || '').length > 10);
 
+  // Sobreposicao parcial: +15 minutos dentro da duracao do primeiro agendamento
+  const [slotH, slotM] = String(slot).split(':').map(Number);
+  const partialMinutes = slotH * 60 + slotM + 15;
+  const partialSlot = `${String(Math.floor(partialMinutes / 60)).padStart(2, '0')}:${String(partialMinutes % 60).padStart(2, '0')}`;
+  const partialOverlap = await call('/api/appointments', {
+    method: 'POST',
+    body: { client_id: clientId, barber_id: barberId, service_id: serviceId, date: targetDate, start_time: partialSlot },
+  });
+  check('sobreposicao parcial responde 409', partialOverlap.status === 409, `status ${partialOverlap.status}`);
+
+  // Horario adjacente: exatamente no end_time do primeiro agendamento deve ser permitido
+  const adjacentSlot = appointment.body?.end_time;
+  const adjacent = await call('/api/appointments', {
+    method: 'POST',
+    body: { client_id: clientId, barber_id: barberId, service_id: serviceId, date: targetDate, start_time: adjacentSlot },
+  });
+  check('horario adjacente permitido responde 201', adjacent.status === 201, `status ${adjacent.status}`);
+
+  // Agendamento cancelado nao bloqueia o horario
+  if (adjacent.status === 201) {
+    const adjacentId = Number(adjacent.body?.id);
+    await call(`/api/appointments/${adjacentId}/status`, { method: 'PATCH', body: { status: 'cancelled' } });
+    const rebookAfterCancel = await call('/api/appointments', {
+      method: 'POST',
+      body: { client_id: clientId, barber_id: barberId, service_id: serviceId, date: targetDate, start_time: adjacentSlot },
+    });
+    check('agendamento cancelado nao bloqueia horario', rebookAfterCancel.status === 201, `status ${rebookAfterCancel.status}`);
+    if (rebookAfterCancel.status === 201) {
+      await call(`/api/appointments/${Number(rebookAfterCancel.body?.id)}`, { method: 'DELETE' });
+    }
+  }
+
   const outsideHours = await call('/api/appointments', {
     method: 'POST',
     body: { client_id: clientId, barber_id: barberId, service_id: serviceId, date: targetDate, start_time: '03:00' },
