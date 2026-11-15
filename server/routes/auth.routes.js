@@ -38,6 +38,7 @@ function statusPayload(req, authenticated) {
   };
   if (authenticated) {
     payload.password_is_default = isUsingDefaultPassword();
+    payload.is_master = session?.role === 'master';
     payload.user = {
       email: session?.sub || 'admin',
       role: session?.role || 'owner',

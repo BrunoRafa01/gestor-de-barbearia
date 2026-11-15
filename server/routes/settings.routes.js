@@ -1,4 +1,15 @@
-import { DEFAULT_SETTINGS, all, batch, get, getSetting, getSettingsMap, run, setSetting } from '../db.js';
+import {
+  DEFAULT_SETTINGS,
+  all,
+  batch,
+  get,
+  getAllShopSettings,
+  getSetting,
+  getSettingsMap,
+  run,
+  setSetting,
+  setShopSetting,
+} from '../db.js';
 import { invalidateBusinessHours, invalidateClosures } from '../availability.js';
 import { HttpError } from '../http.js';
 import {
@@ -110,10 +121,16 @@ function normalizeSetting(key, value) {
   }
 }
 
-function publicSettings() {
-  const map = getSettingsMap();
-  const hasToken = Boolean(map.whatsapp_access_token || process.env.WHATSAPP_ACCESS_TOKEN);
-  const hasWebhookToken = Boolean(map.whatsapp_webhook_verify_token || process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN);
+async function publicSettings(shopId = 1) {
+  const sid = Number(shopId) || 1;
+  const shopMap = await getAllShopSettings(sid);
+  const map = sid === 1
+    ? { ...getSettingsMap(), ...shopMap }
+    : { ...DEFAULT_SETTINGS, ...shopMap };
+  const hasToken = Boolean(map.whatsapp_access_token || (sid === 1 && process.env.WHATSAPP_ACCESS_TOKEN));
+  const hasWebhookToken = Boolean(
+    map.whatsapp_webhook_verify_token || (sid === 1 && process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN)
+  );
   for (const key of SECRET_KEYS) delete map[key];
   map.whatsapp_access_token_configured = hasToken;
   map.whatsapp_webhook_verify_token_configured = hasWebhookToken;
@@ -133,22 +150,24 @@ export const settingsRoutes = [
   {
     method: 'GET',
     path: '/api/settings',
-    handler: () => ({ status: 200, body: publicSettings() }),
+    handler: async ({ session }) => ({ status: 200, body: await publicSettings(session?.shopId || 1) }),
   },
   {
     method: 'PUT',
     path: '/api/settings',
-    handler: async ({ body }) => {
+    handler: async ({ body, session }) => {
+      const shopId = session?.shopId || 1;
       const entries = Object.entries(body || {}).filter(([key]) => EDITABLE_KEYS.includes(key));
 
       // Valida tudo antes de gravar, para nao deixar configuracao parcial.
       const normalized = entries.map(([key, value]) => [key, normalizeSetting(key, value)]);
 
       for (const [key, value] of normalized) {
-        await setSetting(key, value);
+        await setShopSetting(shopId, key, value);
+        if (shopId === 1) await setSetting(key, value);
       }
 
-      return { status: 200, body: publicSettings() };
+      return { status: 200, body: await publicSettings(shopId) };
     },
   },
   {

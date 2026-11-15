@@ -22,10 +22,11 @@ import {
   requiredTime,
 } from './validate.js';
 import { ACTIVE_STATUSES, addDays, isValidStatus, todayISO } from './time.js';
+import { PAYMENT_METHODS } from './finance.js';
 
 const APPOINTMENT_SELECT = `
-  SELECT a.id, a.client_id, a.barber_id, a.service_id, a.date, a.start_time, a.end_time,
-         a.status, a.price, a.notes, a.source, a.cancel_token, a.created_at, a.updated_at,
+  SELECT a.id, a.shop_id, a.client_id, a.barber_id, a.service_id, a.date, a.start_time, a.end_time,
+         a.status, a.price, a.payment_method, a.notes, a.source, a.cancel_token, a.created_at, a.updated_at,
          c.name AS client_name, c.phone AS client_phone, c.email AS client_email,
          b.name AS barber_name, b.color AS barber_color,
          s.name AS service_name, s.duration_min AS service_duration
@@ -152,14 +153,15 @@ async function insertIfFree({
   endTime,
   status,
   price,
+  paymentMethod = 'pix',
   notes,
   source,
   cancelToken,
 }) {
   const info = await run(
     `INSERT INTO appointments
-       (shop_id, client_id, barber_id, service_id, date, start_time, end_time, status, price, notes, source, cancel_token)
-     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+       (shop_id, client_id, barber_id, service_id, date, start_time, end_time, status, price, payment_method, notes, source, cancel_token)
+     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       WHERE NOT EXISTS (
         SELECT 1 FROM appointments a
          WHERE a.barber_id = ?
@@ -169,7 +171,7 @@ async function insertIfFree({
            AND a.end_time   > ?
       )`,
     [
-      shopId, clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, source, cancelToken,
+      shopId, clientId, barberId, serviceId, date, startTime, endTime, status, price, paymentMethod, notes, source, cancelToken,
       barberId, date, endTime, startTime,
     ]
   );
@@ -208,6 +210,9 @@ export async function createAppointment(input, now = new Date()) {
     input.price === undefined || input.price === null || input.price === ''
       ? availability.price
       : parsePrice(input.price);
+  const paymentMethod = input.payment_method
+    ? requiredEnum(String(input.payment_method), PAYMENT_METHODS, 'forma de pagamento')
+    : 'pix';
 
   const cancelToken = input.cancel_token || randomBytes(16).toString('hex');
 
@@ -221,6 +226,7 @@ export async function createAppointment(input, now = new Date()) {
     endTime,
     status,
     price,
+    paymentMethod,
     notes,
     source,
     cancelToken,
@@ -280,11 +286,14 @@ export async function updateAppointment(id, input, now = new Date(), { shopId = 
     : serviceChanged
       ? Number(service.price)
       : Number(current.price);
+  const paymentMethod = input.payment_method
+    ? requiredEnum(String(input.payment_method), PAYMENT_METHODS, 'forma de pagamento')
+    : current.payment_method || 'pix';
 
   const updateInfo = await run(
     `UPDATE appointments
         SET client_id = ?, barber_id = ?, service_id = ?, date = ?, start_time = ?, end_time = ?,
-            status = ?, price = ?, notes = ?, updated_at = datetime('now','localtime')
+            status = ?, price = ?, payment_method = ?, notes = ?, updated_at = datetime('now','localtime')
       WHERE id = ?
         AND (
           ? IN ('cancelled', 'no_show')
@@ -299,7 +308,7 @@ export async function updateAppointment(id, input, now = new Date(), { shopId = 
           )
         )`,
     [
-      clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, appointmentId,
+      clientId, barberId, serviceId, date, startTime, endTime, status, price, paymentMethod, notes, appointmentId,
       status, appointmentId, barberId, date, endTime, startTime,
     ]
   );

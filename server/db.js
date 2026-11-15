@@ -220,6 +220,28 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   current_period_end TEXT,
   updated_at         TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id        INTEGER NOT NULL DEFAULT 1,
+  description    TEXT NOT NULL,
+  category       TEXT NOT NULL DEFAULT 'Geral',
+  amount         REAL NOT NULL DEFAULT 0,
+  payment_method TEXT NOT NULL DEFAULT 'pix',
+  date           TEXT NOT NULL,
+  notes          TEXT,
+  created_at     TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_expenses_shop_date ON expenses(shop_id, date);
+
+CREATE TABLE IF NOT EXISTS shop_settings (
+  shop_id    INTEGER NOT NULL,
+  key        TEXT NOT NULL,
+  value      TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  PRIMARY KEY (shop_id, key)
+);
 `;
 
 export const DEFAULT_SETTINGS = {
@@ -538,6 +560,15 @@ export async function initDatabase(options = {}) {
     }
   }
 
+  try {
+    const apptCols = await driver.all('PRAGMA table_info(appointments)', []);
+    if (!apptCols.map((c) => c.name).includes('payment_method')) {
+      await driver.exec("ALTER TABLE appointments ADD COLUMN payment_method TEXT NOT NULL DEFAULT 'pix'");
+    }
+  } catch {
+    /* coluna ja existente */
+  }
+
   await seedDefaults();
   await loadSettings();
   initialized = true;
@@ -760,10 +791,10 @@ export async function closeDatabase() {
 
 export async function getShopBySlug(slug = 'nova-barbearia') {
   const shop = await get('SELECT * FROM barbershops WHERE slug = ? AND active = 1', [slug]);
-  if (!shop) {
+  if (!shop && slug === 'nova-barbearia') {
     return await get('SELECT * FROM barbershops WHERE active = 1 ORDER BY id ASC LIMIT 1', []);
   }
-  return shop;
+  return shop || null;
 }
 
 export async function listShops() {
@@ -786,4 +817,38 @@ export async function addReview({ shopSlug = 'nova-barbearia', clientName, ratin
     'INSERT INTO reviews (shop_slug, client_name, rating, comment, appointment_id, barber_id, verified) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [shopSlug, clientName, Number(rating), comment || '', appointmentId || null, barberId || null, verified]
   );
+}
+
+export async function getAllShopSettings(shopId = 1) {
+  const sid = Number(shopId) || 1;
+  const base = sid === 1 ? getSettingsMap() : { ...DEFAULT_SETTINGS };
+  const rows = await all('SELECT key, value FROM shop_settings WHERE shop_id = ?', [sid]);
+  for (const row of rows) {
+    base[row.key] = row.value;
+  }
+  return base;
+}
+
+export async function getShopSetting(shopId, key, fallback = '') {
+  const sid = Number(shopId) || 1;
+  const row = await get('SELECT value FROM shop_settings WHERE shop_id = ? AND key = ?', [sid, key]);
+  if (row && row.value !== undefined) return row.value;
+  if (sid === 1) return getSetting(key, fallback);
+  return DEFAULT_SETTINGS[key] ?? fallback;
+}
+
+export async function setShopSetting(shopId, key, value) {
+  const sid = Number(shopId) || 1;
+  const str = String(value ?? '');
+  await run(
+    `INSERT INTO shop_settings (shop_id, key, value, updated_at)
+     VALUES (?, ?, ?, datetime('now','localtime'))
+     ON CONFLICT(shop_id, key) DO UPDATE SET
+       value = excluded.value,
+       updated_at = datetime('now','localtime')`,
+    [sid, key, str]
+  );
+  if (sid === 1) {
+    await setSetting(key, str);
+  }
 }

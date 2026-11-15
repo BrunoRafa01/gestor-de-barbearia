@@ -13,6 +13,7 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { hhmmToMinutes, nowMinutes, todayISO } from '../server/time.js';
 import { isWeakInitialPassword } from '../server/auth.js';
@@ -903,7 +904,161 @@ async function run() {
     shop2Reports.status === 200 && shop2Reports.body?.totals?.appointments === 0
   );
 
-  /* --------------------------- 17. Rate limiting -------------------------- */
+  /* --------------------- 18. Financeiro & Isolamento --------------------- */
+  await call('/api/auth/login', {
+    method: 'POST',
+    auth: false,
+    body: { password: 'NovaSenhaForte123' },
+  });
+  const shop1Cookie = cookie;
+
+  const expCreate = await call('/api/finance/expenses', {
+    method: 'POST',
+    body: {
+      description: 'Aluguel teste',
+      category: 'Aluguel',
+      amount: 120,
+      date: todayISO(),
+      payment_method: 'pix',
+    },
+  });
+  check('POST /api/finance/expenses registra despesa (201)', expCreate.status === 201 && expCreate.body?.id > 0);
+  const expId = expCreate.body?.id;
+
+  const fin1 = await call(`/api/finance/summary?from=${todayISO()}&to=${todayISO()}`);
+  const s1 = fin1.body?.summary || {};
+  check(
+    'GET /api/finance/summary calcula lucro liquido real corretamente',
+    fin1.status === 200 &&
+      s1.total_expenses >= 120 &&
+      Math.abs(s1.net_profit - Number((s1.revenue_realized - s1.total_commissions - s1.total_expenses).toFixed(2))) < 0.01
+  );
+
+  const fin2 = await call(`/api/finance/summary?from=${todayISO()}&to=${todayISO()}`, {
+    auth: false,
+    headers: { Cookie: emailLoginCookie },
+  });
+  check(
+    'isolamento financeiro impede vazamento de despesas para outra barbearia',
+    fin2.status === 200 && Array.isArray(fin2.body?.expenses) && fin2.body.expenses.length === 0
+  );
+
+  const expCrossDel = await call(`/api/finance/expenses/${expId}`, {
+    method: 'DELETE',
+    auth: false,
+    headers: { Cookie: emailLoginCookie },
+  });
+  check('outra barbearia recebe 404 ao tentar excluir despesa alheia', expCrossDel.status === 404);
+
+  const expDel = await call(`/api/finance/expenses/${expId}`, { method: 'DELETE' });
+  check('DELETE /api/finance/expenses/:id remove despesa da propria barbearia', expDel.status === 200);
+
+  /* --------------------- 19. Isolamento shop_settings -------------------- */
+  const set2Put = await call('/api/settings', {
+    method: 'PUT',
+    auth: false,
+    headers: { Cookie: emailLoginCookie },
+    body: { shop_name: 'Barbearia Teste 2 Isolada' },
+  });
+  check(
+    'PUT /api/settings salva configuracoes isoladas por barbearia',
+    set2Put.status === 200 && set2Put.body?.shop_name === 'Barbearia Teste 2 Isolada'
+  );
+  const set1Get = await call('/api/settings');
+  check(
+    'GET /api/settings da barbearia 1 nao e sobrescrito pela barbearia 2',
+    set1Get.status === 200 && set1Get.body?.shop_name !== 'Barbearia Teste 2 Isolada'
+  );
+
+  /* ---------------- 20. Painel Master & Suspensao de Loja ---------------- */
+  const masterForbidden1 = await call('/api/master/overview');
+  const masterForbidden2 = await call('/api/master/shops', {
+    auth: false,
+    headers: { Cookie: emailLoginCookie },
+  });
+  check(
+    'donos comuns recebem 403 nas rotas do Painel Master',
+    masterForbidden1.status === 403 && masterForbidden2.status === 403
+  );
+
+  await call('/api/auth/register-shop', {
+    method: 'POST',
+    auth: false,
+    headers: { 'X-Forwarded-For': '198.51.100.88' },
+    body: {
+      shop_name: 'Master Console Shop',
+      name: 'Master Admin',
+      email: 'master@novaruntime.local',
+      password: 'MasterPassword123',
+    },
+  });
+  const directDb = new DatabaseSync(join(workDir, 'teste.db'));
+  directDb.prepare("UPDATE users SET role = 'master' WHERE email = ?").run('master@novaruntime.local');
+  directDb.close();
+
+  const masterLogin = await call('/api/auth/login', {
+    method: 'POST',
+    auth: false,
+    headers: { 'X-Forwarded-For': '198.51.100.88' },
+    body: { email: 'master@novaruntime.local', password: 'MasterPassword123' },
+  });
+  const masterCookie = (masterLogin.headers.get('set-cookie') || '').split(';')[0];
+  cookie = shop1Cookie;
+  const masterMe = await call('/api/auth/me', { auth: false, headers: { Cookie: masterCookie } });
+  check('usuario master autentica com is_master = true', masterMe.status === 200 && masterMe.body?.is_master === true);
+
+  const [mOverview, mShops, mLogs] = await Promise.all([
+    call('/api/master/overview', { auth: false, headers: { Cookie: masterCookie } }),
+    call('/api/master/shops', { auth: false, headers: { Cookie: masterCookie } }),
+    call('/api/master/logs', { auth: false, headers: { Cookie: masterCookie } }),
+  ]);
+  check(
+    'Painel Master retorna overview, barbearias e logs',
+    mOverview.status === 200 &&
+      mOverview.body?.shops?.total >= 2 &&
+      mShops.status === 200 &&
+      Array.isArray(mShops.body) &&
+      mLogs.status === 200
+  );
+
+  const shop2Id = meEmail.body?.user?.shop_id;
+  const shop2Suspend = await call(`/api/master/shops/${shop2Id}`, {
+    method: 'PATCH',
+    auth: false,
+    headers: { Cookie: masterCookie },
+    body: { active: false },
+  });
+  check('Painel Master suspende barbearia 2', shop2Suspend.status === 200 && shop2Suspend.body?.active === false);
+
+  const shop2Blocked = await call('/api/clients', {
+    auth: false,
+    headers: { Cookie: emailLoginCookie },
+  });
+  const shop2Slug = mShops.body?.find((s) => s.id === shop2Id)?.slug || 'barbearia-oauth-teste';
+  const shop2PublicBlocked = await call(`/api/public/config?shop=${shop2Slug}`, { auth: false });
+  check(
+    'barbearia suspensa recebe 403 no painel e 404 na vitrine publica',
+    shop2Blocked.status === 403 && shop2PublicBlocked.status === 404,
+    `panel=${shop2Blocked.status}, public=${shop2PublicBlocked.status}, slug=${shop2Slug}`
+  );
+
+  const shop2Reactivate = await call(`/api/master/shops/${shop2Id}`, {
+    method: 'PATCH',
+    auth: false,
+    headers: { Cookie: masterCookie },
+    body: { active: true, plan_id: 'pro' },
+  });
+  check(
+    'Painel Master reativa barbearia 2 e atualiza plano',
+    shop2Reactivate.status === 200 && shop2Reactivate.body?.active === true && shop2Reactivate.body?.plan_id === 'pro'
+  );
+  const shop2Restored = await call('/api/clients', {
+    auth: false,
+    headers: { Cookie: emailLoginCookie },
+  });
+  check('barbearia reativada volta a acessar o painel (200)', shop2Restored.status === 200);
+
+  /* --------------------------- 21. Rate limiting -------------------------- */
   const attackerIp = '198.51.100.77';
   let blockedAt = 0;
   for (let attempt = 1; attempt <= 12; attempt += 1) {

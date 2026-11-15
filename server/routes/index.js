@@ -7,6 +7,8 @@ import { dashboardRoutes } from './dashboard.routes.js';
 import { healthRoutes } from './health.routes.js';
 import { publicRoutes } from './public.routes.js';
 import { reportRoutes } from './reports.routes.js';
+import { financeRoutes } from './finance.routes.js';
+import { masterRoutes } from './master.routes.js';
 import { serviceRoutes } from './services.routes.js';
 import { settingsRoutes } from './settings.routes.js';
 import { whatsappRoutes } from './whatsapp.routes.js';
@@ -22,6 +24,8 @@ export const apiRoutes = [
   ...publicRoutes,
   ...dashboardRoutes,
   ...reportRoutes,
+  ...financeRoutes,
+  ...masterRoutes,
   ...clientRoutes,
   ...barberRoutes,
   ...serviceRoutes,

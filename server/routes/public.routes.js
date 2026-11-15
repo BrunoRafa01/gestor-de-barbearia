@@ -46,6 +46,9 @@ async function shopPayload(slug) {
   let shopRow = null;
   if (slug) {
     shopRow = await getShopBySlug(slug);
+    if (!shopRow || Number(shopRow.active) === 0) {
+      throw new HttpError(404, 'Barbearia nao encontrada ou indisponivel.');
+    }
   }
   const defaultCuts = [
     { title: 'Degradê Navalhado', desc: 'Acabamento milimétrico na lâmina e contorno alinhado', tag: 'Cabelo' },

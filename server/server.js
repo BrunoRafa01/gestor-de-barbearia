@@ -9,7 +9,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertAuthenticated, ensureAdminPassword, getSessionPayload, isUsingDefaultPassword } from './auth.js';
-import { closeDatabase, driverKind, driverLabel, initDatabase } from './db.js';
+import { closeDatabase, driverKind, driverLabel, get, initDatabase } from './db.js';
 import { isDemoMode, seedDemoData } from './demo.js';
 import { HttpError, readJsonBody, sendError, sendJson, serveStatic } from './http.js';
 import { applySecurityHeaders, isSecureRequest, newRequestId } from './security.js';
@@ -188,6 +188,19 @@ const server = createServer(async (request, response) => {
 
       const session = getSessionPayload(request);
       const shopId = Number(session?.shopId) || 1;
+
+      if (
+        match.route.auth !== false &&
+        session &&
+        session.role !== 'master' &&
+        !pathname.startsWith('/api/master') &&
+        !pathname.startsWith('/api/auth')
+      ) {
+        const shopRow = await get('SELECT active FROM barbershops WHERE id = ?', [shopId]);
+        if (shopRow && Number(shopRow.active) === 0) {
+          throw new HttpError(403, 'Conta da barbearia suspensa. Entre em contato com o suporte da Nova Runtime.');
+        }
+      }
 
       const handler = /** @type {(ctx: any) => Promise<any>} */ (match.route.handler);
       const result = await handler({

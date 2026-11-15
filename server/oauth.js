@@ -28,6 +28,14 @@ export function isGoogleOAuthEnabled() {
   return getGoogleOAuthConfig().enabled;
 }
 
+export function getMasterEmails() {
+  const raw = String(process.env.MASTER_ALLOWED_EMAILS || '');
+  return raw
+    .split(/[\s,;]+/)
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export function getAllowedAdminEmails() {
   const raw = String(process.env.ADMIN_ALLOWED_EMAILS || '');
   return raw
@@ -121,6 +129,9 @@ export async function authorizeGoogleUser({ email, name }) {
     return { allowed: false, status: 403, reason: 'E-mail invalido.' };
   }
 
+  const masterEmails = getMasterEmails();
+  const isMaster = masterEmails.includes(normalizedEmail);
+
   const existing = await get('SELECT * FROM users WHERE email = ?', [normalizedEmail]);
   if (existing) {
     if (Number(existing.active) !== 1) {
@@ -133,7 +144,7 @@ export async function authorizeGoogleUser({ email, name }) {
         shop_id: Number(existing.shop_id) || 1,
         email: existing.email,
         name: existing.name,
-        role: existing.role || 'owner',
+        role: isMaster ? 'master' : existing.role || 'owner',
       },
     };
   }
@@ -141,10 +152,11 @@ export async function authorizeGoogleUser({ email, name }) {
   const allowedEmails = getAllowedAdminEmails();
   const safeName = String(name || normalizedEmail.split('@')[0]).slice(0, 120);
 
-  if (allowedEmails.includes(normalizedEmail)) {
+  if (isMaster || allowedEmails.includes(normalizedEmail)) {
+    const role = isMaster ? 'master' : 'owner';
     const info = await run(
       'INSERT INTO users (shop_id, email, name, password_hash, role, active) VALUES (?, ?, ?, ?, ?, 1)',
-      [1, normalizedEmail, safeName, '!oauth-only', 'owner']
+      [1, normalizedEmail, safeName, '!oauth-only', role]
     );
     return {
       allowed: true,
@@ -153,7 +165,7 @@ export async function authorizeGoogleUser({ email, name }) {
         shop_id: 1,
         email: normalizedEmail,
         name: safeName,
-        role: 'owner',
+        role,
       },
     };
   }
