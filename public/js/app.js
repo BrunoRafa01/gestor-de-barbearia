@@ -249,19 +249,14 @@ function renderLogin() {
           </div>
         </div>
         <h1>Acesso ao painel</h1>
-        <p class="auth-sub">Entre com sua conta Google ou com seu acesso do painel.</p>
+        <p class="auth-sub">Entre com seu e-mail e senha do painel.</p>
         ${oauthError ? `<div class="auth-alert" role="alert">${esc(oauthError)}</div>` : ''}
         ${
-          googleEnabled
-            ? `<a class="btn-oauth" href="/api/auth/oauth/google">${googleIconSvg()}<span>Continuar com Google</span></a>`
-            : `<button class="btn-oauth is-disabled" type="button" id="google-oauth-hint">${googleIconSvg()}<span>Continuar com Google (configurar .env)</span></button>`
-        }
-        ${
           demoMode
-            ? `<a class="btn-oauth" href="/api/auth/demo-session" style="margin-top:8px">${icon('sparkles')}<span>Entrar em Modo Dev Local</span></a>`
+            ? `<a class="btn-oauth" href="/api/auth/demo-session">${icon('sparkles')}<span>Entrar em Modo Demonstração</span></a>
+               <div class="auth-divider">ou</div>`
             : ''
         }
-        <div class="auth-divider">ou</div>
         <div class="field">
           <label for="login-email">E-mail (opcional para admin local)</label>
           <input type="email" id="login-email" name="email" autocomplete="email" placeholder="seuemail@barbearia.com" />
@@ -282,12 +277,6 @@ function renderLogin() {
   const form = document.getElementById('login-form');
   const emailInput = document.getElementById('login-email');
   const passwordInput = document.getElementById('login-password');
-  const googleHintBtn = document.getElementById('google-oauth-hint');
-  if (googleHintBtn) {
-    googleHintBtn.addEventListener('click', () => {
-      toast('Configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET e ADMIN_ALLOWED_EMAILS no .env para ativar.', 'info');
-    });
-  }
   passwordInput.focus();
 
   form.addEventListener('submit', async (event) => {
