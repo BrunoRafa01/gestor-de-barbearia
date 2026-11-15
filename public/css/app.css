@@ -4427,15 +4427,23 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 @media (max-width: 600px) {
   html, body {
     overflow-x: hidden;
+    max-width: 100%;
+  }
+  .app-shell,
+  .main,
+  .content,
+  .stack {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
   }
   .main {
-    min-width: 0;
-    width: 100%;
     overflow-x: clip;
   }
   .topbar {
     gap: 8px;
     padding: 10px 12px;
+    max-width: 100%;
   }
   .topbar-title {
     min-width: 0;
@@ -4456,16 +4464,25 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   }
   .topbar .btn-primary {
     padding: 7px 10px;
-    font-size: 12.5px;
+    font-size: 12px;
+    white-space: nowrap;
   }
   .user-pill-btn {
-    max-width: 120px;
-    overflow: hidden;
+    padding: 4px 8px;
+    gap: 4px;
   }
   .user-pill-btn span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: none;
+  }
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .toolbar .search,
+  .toolbar .field {
+    width: 100%;
+    min-width: 0;
   }
   .ct-header {
     align-items: stretch;
@@ -4486,6 +4503,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .ct-panel,
   .card {
     min-width: 0;
+    max-width: 100%;
   }
   .ct-agenda-head,
   .ct-filter-bar {
@@ -4501,8 +4519,12 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
     font-size: 19px;
   }
   .table-wrap {
+    width: 100%;
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  .table-wrap table {
+    min-width: 560px;
   }
 }
