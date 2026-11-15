@@ -325,8 +325,8 @@ function shellHtml() {
                         <strong>${esc(state.me.user.email)}</strong>
                         <span>${esc(state.me.user.role === 'owner' ? 'Proprietário / Admin' : state.me.user.role || 'Admin')} · Loja #${esc(String(state.me.user.shop_id || 1))}</span>
                       </div>
-                      <a class="user-menu-item" href="#/plano">${icon('sparkles')}<span>Plano &amp; Assinatura</span></a>
-                      <a class="user-menu-item" href="#/configuracoes">${icon('settings')}<span>Configurações</span></a>
+                      <a class="user-menu-item" href="#/reports">${icon('chart')}<span>Relatórios &amp; Caixa</span></a>
+                      <a class="user-menu-item" href="#/settings">${icon('settings')}<span>Configurações</span></a>
                       <button class="user-menu-item" type="button" id="topbar-logout">${icon('logout')}<span>Sair do painel</span></button>
                     </div>
                   </div>`
@@ -555,7 +555,7 @@ async function viewDashboard() {
     api.get(`/api/dashboard${query({ date: state.date })}`),
     api.get(`/api/reports${query({ from: range.from, to: range.to })}`).catch(() => null),
     api.get('/api/billing/plan').catch(() => null),
-    api.get('/api/whatsapp/status').catch(() => null),
+    api.get('/api/whatsapp/config').catch(() => null),
     fetch('/health').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
 
@@ -626,12 +626,12 @@ async function viewDashboard() {
   };
   const filteredDayAppts = filterAppts(today.appointments || []);
 
-  const planName = billing?.plan?.plan_name || 'Plano Gratuito';
+  const planName = billing?.plan?.name || 'Plano Gratuito';
   const activeBarbers = billing?.usage?.active_barbers ?? today.occupancy.barbers;
   const maxBarbers = billing?.plan?.max_barbers;
   const barberCapLabel = maxBarbers ? `${activeBarbers} / ${maxBarbers} profissionais` : `${activeBarbers} profissionais`;
-  const waConnected = Boolean(waStatus?.configured && waStatus?.enabled);
-  const dbEngine = health?.database === 'turso' ? 'Turso Cloud (libSQL)' : 'SQLite Local';
+  const waConnected = Boolean(waStatus?.is_configured && waStatus?.enabled);
+  const dbEngine = health?.driver === 'turso' ? 'Turso Cloud (libSQL)' : 'SQLite Local';
 
   const notice = onboardingNotice();
 
@@ -657,7 +657,7 @@ async function viewDashboard() {
             )
             .join('')}
         </div>
-        <button type="button" class="btn btn-sm" id="ct-export-csv">${icon('download')}<span>Exportar .CSV</span></button>
+        <button type="button" class="btn btn-sm" id="ct-export-csv"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Exportar .CSV</span></button>
         <button type="button" class="btn btn-primary btn-sm" id="ct-new-appt">${icon('plus')}<span>Novo Agendamento</span></button>
       </div>
     </div>
@@ -759,7 +759,7 @@ async function viewDashboard() {
             <div class="ct-card-label">Ranking de Serviços &amp; Equipe</div>
             <div class="ct-card-sub">Mais procurados e faturamento</div>
           </div>
-          <a href="#/relatorios" style="font-size:12px;color:#60A5FA;text-decoration:none">Ver relatório</a>
+          <a href="#/reports" style="font-size:12px;color:#60A5FA;text-decoration:none">Ver relatório</a>
         </div>
         <div class="ct-rank-list">
           ${
@@ -814,7 +814,7 @@ async function viewDashboard() {
               <strong>${esc(planName)}</strong>
               <span>${esc(barberCapLabel)}</span>
             </div>
-            <a href="#/plano" class="ct-pill is-blue" style="text-decoration:none">Gerenciar</a>
+            <a href="#/settings" class="ct-pill is-blue" style="text-decoration:none">Configurar</a>
           </div>
         </div>
       </article>
