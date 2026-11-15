@@ -47,3 +47,10 @@ services:
       # Segredo da Meta para validar X-Hub-Signature-256 no webhook do WhatsApp
       - key: WHATSAPP_APP_SECRET
         sync: false
+      # Login administrativo com Google OAuth 2.0 (opcional)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: ADMIN_ALLOWED_EMAILS
+        sync: false

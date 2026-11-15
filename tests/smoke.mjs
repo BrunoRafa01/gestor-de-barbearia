@@ -830,7 +830,56 @@ async function run() {
   const afterLogout = await call('/api/clients', { auth: false, headers: { Cookie: cookie } });
   check('sessao encerrada bloqueia a API', afterLogout.status === 401, `status ${afterLogout.status}`);
 
-  /* --------------------------- 16. Rate limiting -------------------------- */
+  /* ---------------- 16. Google OAuth & Multi-tenant Login ----------------- */
+  const oauthProviders = await call('/api/auth/oauth/providers', { auth: false });
+  check('GET /api/auth/oauth/providers responde 200', oauthProviders.status === 200 && typeof oauthProviders.body?.google === 'boolean');
+
+  const googleStartUnconfigured = await call('/api/auth/oauth/google', { auth: false });
+  check('GET /api/auth/oauth/google retorna 503 sem configuracao', googleStartUnconfigured.status === 503);
+
+  const oauthBadStateJson = await call('/api/auth/oauth/google/callback?state=forged&code=123', {
+    auth: false,
+    headers: { Accept: 'application/json' },
+  });
+  check('callback OAuth rejeita state invalido com 403', oauthBadStateJson.status === 403);
+
+  const oauthBadStateBrowser = await fetch(`${BASE}/api/auth/oauth/google/callback?state=forged&code=123`, {
+    redirect: 'manual',
+  });
+  check(
+    'callback OAuth redireciona browser para #login com oauth_error',
+    oauthBadStateBrowser.status === 302 && String(oauthBadStateBrowser.headers.get('location') || '').includes('oauth_error=')
+  );
+
+  const shopReg = await call('/api/auth/register-shop', {
+    method: 'POST',
+    auth: false,
+    body: {
+      shop_name: 'Barbearia OAuth Teste',
+      name: 'Dono Teste',
+      email: 'dono.teste@barbearia.local',
+      password: 'Password123',
+    },
+  });
+  check('register-shop cria nova barbearia e usuario', shopReg.status === 201 && shopReg.body?.authenticated === true);
+
+  const emailLogin = await call('/api/auth/login', {
+    method: 'POST',
+    auth: false,
+    body: {
+      email: 'dono.teste@barbearia.local',
+      password: 'Password123',
+    },
+  });
+  check('login com e-mail e senha funciona para usuario cadastrado', emailLogin.status === 200 && emailLogin.body?.authenticated === true);
+  const emailLoginCookie = (emailLogin.headers.get('set-cookie') || '').split(';')[0];
+  const meEmail = await call('/api/auth/me', { auth: false, headers: { Cookie: emailLoginCookie } });
+  check(
+    'GET /api/auth/me retorna user.email e oauth_providers',
+    meEmail.status === 200 && meEmail.body?.user?.email === 'dono.teste@barbearia.local' && typeof meEmail.body?.oauth_providers?.google === 'boolean'
+  );
+
+  /* --------------------------- 17. Rate limiting -------------------------- */
   const attackerIp = '198.51.100.77';
   let blockedAt = 0;
   for (let attempt = 1; attempt <= 12; attempt += 1) {

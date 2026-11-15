@@ -1,5 +1,6 @@
 import {
   endSession,
+  getSessionPayload,
   hashPassword,
   isAuthenticated,
   isUsingDefaultPassword,
@@ -11,21 +12,47 @@ import {
 import { get, getSetting, run } from '../db.js';
 import { getShopPlan, listPlans, setShopPlan } from '../plans.js';
 import { isDemoMode } from '../demo.js';
-import { HttpError } from '../http.js';
+import { HttpError, clearCookie, parseCookies, setCookie } from '../http.js';
+import {
+  OAUTH_STATE_COOKIE,
+  authorizeGoogleUser,
+  buildGoogleAuthUrl,
+  createOAuthState,
+  fetchGoogleUserInfo,
+  isGoogleOAuthEnabled,
+  verifyOAuthState,
+} from '../oauth.js';
 import { clientIp, isSecureRequest, loginLimiter } from '../security.js';
 import { optionalEmail, requiredString } from '../validate.js';
 
 function statusPayload(req, authenticated) {
+  const session = authenticated ? getSessionPayload(req) : null;
   const payload = {
     authenticated,
     shop_name: getSetting('shop_name', 'Gestor de Barbearia'),
     company: getSetting('shop_company', 'Nova Runtime'),
     demo: isDemoMode(),
+    oauth_providers: {
+      google: isGoogleOAuthEnabled(),
+    },
   };
   if (authenticated) {
     payload.password_is_default = isUsingDefaultPassword();
+    payload.user = {
+      email: session?.sub || 'admin',
+      role: session?.role || 'owner',
+      shop_id: Number(session?.shopId) || 1,
+    };
   }
   return payload;
+}
+
+function redirectWithOAuthError(req, res, message, status = 403) {
+  if (String(req.headers.accept || '').includes('application/json')) {
+    throw new HttpError(status, message);
+  }
+  res.writeHead(302, { Location: `/#login?oauth_error=${encodeURIComponent(message)}` });
+  res.end();
 }
 
 export const authRoutes = [
@@ -154,6 +181,79 @@ export const authRoutes = [
       status: 200,
       body: statusPayload(req, isAuthenticated(req)),
     }),
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/oauth/providers',
+    auth: false,
+    handler: () => ({
+      status: 200,
+      body: { google: isGoogleOAuthEnabled() },
+    }),
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/oauth/google',
+    auth: false,
+    handler: ({ req, res }) => {
+      if (!isGoogleOAuthEnabled()) {
+        throw new HttpError(503, 'Login com Google nao configurado neste servidor.');
+      }
+      const state = createOAuthState();
+      setCookie(res, OAUTH_STATE_COOKIE, state, {
+        httpOnly: true,
+        sameSite: 'Lax',
+        secure: isSecureRequest(req),
+        maxAge: 10 * 60 * 1000,
+      });
+      const url = buildGoogleAuthUrl(req, state);
+      res.writeHead(302, { Location: url });
+      res.end();
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/oauth/google/callback',
+    auth: false,
+    handler: async ({ req, res, query }) => {
+      const secure = isSecureRequest(req);
+      const cookies = parseCookies(req);
+      const expectedState = cookies[OAUTH_STATE_COOKIE];
+      clearCookie(res, OAUTH_STATE_COOKIE, { secure });
+
+      if (query?.error) {
+        return redirectWithOAuthError(req, res, 'Autenticacao cancelada ou recusada pelo Google.', 403);
+      }
+
+      const receivedState = query?.state;
+      if (!verifyOAuthState(expectedState, receivedState)) {
+        return redirectWithOAuthError(req, res, 'Sessao OAuth invalida ou expirada. Tente novamente.', 403);
+      }
+
+      const code = query?.code;
+      if (!code) {
+        return redirectWithOAuthError(req, res, 'Codigo de autorizacao ausente.', 400);
+      }
+
+      try {
+        const profile = await fetchGoogleUserInfo(req, code);
+        const authResult = await authorizeGoogleUser(profile);
+        if (!authResult.allowed) {
+          return redirectWithOAuthError(req, res, authResult.reason, authResult.status || 403);
+        }
+
+        startSession(res, {
+          secure,
+          sub: authResult.user.email,
+          shopId: authResult.user.shop_id,
+          role: authResult.user.role,
+        });
+        res.writeHead(302, { Location: '/#dashboard' });
+        res.end();
+      } catch (err) {
+        return redirectWithOAuthError(req, res, err.message || 'Falha ao autenticar com Google.', err.status || 401);
+      }
+    },
   },
   {
     method: 'GET',

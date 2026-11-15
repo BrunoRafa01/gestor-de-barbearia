@@ -163,8 +163,24 @@ function topNotices() {
 
 /* --------------------------------- Login --------------------------------- */
 
+function readOAuthErrorFromHash() {
+  const hash = location.hash || '';
+  const qIndex = hash.indexOf('?');
+  if (qIndex === -1) return '';
+  const params = new URLSearchParams(hash.slice(qIndex + 1));
+  return params.get('oauth_error') || '';
+}
+
+function googleIconSvg() {
+  return `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.5 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12s4.3 9.5 9.5 9.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.1-1.1-.2-1.6H12z"/>
+  </svg>`;
+}
+
 function renderLogin() {
   const root = document.getElementById('app');
+  const oauthError = readOAuthErrorFromHash();
+  const googleEnabled = Boolean(state.me?.oauth_providers?.google);
   root.innerHTML = `
     <div class="page-centered">
       <form class="auth-card" id="login-form">
@@ -185,8 +201,19 @@ function renderLogin() {
           </div>
         </div>
         <h1>Acesso ao painel</h1>
-        <p class="auth-sub">Entre com sua senha para gerenciar a agenda, clientes e atendimentos da barbearia.</p>
+        <p class="auth-sub">Entre com sua conta Google autorizada ou com seu acesso do painel.</p>
+        ${oauthError ? `<div class="auth-alert" role="alert">${esc(oauthError)}</div>` : ''}
+        ${
+          googleEnabled
+            ? `<a class="btn-oauth" href="/api/auth/oauth/google">${googleIconSvg()}<span>Entrar com Google</span></a>`
+            : `<button class="btn-oauth is-disabled" type="button" id="google-oauth-hint">${googleIconSvg()}<span>Entrar com Google (não configurado)</span></button>`
+        }
+        <div class="auth-divider">ou</div>
         <div class="field">
+          <label for="login-email">E-mail (opcional para admin local)</label>
+          <input type="email" id="login-email" name="email" autocomplete="email" placeholder="seuemail@barbearia.com" />
+        </div>
+        <div class="field" style="margin-top:10px">
           <label for="login-password">Senha do painel</label>
           <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="Digite sua senha" />
         </div>
@@ -194,13 +221,20 @@ function renderLogin() {
           <button class="btn btn-primary btn-block" type="submit">Entrar no Sistema</button>
         </div>
         <div class="auth-hint">
-          Acesso restrito à equipe da barbearia. Senha padrão inicial: <b>admin123</b>.
+          Acesso restrito a contas autorizadas. Senha padrão inicial: <b>admin123</b>.
         </div>
       </form>
     </div>`;
 
   const form = document.getElementById('login-form');
+  const emailInput = document.getElementById('login-email');
   const passwordInput = document.getElementById('login-password');
+  const googleHintBtn = document.getElementById('google-oauth-hint');
+  if (googleHintBtn) {
+    googleHintBtn.addEventListener('click', () => {
+      toast('Configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET e ADMIN_ALLOWED_EMAILS no .env para ativar.', 'info');
+    });
+  }
   passwordInput.focus();
 
   form.addEventListener('submit', async (event) => {
@@ -208,7 +242,11 @@ function renderLogin() {
     const submit = form.querySelector('button[type=submit]');
     setBusy(submit, true, 'Entrando...');
     try {
-      await api.post('/api/auth/login', { password: passwordInput.value });
+      const payload = { password: passwordInput.value };
+      const email = emailInput.value.trim();
+      if (email) payload.email = email;
+      await api.post('/api/auth/login', payload);
+      state.me = await api.get('/api/auth/me');
       await startApp();
     } catch (error) {
       toast(error.message, 'error');
@@ -269,6 +307,14 @@ function shellHtml() {
             <p id="page-sub"></p>
           </div>
           <div class="topbar-actions">
+            ${
+              state.me?.user?.email
+                ? `<div class="user-pill hide-mobile" title="${esc(state.me.user.email)}">
+                    <span class="user-pill-avatar">${esc(state.me.user.email.slice(0, 1).toUpperCase())}</span>
+                    <span class="user-pill-label">${esc(state.me.user.email)}</span>
+                  </div>`
+                : ''
+            }
             <button class="btn btn-primary" id="quick-new" type="button">${icon('plus')}<span class="hide-mobile">Novo agendamento</span></button>
           </div>
         </header>
