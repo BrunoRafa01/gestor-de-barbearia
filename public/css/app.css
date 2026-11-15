@@ -1339,7 +1339,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 
 .grid { display: grid; gap: 14px; }
 .grid-kpi { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
 .grid-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 
 .kpi {
@@ -4425,10 +4425,84 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 @media (max-width: 600px) {
+  html, body {
+    overflow-x: hidden;
+  }
+  .main {
+    min-width: 0;
+    width: 100%;
+    overflow-x: clip;
+  }
+  .topbar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .topbar-title {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .topbar-title h1 {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .topbar-title p {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .topbar .btn-primary {
+    padding: 7px 10px;
+    font-size: 12.5px;
+  }
+  .user-pill-btn {
+    max-width: 120px;
+    overflow: hidden;
+  }
+  .user-pill-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ct-header {
+    align-items: stretch;
+    gap: 10px;
+  }
+  .ct-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .ct-segmented {
+    flex: 1 1 auto;
+    overflow-x: auto;
+  }
   .ct-kpi-grid {
     grid-template-columns: 1fr;
   }
+  .ct-kpi-card,
+  .ct-panel,
+  .card {
+    min-width: 0;
+  }
+  .ct-agenda-head,
+  .ct-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .ct-search {
+    width: 100%;
+    min-width: 0;
+  }
   .ct-title {
-    font-size: 20px;
+    font-size: 19px;
+  }
+  .table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
