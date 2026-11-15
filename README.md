@@ -199,6 +199,15 @@ npm run test:all
 
 ---
 
+## 🚀 Arquitetura SaaS, Financeiro & Painel Master
+
+- **Multiempresa (`shop_id`):** isolamento completo por barbearia em agendamentos, clientes, profissionais, serviços, financeiro, relatórios e `shop_settings`.
+- **Financeiro Real (`#/finance`):** separação clara entre receita bruta realizada, comissões da equipe, despesas operacionais e lucro líquido real, além de quebra por forma de pagamento (`PIX`, `Crédito`, `Débito`, `Dinheiro`) e fechamento de caixa diário.
+- **Autenticação & Onboarding:** login com senha administrativa, e-mail/senha por barbearia (`/api/auth/register-shop`) e **Google OAuth 2.0** (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OAUTH_ALLOW_SIGNUP`).
+- **Painel Master Nova Runtime (`#/master`):** acesso restrito via `MASTER_ALLOWED_EMAILS` (`role = 'master'`) para gerenciar planos (`free`, `basic`, `pro`), suspender/reativar estabelecimentos e monitorar saúde da plataforma.
+
+---
+
 ## 🏢 Desenvolvido por Nova Runtime
 
 A **Nova Runtime Tecnologia** é uma empresa de engenharia de software especializada no desenvolvimento de soluções digitais de alto impacto, arquitetura em nuvem, segurança da informação e produtos escaláveis para o mercado corporativo e varejo.

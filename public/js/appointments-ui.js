@@ -112,6 +112,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
     date: appointment?.date ?? defaults.date ?? new Date().toISOString().slice(0, 10),
     start_time: appointment?.start_time ?? defaults.start_time ?? '',
     status: appointment?.status ?? 'pending',
+    payment_method: appointment?.payment_method ?? 'pix',
     notes: appointment?.notes ?? '',
   };
 
@@ -160,6 +161,23 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
         <input type="number" step="0.01" min="0" id="ap-price" name="price" value="${
           appointment?.price ?? ''
         }" placeholder="Usa o preço do serviço" />
+      </div>
+
+      <div class="field">
+        <label for="ap-payment">Forma de pagamento</label>
+        <select id="ap-payment" name="payment_method">
+          ${options(
+            [
+              { id: 'pix', name: 'PIX' },
+              { id: 'credit_card', name: 'Cartão de Crédito' },
+              { id: 'debit_card', name: 'Cartão de Débito' },
+              { id: 'cash', name: 'Dinheiro' },
+              { id: 'other', name: 'Outro' },
+            ],
+            current.payment_method,
+            (item) => item.name
+          )}
+        </select>
       </div>
 
       ${
@@ -297,6 +315,7 @@ export async function openAppointmentForm({ appointment = null, defaults = {}, o
         start_time: data.start_time,
         notes: data.notes,
         status: data.status,
+        payment_method: data.payment_method || 'pix',
       };
       if (data.price !== '') payload.price = Number(data.price);
 
@@ -334,6 +353,7 @@ export function openAppointmentDetails(appointment, { onChanged = null } = {}) {
         <div><span>Data</span><strong>${esc(formatDateBR(appointment.date))}</strong></div>
         <div><span>Horário</span><strong>${esc(appointment.start_time)} às ${esc(appointment.end_time)}</strong></div>
         <div><span>Valor</span><strong>${esc(money(appointment.price))}</strong></div>
+        <div><span>Pagamento</span><strong>${esc({ pix: 'PIX', credit_card: 'Crédito', debit_card: 'Débito', cash: 'Dinheiro', other: 'Outro' }[appointment.payment_method] || 'PIX')}</strong></div>
       </div>
 
       ${appointment.notes ? `<p class="muted"><strong>Observações:</strong> ${esc(appointment.notes)}</p>` : ''}

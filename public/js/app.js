@@ -44,12 +44,14 @@ const NAV = [
   { key: 'agenda', label: 'Agenda', icon: 'calendar', group: 'Gestão' },
   { key: 'appointments', label: 'Agendamentos', icon: 'list', group: 'Gestão' },
   { key: 'clients', label: 'Clientes', icon: 'users', group: 'Gestão' },
-  { key: 'reports', label: 'Relatórios & Caixa', icon: 'chart', group: 'Gestão' },
+  { key: 'finance', label: 'Financeiro', icon: 'wallet', group: 'Gestão' },
+  { key: 'reports', label: 'Relatórios', icon: 'chart', group: 'Gestão' },
   { key: 'marketing', label: 'Divulgação & QR', icon: 'link', group: 'Marketing' },
   { key: 'barbers', label: 'Profissionais', icon: 'scissors', group: 'Cadastros' },
   { key: 'services', label: 'Serviços', icon: 'tag', group: 'Cadastros' },
   { key: 'settings', label: 'Configurações', icon: 'settings', group: 'Sistema' },
   { key: 'backup', label: 'Backup', icon: 'database', group: 'Sistema' },
+  { key: 'master', label: 'Painel Master', icon: 'shield', group: 'Nova Runtime', masterOnly: true },
 ];
 
 const ROW_MINUTES = 30; // altura de cada linha da agenda
@@ -314,10 +316,10 @@ function navItem(item) {
 }
 
 function shellHtml() {
-  const groups = ['Gestão', 'Cadastros', 'Marketing', 'Sistema'];
+  const groups = ['Gestão', 'Cadastros', 'Marketing', 'Sistema', 'Nova Runtime'];
   const navHtml = groups
     .map((group) => {
-      const items = NAV.filter((item) => item.group === group);
+      const items = NAV.filter((item) => item.group === group && (!item.masterOnly || state.me?.is_master));
       if (!items.length) return '';
       return `<div class="nav-label">${esc(group)}</div>${items.map(navItem).join('')}`;
     })
@@ -502,12 +504,14 @@ const TITLES = {
   agenda: 'Agenda',
   appointments: 'Agendamentos',
   clients: 'Clientes',
-  reports: 'Relatórios & Caixa',
+  finance: 'Financeiro & Caixa',
+  reports: 'Relatórios',
   marketing: 'Divulgação & QR Code',
   barbers: 'Profissionais',
   services: 'Serviços',
   settings: 'Configurações',
   backup: 'Backup e dados',
+  master: 'Torre de Controle — Nova Runtime',
 };
 
 function subtitleFor(view) {
@@ -522,6 +526,8 @@ function subtitleFor(view) {
       return 'Crie, confirme, edite e cancele agendamentos.';
     case 'clients':
       return 'Cadastro e histórico de atendimentos.';
+    case 'finance':
+      return 'Receitas, despesas, comissões, formas de pagamento e fechamento de caixa.';
     case 'reports':
       return 'Faturamento, ocupação e desempenho por período.';
     case 'marketing':
@@ -534,6 +540,8 @@ function subtitleFor(view) {
       return 'Funcionamento, folgas, WhatsApp e segurança.';
     case 'backup':
       return 'Exporte, restaure e proteja os dados da barbearia.';
+    case 'master':
+      return 'Visão executiva multiempresa, assinaturas, planos e saúde da plataforma.';
     default:
       return '';
   }
@@ -3616,6 +3624,396 @@ Escolha seu barbeiro, o melhor horário e receba a confirmação na hora! Te esp
   });
 }
 
+/* -------------------------------- Financeiro ------------------------------ */
+
+let financeRange = { from: addDays(todayISO(), -29), to: todayISO() };
+
+async function viewFinance() {
+  const qs = `?from=${encodeURIComponent(financeRange.from)}&to=${encodeURIComponent(financeRange.to)}`;
+  const data = await api.get(`/api/finance/summary${qs}`);
+  const summary = data.summary || {};
+  const byMethod = data.by_payment_method || [];
+  const closing = data.cash_closing || [];
+  const expenses = data.expenses || [];
+  const methodLabel = {
+    pix: 'PIX',
+    credit_card: 'Cartão de Crédito',
+    debit_card: 'Cartão de Débito',
+    cash: 'Dinheiro',
+    other: 'Outro',
+  };
+
+  content().innerHTML = `
+    <div class="stack" style="gap:18px">
+      <div class="card">
+        <div class="card-body row-actions" style="justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div class="row-actions" style="gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-sm" data-fin-preset="today">Hoje</button>
+            <button type="button" class="btn btn-sm" data-fin-preset="7d">7 dias</button>
+            <button type="button" class="btn btn-sm" data-fin-preset="30d">30 dias</button>
+            <button type="button" class="btn btn-sm" data-fin-preset="month">Mês atual</button>
+          </div>
+          <form id="fin-range-form" class="row-actions" style="gap:8px;flex-wrap:wrap">
+            <input type="date" id="fin-from" value="${esc(financeRange.from)}" />
+            <span class="muted">até</span>
+            <input type="date" id="fin-to" value="${esc(financeRange.to)}" />
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="ct-kpi-grid">
+        <div class="ct-kpi-card">
+          <div class="ct-kpi-top">
+            <span class="ct-kpi-label">Receita Bruta Realizada</span>
+            <span class="ct-badge ok">${Number(summary.completed_count || 0)} atend.</span>
+          </div>
+          <div class="ct-kpi-value">${esc(money(summary.revenue_realized || 0))}</div>
+          <div class="ct-kpi-foot"><span>Previsto: ${esc(money(summary.revenue_expected || 0))}</span></div>
+        </div>
+
+        <div class="ct-kpi-card">
+          <div class="ct-kpi-top">
+            <span class="ct-kpi-label">Comissões da Equipe</span>
+            <span class="ct-badge">${esc(money(summary.total_commissions || 0))}</span>
+          </div>
+          <div class="ct-kpi-value">${esc(money(summary.total_commissions || 0))}</div>
+          <div class="ct-kpi-foot"><span>Calculado por profissional</span></div>
+        </div>
+
+        <div class="ct-kpi-card">
+          <div class="ct-kpi-top">
+            <span class="ct-kpi-label">Despesas Operacionais</span>
+            <span class="ct-badge">${expenses.length} lanç.</span>
+          </div>
+          <div class="ct-kpi-value">${esc(money(summary.total_expenses || 0))}</div>
+          <div class="ct-kpi-foot"><span>Custos fixos e variáveis</span></div>
+        </div>
+
+        <div class="ct-kpi-card ct-kpi-highlight">
+          <div class="ct-kpi-top">
+            <span class="ct-kpi-label">Lucro Líquido Real</span>
+            <span class="ct-badge">${Number(summary.revenue_realized || 0) > 0 ? Math.round((Number(summary.net_profit || 0) / Number(summary.revenue_realized)) * 100) : 0}% margem</span>
+          </div>
+          <div class="ct-kpi-value">${esc(money(summary.net_profit || 0))}</div>
+          <div class="ct-kpi-foot"><span>Receita − Comissões − Despesas</span></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="gap:16px">
+        <div class="card">
+          <div class="card-header"><strong>Formas de Pagamento</strong><span class="muted">Atendimentos concluídos</span></div>
+          <div class="card-body">
+            ${
+              byMethod.length
+                ? `<div class="table-wrap"><table><thead><tr><th>Forma</th><th>Qtd</th><th>Total</th></tr></thead><tbody>
+                    ${byMethod
+                      .map(
+                        (row) => `<tr>
+                          <td>${esc(methodLabel[row.payment_method] || row.payment_method)}</td>
+                          <td>${Number(row.count)}</td>
+                          <td><strong>${esc(money(row.total))}</strong></td>
+                        </tr>`
+                      )
+                      .join('')}
+                  </tbody></table></div>`
+                : '<p class="muted">Nenhum atendimento concluído no período.</p>'
+            }
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><strong>Lançar Despesa</strong><span class="muted">Registro operacional</span></div>
+          <div class="card-body">
+            <form id="fin-expense-form" class="form-grid">
+              <div class="field span-2">
+                <label for="exp-desc">Descrição</label>
+                <input id="exp-desc" name="description" required maxlength="140" placeholder="Ex.: Aluguel, Energia, Pomadas..." />
+              </div>
+              <div class="field">
+                <label for="exp-cat">Categoria</label>
+                <select id="exp-cat" name="category">
+                  <option value="Operacional">Operacional</option>
+                  <option value="Produtos">Produtos</option>
+                  <option value="Aluguel">Aluguel</option>
+                  <option value="Energia/Água">Energia/Água</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="exp-amount">Valor (R$)</label>
+                <input id="exp-amount" name="amount" type="number" step="0.01" min="0.01" required placeholder="0,00" />
+              </div>
+              <div class="field">
+                <label for="exp-date">Data</label>
+                <input id="exp-date" name="date" type="date" value="${esc(todayISO())}" required />
+              </div>
+              <div class="field">
+                <label for="exp-method">Pagamento</label>
+                <select id="exp-method" name="payment_method">
+                  <option value="pix">PIX</option>
+                  <option value="cash">Dinheiro</option>
+                  <option value="debit_card">Cartão Débito</option>
+                  <option value="credit_card">Cartão Crédito</option>
+                  <option value="other">Outro</option>
+                </select>
+              </div>
+              <div class="field span-2">
+                <button type="submit" class="btn btn-primary">Registrar Despesa</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><strong>Fechamento de Caixa Diário</strong><span class="muted">Receita, despesas e saldo</span></div>
+        <div class="card-body">
+          ${
+            closing.length
+              ? `<div class="table-wrap"><table><thead><tr><th>Data</th><th>Receita</th><th>Despesas</th><th>Saldo</th></tr></thead><tbody>
+                  ${closing
+                    .map(
+                      (row) => `<tr>
+                        <td>${esc(formatDateBR(row.date))}</td>
+                        <td>${esc(money(row.revenue))}</td>
+                        <td>${esc(money(row.expenses))}</td>
+                        <td><strong>${esc(money(row.net))}</strong></td>
+                      </tr>`
+                    )
+                    .join('')}
+                </tbody></table></div>`
+              : '<p class="muted">Sem movimentação financeira no período.</p>'
+          }
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><strong>Histórico de Despesas</strong><span class="muted">${expenses.length} lançamento(s)</span></div>
+        <div class="card-body">
+          ${
+            expenses.length
+              ? `<div class="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th>Valor</th><th></th></tr></thead><tbody>
+                  ${expenses
+                    .map(
+                      (exp) => `<tr>
+                        <td>${esc(formatDateBR(exp.date))}</td>
+                        <td>${esc(exp.description)}</td>
+                        <td><span class="tag">${esc(exp.category)}</span></td>
+                        <td>${esc(methodLabel[exp.payment_method] || exp.payment_method)}</td>
+                        <td><strong>${esc(money(exp.amount))}</strong></td>
+                        <td><button type="button" class="btn btn-danger btn-sm" data-del-expense="${exp.id}">Excluir</button></td>
+                      </tr>`
+                    )
+                    .join('')}
+                </tbody></table></div>`
+              : '<p class="muted">Nenhuma despesa registrada neste período.</p>'
+          }
+        </div>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('[data-fin-preset]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const today = todayISO();
+      const preset = btn.dataset.finPreset;
+      if (preset === 'today') financeRange = { from: today, to: today };
+      else if (preset === '7d') financeRange = { from: addDays(today, -6), to: today };
+      else if (preset === '30d') financeRange = { from: addDays(today, -29), to: today };
+      else if (preset === 'month') financeRange = { from: `${today.slice(0, 7)}-01`, to: today };
+      viewFinance();
+    });
+  });
+
+  document.getElementById('fin-range-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    financeRange = {
+      from: document.getElementById('fin-from').value,
+      to: document.getElementById('fin-to').value,
+    };
+    viewFinance();
+  });
+
+  document.getElementById('fin-expense-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const payload = {
+      description: form.description.value.trim(),
+      category: form.category.value,
+      amount: Number(form.amount.value),
+      date: form.date.value,
+      payment_method: form.payment_method.value,
+    };
+    try {
+      await api.post('/api/finance/expenses', payload);
+      toast('Despesa registrada com sucesso.');
+      viewFinance();
+    } catch (err) {
+      toast(err.message || 'Erro ao registrar despesa.', 'error');
+    }
+  });
+
+  document.querySelectorAll('[data-del-expense]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.delExpense;
+      if (!(await confirmDialog('Excluir esta despesa?', 'Esta ação remove o lançamento do fechamento de caixa.'))) return;
+      try {
+        await api.del(`/api/finance/expenses/${id}`);
+        toast('Despesa removida.');
+        viewFinance();
+      } catch (err) {
+        toast(err.message || 'Erro ao excluir despesa.', 'error');
+      }
+    });
+  });
+}
+
+/* ------------------------------ Painel Master ----------------------------- */
+
+async function viewMaster() {
+  const [overview, shopsList, logsData] = await Promise.all([
+    api.get('/api/master/overview'),
+    api.get('/api/master/shops'),
+    api.get('/api/master/logs'),
+  ]);
+  const shopTotals = overview.shops || {};
+  const apptTotals = overview.appointments || {};
+  const shops = Array.isArray(shopsList) ? shopsList : [];
+  const recentShops = logsData.recent_shops || [];
+  const recentMessages = logsData.recent_messages || [];
+
+  content().innerHTML = `
+    <div class="stack" style="gap:18px">
+      <div class="ct-kpi-grid">
+        <div class="ct-kpi-card">
+          <div class="ct-kpi-top"><span class="ct-kpi-label">Barbearias Cadastradas</span><span class="ct-badge ok">${Number(shopTotals.active || 0)} ativas</span></div>
+          <div class="ct-kpi-value">${Number(shopTotals.total || 0)}</div>
+          <div class="ct-kpi-foot"><span>${Number(shopTotals.suspended || 0)} suspensa(s)</span></div>
+        </div>
+        <div class="ct-kpi-card ct-kpi-highlight">
+          <div class="ct-kpi-top"><span class="ct-kpi-label">GMV da Plataforma</span><span class="ct-badge">Concluídos</span></div>
+          <div class="ct-kpi-value">${esc(money(apptTotals.gmv || 0))}</div>
+          <div class="ct-kpi-foot"><span>Volume transacionado nas barbearias</span></div>
+        </div>
+        <div class="ct-kpi-card">
+          <div class="ct-kpi-top"><span class="ct-kpi-label">Agendamentos Totais</span><span class="ct-badge">Plataforma</span></div>
+          <div class="ct-kpi-value">${Number(apptTotals.total || 0)}</div>
+          <div class="ct-kpi-foot"><span>Todos os estabelecimentos</span></div>
+        </div>
+        <div class="ct-kpi-card">
+          <div class="ct-kpi-top"><span class="ct-kpi-label">Saúde do Banco</span><span class="ct-badge ${overview.database?.ok ? 'ok' : ''}">${overview.database?.ok ? 'Online' : 'Alerta'}</span></div>
+          <div class="ct-kpi-value">${esc(overview.driver || 'sqlite')}</div>
+          <div class="ct-kpi-foot"><span>Latência: ${Number(overview.database?.latency_ms || 0)} ms</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><strong>Estabelecimentos & Assinaturas</strong><span class="muted">${shops.length} barbearia(s)</span></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Barbearia</th><th>Plano</th><th>Status</th><th>Agend.</th><th>Ações</th></tr></thead>
+              <tbody>
+                ${shops
+                  .map(
+                    (s) => `<tr>
+                      <td>#${Number(s.id)}</td>
+                      <td><strong>${esc(s.name)}</strong><br><span class="muted">/b/${esc(s.slug)}</span></td>
+                      <td>
+                        <select class="master-plan-select" data-shop-id="${s.id}" style="min-width:130px">
+                          <option value="free" ${s.plan_id === 'free' ? 'selected' : ''}>Gratuito / Demo</option>
+                          <option value="basic" ${s.plan_id === 'basic' ? 'selected' : ''}>Básico</option>
+                          <option value="pro" ${s.plan_id === 'pro' ? 'selected' : ''}>Profissional</option>
+                        </select>
+                      </td>
+                      <td>${s.active ? '<span class="tag ok">Ativa</span>' : '<span class="tag danger">Suspensa</span>'}</td>
+                      <td>${Number(s.appointments_count || 0)}</td>
+                      <td>
+                        <button type="button" class="btn btn-sm ${s.active ? 'btn-danger' : 'btn-ok'}" data-toggle-shop="${s.id}" data-next-active="${s.active ? 0 : 1}">
+                          ${s.active ? 'Suspender' : 'Reativar'}
+                        </button>
+                      </td>
+                    </tr>`
+                  )
+                  .join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="gap:16px">
+        <div class="card">
+          <div class="card-header"><strong>Últimas Barbearias Cadastradas</strong><span class="muted">Onboarding</span></div>
+          <div class="card-body">
+            ${
+              recentShops.length
+                ? `<div class="table-wrap"><table><thead><tr><th>Barbearia</th><th>Slug</th><th>Status</th></tr></thead><tbody>
+                    ${recentShops
+                      .map(
+                        (rs) => `<tr>
+                          <td><strong>${esc(rs.name)}</strong></td>
+                          <td class="muted">/b/${esc(rs.slug)}</td>
+                          <td>${Number(rs.active) === 1 ? '<span class="tag ok">Ativa</span>' : '<span class="tag danger">Suspensa</span>'}</td>
+                        </tr>`
+                      )
+                      .join('')}
+                  </tbody></table></div>`
+                : '<p class="muted">Sem cadastros recentes.</p>'
+            }
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><strong>Fila Recente de Mensagens WhatsApp</strong><span class="muted">Telemetria</span></div>
+          <div class="card-body">
+            ${
+              recentMessages.length
+                ? `<div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Status</th><th>Data</th></tr></thead><tbody>
+                    ${recentMessages
+                      .map(
+                        (m) => `<tr>
+                          <td><span class="tag">${esc(m.type || '')}</span></td>
+                          <td>${esc(m.status || '')}</td>
+                          <td class="muted">${esc(m.created_at || '')}</td>
+                        </tr>`
+                      )
+                      .join('')}
+                  </tbody></table></div>`
+                : '<p class="muted">Nenhuma mensagem enfileirada.</p>'
+            }
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('.master-plan-select').forEach((sel) => {
+    sel.addEventListener('change', async () => {
+      try {
+        await api.patch(`/api/master/shops/${sel.dataset.shopId}`, { plan_id: sel.value });
+        toast('Plano atualizado com sucesso.');
+        viewMaster();
+      } catch (err) {
+        toast(err.message || 'Erro ao atualizar plano.', 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-toggle-shop]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const nextActive = Number(btn.dataset.nextActive) === 1;
+      try {
+        await api.patch(`/api/master/shops/${btn.dataset.toggleShop}`, { active: nextActive });
+        toast(nextActive ? 'Barbearia reativada.' : 'Barbearia suspensa.');
+        viewMaster();
+      } catch (err) {
+        toast(err.message || 'Erro ao alterar status da barbearia.', 'error');
+      }
+    });
+  });
+}
+
 /* --------------------------------- Roteador ------------------------------- */
 
 const VIEWS = {
@@ -3623,18 +4021,23 @@ const VIEWS = {
   agenda: viewAgenda,
   appointments: viewAppointments,
   clients: viewClients,
+  finance: viewFinance,
   reports: viewReports,
   marketing: viewMarketing,
   barbers: viewBarbers,
   services: viewServices,
   settings: viewSettings,
   backup: viewBackup,
+  master: viewMaster,
 };
 
 function currentViewFromHash() {
   const params = new URLSearchParams(window.location.search);
   const key = (location.hash || '').replace(/^#\/?/, '') || params.get('view');
-  return NAV.some((item) => item.key === key) ? key : 'dashboard';
+  const match = NAV.find((item) => item.key === key);
+  if (!match) return 'dashboard';
+  if (match.masterOnly && !state.me?.is_master) return 'dashboard';
+  return match.key;
 }
 
 /* ---------------------------------- Boot ---------------------------------- */

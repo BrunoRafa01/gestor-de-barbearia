@@ -254,3 +254,12 @@ os valores atuais em <https://render.com/pricing> e <https://turso.tech/pricing>
 | Dados sumiram apos deploy | Estava usando SQLite no Render | Configure o Turso e reimporte o ultimo backup |
 | Painel nao aceita a senha | `ADMIN_PASSWORD` diferente do esperado | Veja o valor em Environment ou troque a senha pelo painel |
 | Primeira visita muito lenta | Cold start do plano gratuito | Normal; use o monitor de uptime citado acima |
+
+---
+
+## Variaveis SaaS, Google OAuth e Painel Master
+
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI`: habilita o botao "Continuar com Google" no painel (`https://SEU-DOMINIO/api/auth/oauth/google/callback`).
+- `ADMIN_ALLOWED_EMAILS`: lista de e-mails autorizados via Google para a barbearia principal.
+- `OAUTH_ALLOW_SIGNUP=true`: permite que novas barbearias criem conta automaticamente pelo Google OAuth.
+- `MASTER_ALLOWED_EMAILS`: e-mails com permissao `master` para acessar `#/master` (Torre de Controle da Nova Runtime: planos, suspensao/reativacao e logs).

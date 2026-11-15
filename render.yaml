@@ -56,3 +56,5 @@ services:
         sync: false
       - key: OAUTH_ALLOW_SIGNUP
         value: "false"
+      - key: MASTER_ALLOWED_EMAILS
+        sync: false
