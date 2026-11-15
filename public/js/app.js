@@ -496,7 +496,6 @@ async function viewDashboard() {
 
   const upcomingPreview = data.upcoming.length
     ? `<div class="finity-tx-list">${data.upcoming
-        .slice(0, 4)
         .map(
           (item) => `
           <div class="finity-tx-row" data-appt="${item.id}" role="button" tabindex="0">
@@ -571,7 +570,7 @@ async function viewDashboard() {
         <div class="finity-progress-wrap">
           <div class="finity-progress-head">
             <span>Ocupação</span>
-            <strong class="mono">${rate === null ? '--' : `${occupancyPct}%`}</strong>
+            <strong class="mono">${rate === null ? 'Fechado' : `${occupancyPct}%`}</strong>
           </div>
           <div class="finity-progress-track">
             <div class="finity-progress-fill" style="width:${occupancyPct}%"></div>
@@ -637,7 +636,7 @@ async function viewDashboard() {
         <div class="finity-progress-wrap" style="margin-top:16px">
           <div class="finity-progress-head">
             <span>Capacidade preenchida</span>
-            <strong class="mono">${rate === null ? '--' : `${occupancyPct}%`}</strong>
+            <strong class="mono">${rate === null ? 'Fechado' : `${occupancyPct}%`}</strong>
           </div>
           <div class="finity-progress-track">
             <div class="finity-progress-fill" style="width:${occupancyPct}%"></div>
@@ -738,12 +737,12 @@ async function viewDashboard() {
       <div class="kpi-cell">
         <span class="kpi-cell-label">Semana / Mês</span>
         <strong class="kpi-cell-val mono">${esc(money(week.revenue_expected))}</strong>
-        <span class="kpi-cell-sub mono">Mês: ${esc(money(month.revenue_expected))}</span>
+        <span class="kpi-cell-sub mono">Mês realizado: ${esc(money(month.revenue_realized))}</span>
       </div>
       <div class="kpi-cell">
         <span class="kpi-cell-label">Ticket médio (mês)</span>
         <strong class="kpi-cell-val mono">${esc(money(month.average_ticket))}</strong>
-        <span class="kpi-cell-sub">${month.completed} atend. · Ocupação ${rate === null ? '--' : `${occupancyPct}%`}</span>
+        <span class="kpi-cell-sub">${month.completed} atend. · Ocupação ${rate === null ? 'Fechado' : `${occupancyPct}%`}</span>
       </div>
     </section>`;
 

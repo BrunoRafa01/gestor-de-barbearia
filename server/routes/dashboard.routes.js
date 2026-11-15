@@ -60,12 +60,12 @@ export const dashboardRoutes = [
       const weekStart = startOfWeek(date);
       const weekEnd = endOfWeek(date);
       const weekAppointments = (await listAppointments({ from: weekStart, to: weekEnd })).filter(
-        (item) => item.status !== 'cancelled'
+        (item) => ['pending', 'confirmed', 'completed'].includes(item.status)
       );
 
       const { start: monthStart, end: monthEnd } = monthRange(date);
       const monthAppointments = (await listAppointments({ from: monthStart, to: monthEnd })).filter(
-        (item) => item.status !== 'cancelled'
+        (item) => ['pending', 'confirmed', 'completed'].includes(item.status)
       );
       const completedMonth = monthAppointments.filter((item) => item.status === 'completed');
 
@@ -81,20 +81,20 @@ export const dashboardRoutes = [
 
       const topServices = (
         await all(
-          `SELECT s.name AS name, COUNT(*) AS total, SUM(a.price) AS revenue
-             FROM appointments a JOIN services s ON s.id = a.service_id
-            WHERE a.date BETWEEN ? AND ? AND a.status != 'cancelled'
-            GROUP BY a.service_id ORDER BY total DESC LIMIT 5`,
+          `SELECT COALESCE(s.name, 'Serviço removido') AS name, COUNT(*) AS total, COALESCE(SUM(a.price), 0) AS revenue
+             FROM appointments a LEFT JOIN services s ON s.id = a.service_id
+            WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'
+            GROUP BY a.service_id ORDER BY total DESC, revenue DESC LIMIT 5`,
           [monthStart, monthEnd]
         )
       ).map((row) => ({ ...row, total: Number(row.total), revenue: Number(row.revenue || 0) }));
 
       const topBarbers = (
         await all(
-          `SELECT b.name AS name, COUNT(*) AS total, SUM(a.price) AS revenue
+          `SELECT b.name AS name, COUNT(*) AS total, COALESCE(SUM(a.price), 0) AS revenue
              FROM appointments a JOIN barbers b ON b.id = a.barber_id
-            WHERE a.date BETWEEN ? AND ? AND a.status != 'cancelled'
-            GROUP BY a.barber_id ORDER BY total DESC LIMIT 5`,
+            WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'
+            GROUP BY a.barber_id ORDER BY total DESC, revenue DESC LIMIT 5`,
           [monthStart, monthEnd]
         )
       ).map((row) => ({ ...row, total: Number(row.total), revenue: Number(row.revenue || 0) }));

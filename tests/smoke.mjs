@@ -416,6 +416,13 @@ async function run() {
   check('relatorios trazem 7 dias da semana', reports.body?.by_weekday?.length === 7);
   check('relatorios trazem comissao por profissional', Array.isArray(reports.body?.by_barber));
   check('relatorios trazem servicos', Array.isArray(reports.body?.by_service));
+  const repTotals = reports.body?.totals || {};
+  const barberSum = (reports.body?.by_barber || []).reduce((s, b) => s + Number(b.total || 0), 0);
+  const serviceSum = (reports.body?.by_service || []).reduce((s, sv) => s + Number(sv.total || 0), 0);
+  check('ranking de profissionais soma igual aos concluidos', barberSum === Number(repTotals.completed || 0));
+  check('ranking de servicos soma igual aos concluidos', serviceSum === Number(repTotals.completed || 0));
+  const expectedAvg = repTotals.completed ? Number((repTotals.revenue_realized / repTotals.completed).toFixed(2)) : 0;
+  check('ticket medio bate com receita realizada / concluidos', Number(repTotals.average_ticket) === expectedAvg);
 
   const invalidRange = await call('/api/reports?from=2026-05-10&to=2026-05-01');
   check('periodo invertido responde 400', invalidRange.status === 400);

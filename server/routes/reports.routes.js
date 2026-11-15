@@ -58,21 +58,21 @@ export const reportRoutes = [
           `SELECT b.id AS barber_id, b.name AS name, b.commission AS commission,
                   COUNT(*) AS total,
                   COALESCE(SUM(a.price), 0) AS revenue,
-                  COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS realized,
-                  COALESCE(SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed
+                  COALESCE(SUM(a.price), 0) AS realized,
+                  COUNT(*) AS completed
              FROM appointments a JOIN barbers b ON b.id = a.barber_id
-            WHERE a.date BETWEEN ? AND ? AND a.status != 'cancelled'${barberFilter}
+            WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}
             GROUP BY a.barber_id
-            ORDER BY revenue DESC`,
+            ORDER BY revenue DESC, total DESC`,
           [from, to, ...barberParams]
         ),
         all(
-          `SELECT s.id AS service_id, s.name AS name, COUNT(*) AS total,
+          `SELECT a.service_id AS service_id, COALESCE(s.name, 'Serviço removido') AS name, COUNT(*) AS total,
                   COALESCE(SUM(a.price), 0) AS revenue
-             FROM appointments a JOIN services s ON s.id = a.service_id
-            WHERE a.date BETWEEN ? AND ? AND a.status != 'cancelled'${barberFilter}
+             FROM appointments a LEFT JOIN services s ON s.id = a.service_id
+            WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}
             GROUP BY a.service_id
-            ORDER BY total DESC`,
+            ORDER BY total DESC, revenue DESC`,
           [from, to, ...barberParams]
         ),
         all(
@@ -81,7 +81,7 @@ export const reportRoutes = [
                   COALESCE(SUM(CASE WHEN a.status = 'cancelled' THEN 1 ELSE 0 END), 0) AS cancelled,
                   COALESCE(SUM(CASE WHEN a.status = 'no_show' THEN 1 ELSE 0 END), 0) AS no_show,
                   COALESCE(SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed,
-                  COALESCE(SUM(CASE WHEN a.status != 'cancelled' THEN a.price ELSE 0 END), 0) AS revenue
+                  COALESCE(SUM(CASE WHEN a.status IN ('pending', 'confirmed', 'completed') THEN a.price ELSE 0 END), 0) AS revenue
              FROM appointments a
             WHERE a.date BETWEEN ? AND ?${barberFilter}
             GROUP BY a.date
@@ -107,7 +107,7 @@ export const reportRoutes = [
       const completed = statusCount('completed');
       const noShow = statusCount('no_show');
       const revenueExpected = statusRows
-        .filter((row) => row.status !== 'cancelled')
+        .filter((row) => ['pending', 'confirmed', 'completed'].includes(row.status))
         .reduce((sum, row) => sum + Number(row.revenue || 0), 0);
       const revenueRealized = statusMap.get('completed')?.revenue || 0;
 
