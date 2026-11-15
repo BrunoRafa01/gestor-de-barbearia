@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 3499;
 const BASE = `http://127.0.0.1:${PORT}`;
-const PASSWORD = 'admin-stress-123';
+const PASSWORD = 'AdminStress123';
 const CONCURRENT_USERS = 50;
 
 console.log('='.repeat(70));
