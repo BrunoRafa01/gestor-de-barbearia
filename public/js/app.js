@@ -70,6 +70,51 @@ const state = {
 const content = () => document.getElementById('content');
 const refresh = () => navigate(state.view);
 
+/* ---------------------------------- Tema ---------------------------------- */
+
+function getStoredTheme() {
+  try {
+    return localStorage.getItem('gb_theme') === 'light' ? 'light' : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
+
+function themeIconSvg(theme) {
+  if (theme === 'light') {
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+  }
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+}
+
+function applyTheme(theme) {
+  const next = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem('gb_theme', next);
+  } catch {
+    /* ignora */
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', next === 'light' ? '#F4F6FB' : '#07080B');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    btn.innerHTML = themeIconSvg(next);
+    btn.title = next === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro';
+    btn.setAttribute('aria-label', btn.title);
+  }
+  const menuLabel = document.getElementById('menu-theme-label');
+  if (menuLabel) {
+    menuLabel.textContent = next === 'light' ? 'Tema escuro' : 'Tema claro';
+  }
+}
+
+function toggleTheme() {
+  applyTheme(getStoredTheme() === 'light' ? 'dark' : 'light');
+}
+
+applyTheme(getStoredTheme());
+
 /* -------------------------------- Auxiliares ------------------------------ */
 
 function optionsFrom(list, selected, labelFn, valueFn = (item) => item.id) {
@@ -313,6 +358,7 @@ function shellHtml() {
             <p id="page-sub"></p>
           </div>
           <div class="topbar-actions">
+            <button class="icon-btn" id="theme-toggle" type="button" title="${getStoredTheme() === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro'}" aria-label="Alternar tema">${themeIconSvg(getStoredTheme())}</button>
             ${
               state.me?.user?.email
                 ? `<div class="user-menu-wrap hide-mobile">
@@ -325,6 +371,7 @@ function shellHtml() {
                         <strong>${esc(state.me.user.email)}</strong>
                         <span>${esc(state.me.user.role === 'owner' ? 'Proprietário / Admin' : state.me.user.role || 'Admin')} · Loja #${esc(String(state.me.user.shop_id || 1))}</span>
                       </div>
+                      <button class="user-menu-item" type="button" id="menu-theme-toggle">${themeIconSvg(getStoredTheme())}<span id="menu-theme-label">${getStoredTheme() === 'light' ? 'Tema escuro' : 'Tema claro'}</span></button>
                       <a class="user-menu-item" href="#/reports">${icon('chart')}<span>Relatórios &amp; Caixa</span></a>
                       <a class="user-menu-item" href="#/settings">${icon('settings')}<span>Configurações</span></a>
                       <button class="user-menu-item" type="button" id="topbar-logout">${icon('logout')}<span>Sair do painel</span></button>
@@ -373,6 +420,11 @@ function wireShell() {
   };
 
   document.getElementById('logout').addEventListener('click', doLogout);
+
+  const themeBtn = document.getElementById('theme-toggle');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+  const menuThemeBtn = document.getElementById('menu-theme-toggle');
+  if (menuThemeBtn) menuThemeBtn.addEventListener('click', toggleTheme);
 
   const userMenuBtn = document.getElementById('user-menu-btn');
   const userMenuDrop = document.getElementById('user-menu-dropdown');

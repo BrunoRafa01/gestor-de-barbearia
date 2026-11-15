@@ -107,12 +107,81 @@ body {
 }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59, 130, 246, 0.10), transparent 70%),
+    linear-gradient(180deg, #07080B 0%, #090D16 100%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F4F6FB;
+  --bg-secondary: #EDF1F8;
+  --bg-soft: #EDF1F8;
+  --surface: #FFFFFF;
+  --surface-2: #F8FAFC;
+  --surface-3: #EFF4FF;
+  --border: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-subtle: rgba(15, 23, 42, 0.06);
+  --text: #0F172A;
+  --text-dim: #334155;
+  --text-faint: #64748B;
+  --ok: #059669;
+  --ok-soft: rgba(5, 150, 105, 0.10);
+  --warn: #D97706;
+  --warn-soft: rgba(217, 119, 6, 0.10);
+  --danger: #DC2626;
+  --danger-soft: rgba(220, 38, 38, 0.10);
+  --shadow: 0 10px 28px -12px rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -10%, rgba(59, 130, 246, 0.11), transparent 70%),
+    linear-gradient(180deg, #F4F6FB 0%, #EBF0F8 100%);
+}
+
+:root[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+}
+
+:root[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.86);
+}
+
+:root[data-theme="light"] .ct-bar-track {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .ct-pill {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.10);
+  border-color: rgba(5, 150, 105, 0.22);
+}
+
+:root[data-theme="light"] .ct-pill.is-blue {
+  color: #1D4ED8;
+  background: rgba(37, 99, 235, 0.10);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+:root[data-theme="light"] .ct-pill.is-warn {
+  color: #B45309;
+  background: rgba(217, 119, 6, 0.10);
+  border-color: rgba(217, 119, 6, 0.24);
+}
+
+:root[data-theme="light"] .ct-seg-btn.active,
+:root[data-theme="light"] .ct-filter-pill.active {
+  color: #1D4ED8;
+  background: rgba(37, 99, 235, 0.12);
+}
   -moz-osx-font-smoothing: grayscale;
 }
 
@@ -4024,7 +4093,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .ct-card {
-  background: var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0) 100%), var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px 18px;
@@ -4034,11 +4103,30 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   gap: 10px;
   min-width: 0;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 .ct-card-accent {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.18) 0%, var(--surface) 100%);
-  border-color: rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 55%, #1E40AF 100%);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #F8FAFC;
+  box-shadow: 0 14px 32px -14px rgba(37, 99, 235, 0.52);
+}
+
+.ct-card-accent .ct-card-label,
+.ct-card-accent .ct-card-sub,
+.ct-card-accent .ct-kpi-foot {
+  color: rgba(248, 250, 252, 0.88);
+}
+
+.ct-card-accent .ct-kpi-foot {
+  border-top-color: rgba(255, 255, 255, 0.18);
+}
+
+.ct-card-accent .ct-pill.is-blue {
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .ct-card-head {
@@ -4130,7 +4218,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .ct-bar-fill {
   height: 100%;
   border-radius: 999px;
-  background: #3B82F6;
+  background: linear-gradient(90deg, #2563EB 0%, #60A5FA 100%);
 }
 
 .ct-mid-grid {
