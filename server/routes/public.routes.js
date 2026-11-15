@@ -61,6 +61,11 @@ async function shopPayload(slug) {
     }
   }
 
+  const businessHours = await all(
+    'SELECT weekday, is_open, open_time, close_time FROM business_hours ORDER BY weekday ASC',
+    []
+  );
+
   return {
     slug: shopRow?.slug || 'nova-barbearia',
     name: shopRow?.name || getSetting('shop_name', 'Gestor de Barbearia'),
@@ -74,6 +79,12 @@ async function shopPayload(slug) {
     cover_url: shopRow?.cover_url || null,
     primary_color: shopRow?.primary_color || '#3B82F6',
     cuts_gallery: cuts,
+    business_hours: businessHours.map((h) => ({
+      weekday: Number(h.weekday),
+      is_open: Boolean(h.is_open),
+      open_time: h.open_time,
+      close_time: h.close_time,
+    })),
     public_booking: String(getSetting('public_booking', '1')) === '1',
     min_advance_minutes: Number(getSetting('min_advance_minutes', '0')) || 0,
     max_advance_days: Number(getSetting('max_advance_days', '60')) || 60,

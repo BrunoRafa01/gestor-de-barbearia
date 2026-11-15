@@ -87,9 +87,55 @@ function revealSection(id) {
 
 /* ---------------------------------- Layout -------------------------------- */
 
+const WEEKDAY_NAMES_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+function groupBusinessHours(hours = []) {
+  if (!Array.isArray(hours) || !hours.length) return [];
+  const byDay = new Map(hours.map((h) => [Number(h.weekday), h]));
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const groups = [];
+  for (const wd of order) {
+    const row = byDay.get(wd);
+    if (!row) continue;
+    const key = row.is_open ? `${row.open_time}-${row.close_time}` : 'closed';
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) {
+      last.endWd = wd;
+    } else {
+      groups.push({ key, startWd: wd, endWd: wd, is_open: Boolean(row.is_open), open_time: row.open_time, close_time: row.close_time });
+    }
+  }
+  return groups.map((g) => ({
+    label: g.startWd === g.endWd
+      ? WEEKDAY_NAMES_SHORT[g.startWd]
+      : `${WEEKDAY_NAMES_SHORT[g.startWd]} – ${WEEKDAY_NAMES_SHORT[g.endWd]}`,
+    value: g.is_open ? `${g.open_time} – ${g.close_time}` : 'Fechado',
+  }));
+}
+
+function formatHeaderHours(hours = []) {
+  if (!Array.isArray(hours) || !hours.length) return 'Consulte horários disponíveis';
+  const todayWd = new Date().getDay();
+  const todayRow = hours.find((h) => Number(h.weekday) === todayWd);
+  const openDays = hours.filter((h) => h.is_open);
+  const openSummary = groupBusinessHours(openDays)
+    .map((g) => `${g.label} ${g.value}`)
+    .join(' · ');
+  if (todayRow?.is_open) {
+    return `Aberto hoje · ${todayRow.open_time} às ${todayRow.close_time}`;
+  }
+  return openSummary ? `Hoje fechado · ${openSummary}` : 'Fechado hoje';
+}
+
 function skeletonHtml() {
   const shopName = state.shop?.name || 'Barbearia';
   const shopAddr = state.shop?.address || 'Atendimento com hora marcada';
+  const groupedHours = groupBusinessHours(state.shop?.business_hours);
+  const hoursHtml = groupedHours.length
+    ? groupedHours
+        .map((g) => `<div class="booksy-hours-row"><span>${esc(g.label)}</span><span>${esc(g.value)}</span></div>`)
+        .join('')
+    : '<div class="booksy-hours-row"><span>Horários</span><span>Consulte a agenda</span></div>';
   return `
   <div class="booksy-layout-grid">
     <div class="booksy-main-col">
@@ -207,9 +253,7 @@ function skeletonHtml() {
           <span class="booksy-aside-kicker">Sobre · ${esc(shopName)}</span>
           <p class="booksy-aside-addr">${esc(shopAddr)}</p>
           <div class="booksy-hours-list">
-            <div class="booksy-hours-row"><span>Segunda – Sexta</span><span>09:00 – 20:00</span></div>
-            <div class="booksy-hours-row"><span>Sábado</span><span>09:00 – 19:00</span></div>
-            <div class="booksy-hours-row"><span>Domingo</span><span>Fechado</span></div>
+            ${hoursHtml}
           </div>
         </div>
       </div>
@@ -870,6 +914,9 @@ function applyShop(config) {
 
   const heroNameEl = document.getElementById('shop-hero-name');
   if (heroNameEl) heroNameEl.textContent = config.shop.name;
+
+  const hoursPillEl = document.getElementById('shop-hours-pill');
+  if (hoursPillEl) hoursPillEl.textContent = formatHeaderHours(config.shop.business_hours);
 
   const bioEl = document.getElementById('shop-bio');
   if (bioEl) {
