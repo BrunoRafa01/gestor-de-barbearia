@@ -125,18 +125,80 @@ function groupBusinessHours(hours = []) {
   }));
 }
 
-function formatHeaderHours(hours = []) {
-  if (!Array.isArray(hours) || !hours.length) return 'Consulte horários disponíveis';
-  const todayWd = new Date().getDay();
-  const todayRow = hours.find((h) => Number(h.weekday) === todayWd);
-  const openDays = hours.filter((h) => h.is_open);
+function computeShopStatus(hours = [], closures = []) {
+  const today = todayISO();
+  const todayClosure = Array.isArray(closures) ? closures.find((c) => c.date === today) : null;
+  const openDays = Array.isArray(hours) ? hours.filter((h) => h.is_open) : [];
   const openSummary = groupBusinessHours(openDays)
     .map((g) => `${g.label} ${g.value}`)
     .join(' · ');
-  if (todayRow?.is_open) {
-    return `Aberto hoje · ${todayRow.open_time} às ${todayRow.close_time}`;
+
+  if (todayClosure) {
+    const reason = todayClosure.reason || 'Folga';
+    return {
+      state: 'closed',
+      pillLabel: `Fechado hoje · ${reason}`,
+      hoursLabel: openSummary ? `Hoje fechado (${reason}) · ${openSummary}` : `Hoje fechado (${reason})`,
+    };
   }
-  return openSummary ? `Hoje fechado · ${openSummary}` : 'Fechado hoje';
+
+  if (!Array.isArray(hours) || !hours.length) {
+    return {
+      state: 'open',
+      pillLabel: 'Agendamento Online',
+      hoursLabel: 'Consulte horários disponíveis',
+    };
+  }
+
+  const now = new Date();
+  const todayWd = now.getDay();
+  const todayRow = hours.find((h) => Number(h.weekday) === todayWd);
+
+  if (!todayRow || !todayRow.is_open) {
+    return {
+      state: 'closed',
+      pillLabel: 'Fechado hoje',
+      hoursLabel: openSummary ? `Hoje fechado · ${openSummary}` : 'Fechado hoje',
+    };
+  }
+
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const openMin = hhmmToMinutes(todayRow.open_time || '09:00');
+  const closeMin = hhmmToMinutes(todayRow.close_time || '19:00');
+  const breakStartMin = todayRow.break_start ? hhmmToMinutes(todayRow.break_start) : null;
+  const breakEndMin = todayRow.break_end ? hhmmToMinutes(todayRow.break_end) : null;
+
+  if (nowMin < openMin) {
+    return {
+      state: 'soon',
+      pillLabel: `Abre hoje às ${todayRow.open_time}`,
+      hoursLabel: `Atendimento hoje · ${todayRow.open_time} às ${todayRow.close_time}`,
+    };
+  }
+
+  if (nowMin >= closeMin) {
+    return {
+      state: 'closed',
+      pillLabel: 'Fechado agora',
+      hoursLabel: openSummary
+        ? `Encerrado hoje (${todayRow.open_time}–${todayRow.close_time}) · ${openSummary}`
+        : `Encerrado hoje · ${todayRow.open_time} às ${todayRow.close_time}`,
+    };
+  }
+
+  if (breakStartMin !== null && breakEndMin !== null && nowMin >= breakStartMin && nowMin < breakEndMin) {
+    return {
+      state: 'soon',
+      pillLabel: `Em intervalo · Volta às ${todayRow.break_end}`,
+      hoursLabel: `Aberto hoje · ${todayRow.open_time} às ${todayRow.close_time}`,
+    };
+  }
+
+  return {
+    state: 'open',
+    pillLabel: `Aberto agora · até ${todayRow.close_time}`,
+    hoursLabel: `Aberto hoje · ${todayRow.open_time} às ${todayRow.close_time}`,
+  };
 }
 
 function renderCategoryPills() {
@@ -1104,8 +1166,19 @@ function applyShop(config) {
   const heroNameEl = document.getElementById('shop-hero-name');
   if (heroNameEl) heroNameEl.textContent = config.shop.name;
 
+  const statusInfo = computeShopStatus(config.shop.business_hours, config.shop.closures);
+  const statusPillEl = document.getElementById('shop-open-status-pill');
+  const statusTextEl = document.getElementById('shop-open-status-text');
+  if (statusPillEl) {
+    statusPillEl.classList.remove('is-open', 'is-closed', 'is-soon');
+    statusPillEl.classList.add(`is-${statusInfo.state}`);
+  }
+  if (statusTextEl) {
+    statusTextEl.textContent = statusInfo.pillLabel;
+  }
+
   const hoursPillEl = document.getElementById('shop-hours-pill');
-  if (hoursPillEl) hoursPillEl.textContent = formatHeaderHours(config.shop.business_hours);
+  if (hoursPillEl) hoursPillEl.textContent = statusInfo.hoursLabel;
 
   const bioEl = document.getElementById('shop-bio');
   if (bioEl) {

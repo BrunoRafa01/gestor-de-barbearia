@@ -67,8 +67,12 @@ async function shopPayload(slug) {
   }
 
   const businessHours = await all(
-    'SELECT weekday, is_open, open_time, close_time FROM business_hours ORDER BY weekday ASC',
+    'SELECT weekday, is_open, open_time, close_time, break_start, break_end FROM business_hours ORDER BY weekday ASC',
     []
+  );
+  const closures = await all(
+    'SELECT id, date, reason FROM closures WHERE date >= ? ORDER BY date ASC',
+    [todayISO()]
   );
 
   return {
@@ -90,6 +94,13 @@ async function shopPayload(slug) {
       is_open: Boolean(h.is_open),
       open_time: h.open_time,
       close_time: h.close_time,
+      break_start: h.break_start || null,
+      break_end: h.break_end || null,
+    })),
+    closures: closures.map((c) => ({
+      id: Number(c.id),
+      date: c.date,
+      reason: c.reason || 'Folga',
     })),
     public_booking: String(getSetting('public_booking', '1')) === '1',
     min_advance_minutes: Number(getSetting('min_advance_minutes', '0')) || 0,

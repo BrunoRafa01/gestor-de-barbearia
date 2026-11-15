@@ -279,6 +279,7 @@ export const settingsRoutes = [
     handler: async ({ body }) => {
       const date = requiredDate(body.date, 'data da folga');
       const reason = optionalString(body.reason, 'motivo', 120);
+      const force = Boolean(body.force);
 
       const active = await get(
         `SELECT COUNT(*) AS total FROM appointments
@@ -287,9 +288,18 @@ export const settingsRoutes = [
       );
 
       if (Number(active?.total || 0) > 0) {
-        throw new HttpError(
-          409,
-          'Existem agendamentos ativos nesta data. Cancele ou remaneje antes de marcar a folga.'
+        if (!force) {
+          throw new HttpError(
+            409,
+            'Existem agendamentos ativos nesta data. Cancele ou remaneje antes de marcar a folga.'
+          );
+        }
+        await run(
+          `UPDATE appointments
+              SET status = 'cancelled',
+                  cancellation_reason = ?
+            WHERE date = ? AND status IN ('pending','confirmed')`,
+          [reason ? `Folga: ${reason}` : 'Folga da barbearia', date]
         );
       }
 

@@ -3860,6 +3860,29 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   animation: bookingDotPulse 2.4s ease-in-out infinite;
 }
 
+.shop-verified-pill.is-closed {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.36);
+  color: #FDA4AF;
+}
+
+.shop-verified-pill.is-closed .shop-open-dot {
+  background: #FB7185;
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.2);
+  animation: none;
+}
+
+.shop-verified-pill.is-soon {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.36);
+  color: #FCD34D;
+}
+
+.shop-verified-pill.is-soon .shop-open-dot {
+  background: #FBBF24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.22);
+}
+
 .shop-studio-pill {
   display: inline-flex;
   align-items: center;

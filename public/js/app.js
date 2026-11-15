@@ -2227,34 +2227,41 @@ async function viewSettings() {
           break_start: '',
           break_end: '',
         };
+      const isOpen = Boolean(Number(day.is_open));
       return `
-        <div class="hours-row">
-          <label class="field-check">
-            <input type="checkbox" data-w="${weekday}" data-k="is_open" ${Number(day.is_open) ? 'checked' : ''} />
+        <div class="hours-row" data-hours-row="${weekday}" style="${isOpen ? '' : 'opacity:0.65'}">
+          <label class="field-check" style="gap:8px">
+            <input type="checkbox" data-w="${weekday}" data-k="is_open" ${isOpen ? 'checked' : ''} />
             <span>${esc(WEEKDAYS_SHORT[weekday])}</span>
+            <span class="pill ${isOpen ? 'pill-confirmed' : 'pill-cancelled'}" data-w-badge="${weekday}" style="font-size:10.5px;padding:2px 7px">${isOpen ? 'Aberto' : 'Folga'}</span>
           </label>
-          <input class="control" type="time" data-w="${weekday}" data-k="open_time" value="${esc(day.open_time || '09:00')}" />
-          <input class="control" type="time" data-w="${weekday}" data-k="close_time" value="${esc(day.close_time || '19:00')}" />
-          <input class="control" type="time" data-w="${weekday}" data-k="break_start" value="${esc(day.break_start || '')}" />
-          <input class="control" type="time" data-w="${weekday}" data-k="break_end" value="${esc(day.break_end || '')}" />
+          <input class="control" type="time" data-w="${weekday}" data-k="open_time" value="${esc(day.open_time || '09:00')}" ${isOpen ? '' : 'disabled'} />
+          <input class="control" type="time" data-w="${weekday}" data-k="close_time" value="${esc(day.close_time || '19:00')}" ${isOpen ? '' : 'disabled'} />
+          <input class="control" type="time" data-w="${weekday}" data-k="break_start" value="${esc(day.break_start || '')}" ${isOpen ? '' : 'disabled'} />
+          <input class="control" type="time" data-w="${weekday}" data-k="break_end" value="${esc(day.break_end || '')}" ${isOpen ? '' : 'disabled'} />
         </div>`;
     })
     .join('');
+
+  const today = todayISO();
+  const tomorrow = addDays(today, 1);
+  const todayHasClosure = closures.some((c) => c.date === today);
 
   const closuresHtml = closures.length
     ? `<div>${closures
         .map(
           (closure) => `
         <div class="list-row">
-          <div class="grow">
+          <div class="grow" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <strong>${esc(formatDateBR(closure.date))}</strong>
-            <span>${esc(closure.reason || 'Folga')}</span>
+            ${closure.date === today ? '<span class="pill pill-cancelled" style="font-size:10.5px">Hoje</span>' : ''}
+            <span class="muted">${esc(closure.reason || 'Folga')}</span>
           </div>
-          <button class="btn btn-sm btn-danger" data-closure="${closure.id}" type="button">Remover</button>
+          <button class="btn btn-sm btn-danger" data-closure="${closure.id}" type="button">Remover folga</button>
         </div>`
         )
         .join('')}</div>`
-    : emptyBlock('Nenhuma folga cadastrada');
+    : emptyBlock('Nenhuma folga ou feriado cadastrado');
 
   const publicLink = `${location.origin}/agendar`;
 
@@ -2326,23 +2333,42 @@ async function viewSettings() {
     </div>
 
     <div class="card" style="margin-top:16px">
-      <div class="card-header">
-        <h2>Horário de funcionamento</h2>
+      <div class="card-header" style="flex-wrap:wrap;gap:10px">
+        <div>
+          <h2>Horário de funcionamento &amp; Folga Semanal</h2>
+          <div class="card-sub">Desmarque os dias da semana em que a barbearia fica de folga (fechada)</div>
+        </div>
         <span class="spacer"></span>
-        <button class="btn btn-primary btn-sm" id="save-hours" type="button">${icon('check')} Salvar horários</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-hours-preset="mon-sat">Seg–Sáb (Dom Folga)</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-hours-preset="tue-sat">Ter–Sáb (Dom/Seg Folga)</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-hours-preset="all-open">Abrir Todos os Dias</button>
+        <button class="btn btn-primary btn-sm" id="save-hours" type="button">${icon('check')} Salvar horários e folgas</button>
       </div>
       <div class="hours-head">
-        <span>Dia</span><span>Abre</span><span>Fecha</span><span>Intervalo início</span><span>Intervalo fim</span>
+        <span>Dia / Status</span><span>Abre</span><span>Fecha</span><span>Intervalo início</span><span>Intervalo fim</span>
       </div>
       ${businessRows}
     </div>
 
     <div class="grid grid-2" style="margin-top:16px">
       <div class="card">
-        <div class="card-header"><h2>Folgas e feriados</h2></div>
+        <div class="card-header" style="flex-wrap:wrap;gap:8px">
+          <div>
+            <h2>Dias de Folga, Feriados &amp; Fechamento</h2>
+            <div class="card-sub">Bloqueie datas específicas e atualize o status "Fechado hoje" na página de agendamento</div>
+          </div>
+        </div>
+        <div class="row-actions" style="margin-bottom:12px;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm ${todayHasClosure ? 'btn-ghost' : 'btn-danger'}" id="quick-close-today" type="button" ${todayHasClosure ? 'disabled' : ''}>
+            ${icon('ban')} ${todayHasClosure ? 'Hoje já está marcado como Folga' : 'Fechar Hoje (Folga Hoje)'}
+          </button>
+          <button class="btn btn-sm btn-ghost" id="quick-close-tomorrow" type="button">
+            ${icon('calendar')} Fechar Amanhã (${esc(formatDateBR(tomorrow))})
+          </button>
+        </div>
         <div class="row-actions" style="margin-bottom:14px">
-          <input class="control" type="date" id="closure-date" />
-          <input class="control grow" id="closure-reason" placeholder="Motivo (opcional)" />
+          <input class="control" type="date" id="closure-date" value="${esc(today)}" />
+          <input class="control grow" id="closure-reason" placeholder="Motivo (ex: Folga, Feriado, Reforma)" />
           <button class="btn btn-primary" id="add-closure" type="button">${icon('plus')} Adicionar folga</button>
         </div>
         ${closuresHtml}
@@ -2590,6 +2616,47 @@ async function viewSettings() {
     }
   });
 
+  const syncWeekdayRowState = (weekday) => {
+    const chk = content().querySelector(`[data-w="${weekday}"][data-k="is_open"]`);
+    const row = content().querySelector(`[data-hours-row="${weekday}"]`);
+    const badge = content().querySelector(`[data-w-badge="${weekday}"]`);
+    if (!chk) return;
+    const open = chk.checked;
+    if (row) row.style.opacity = open ? '1' : '0.65';
+    if (badge) {
+      badge.textContent = open ? 'Aberto' : 'Folga';
+      badge.className = `pill ${open ? 'pill-confirmed' : 'pill-cancelled'}`;
+    }
+    content()
+      .querySelectorAll(`[data-w="${weekday}"]:not([data-k="is_open"])`)
+      .forEach((inp) => {
+        inp.disabled = !open;
+      });
+  };
+
+  [0, 1, 2, 3, 4, 5, 6].forEach((weekday) => {
+    content()
+      .querySelector(`[data-w="${weekday}"][data-k="is_open"]`)
+      ?.addEventListener('change', () => syncWeekdayRowState(weekday));
+  });
+
+  content()
+    .querySelectorAll('[data-hours-preset]')
+    .forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.hoursPreset;
+        [0, 1, 2, 3, 4, 5, 6].forEach((weekday) => {
+          const chk = content().querySelector(`[data-w="${weekday}"][data-k="is_open"]`);
+          if (!chk) return;
+          if (preset === 'mon-sat') chk.checked = weekday >= 1 && weekday <= 6;
+          else if (preset === 'tue-sat') chk.checked = weekday >= 2 && weekday <= 6;
+          else if (preset === 'all-open') chk.checked = true;
+          syncWeekdayRowState(weekday);
+        });
+        toast('Predefinição aplicada. Clique em "Salvar horários e folgas" para gravar.');
+      });
+    });
+
   plain('save-hours').addEventListener('click', async (event) => {
     const days = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
       weekday,
@@ -2602,7 +2669,7 @@ async function viewSettings() {
     setBusy(event.currentTarget, true);
     try {
       await api.put('/api/business-hours', { days });
-      saved('Horário de funcionamento salvo.');
+      saved('Horários e folgas semanais salvos com sucesso.');
     } catch (error) {
       toast(error.message, 'error');
     } finally {
@@ -2610,18 +2677,47 @@ async function viewSettings() {
     }
   });
 
-  plain('add-closure').addEventListener('click', async (event) => {
-    const date = plain('closure-date').value;
+  const createClosureWithConfirm = async (date, reason, triggerBtn) => {
     if (!date) return toast('Informe a data da folga.', 'error');
-    setBusy(event.currentTarget, true);
+    if (triggerBtn) setBusy(triggerBtn, true);
     try {
-      await api.post('/api/closures', { date, reason: plain('closure-reason').value });
-      toast('Folga adicionada.');
+      await api.post('/api/closures', { date, reason });
+      toast('Dia de folga registrado com sucesso.');
       refresh();
     } catch (error) {
+      if (triggerBtn) setBusy(triggerBtn, false);
+      if (error.status === 409 && String(error.message || '').toLowerCase().includes('agendamentos ativos')) {
+        const confirmed = await confirmDialog({
+          title: 'Existem agendamentos nesta data',
+          message: `${error.message} Deseja cancelar esses agendamentos automaticamente e registrar a folga mesmo assim?`,
+          confirmLabel: 'Cancelar agendamentos e fechar dia',
+          danger: true,
+        });
+        if (confirmed) {
+          try {
+            await api.post('/api/closures', { date, reason, force: true });
+            toast('Folga registrada e agendamentos do dia cancelados.');
+            refresh();
+          } catch (err2) {
+            toast(err2.message, 'error');
+          }
+        }
+        return;
+      }
       toast(error.message, 'error');
-      setBusy(event.currentTarget, false);
     }
+  };
+
+  plain('add-closure').addEventListener('click', (event) => {
+    createClosureWithConfirm(plain('closure-date').value, plain('closure-reason').value || 'Folga', event.currentTarget);
+  });
+
+  plain('quick-close-today')?.addEventListener('click', (event) => {
+    createClosureWithConfirm(today, plain('closure-reason').value || 'Folga hoje', event.currentTarget);
+  });
+
+  plain('quick-close-tomorrow')?.addEventListener('click', (event) => {
+    createClosureWithConfirm(tomorrow, plain('closure-reason').value || 'Folga programada', event.currentTarget);
   });
 
   content()
