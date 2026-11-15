@@ -3,6 +3,7 @@
 
 import { isAuthenticated } from '../auth.js';
 import { all, get, run } from '../db.js';
+import { runComplianceAudit } from '../compliance.js';
 import { HttpError, readJsonBody } from '../http.js';
 import {
   anonymizeIp,
@@ -184,58 +185,12 @@ export const lgpdRoutes = [
     path: '/api/compliance/status',
     auth: false,
     handler: async () => {
-      const requirements = [
-        { id: 1, name: 'Autenticacao de Seguranca', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Sessoes seguras com tokens criptograficos, timing-safe' },
-        { id: 2, name: 'Controle de Acesso (RBAC)', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Rotas protegidas com assertAuthenticated e isolamento public/admin' },
-        { id: 3, name: 'Criptografia de Dados', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'AES-256-GCM para dados sensiveis e bcrypt work factor 12' },
-        { id: 4, name: 'HTTPS/TLS', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Strict-Transport-Security (HSTS), cookies HttpOnly e Secure' },
-        { id: 5, name: 'Rotina de Senhas', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Validacao estrita de 8+ chars com maiusculas, minusculas, numeros e simbolos' },
-        { id: 6, name: 'SQL Injection', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Consultas estritamente parametrizadas via SQLite / Turso libSQL' },
-        { id: 7, name: 'XSS (Cross-Site Scripting)', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'CSP robusto configurado e sanitizacao ativa de entradas' },
-        { id: 8, name: 'Rotina de Limite', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Rate limiters dedicados para login (8/15m), booking (40/30m) e DSR' },
-        { id: 9, name: 'Protecao de IP', category: 'Privacidade', status: 'IMPLEMENTADO', evidence: 'Anonimizacao automatica de IPs em logs de auditoria' },
-        { id: 10, name: 'Auditoria de Dependencias', category: 'SecOps', status: 'IMPLEMENTADO', evidence: 'Script npm run audit:deps e verificacao automatica de vulnerabilidades' },
-        { id: 11, name: 'Politica de Privacidade', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Documento publico em /privacidade.html conforme Lei 13.709/2018' },
-        { id: 12, name: 'Bases Legais', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Mapeamento explicito das bases legais do Art. 7 da LGPD' },
-        { id: 13, name: 'Minimizacao de Dados', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Coleta restrita a nome, telefone e servico para execucao do agendamento' },
-        { id: 14, name: 'Finalidade de Documentos', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Avisos visuais na interface declarando a finalidade de cada dado coletado' },
-        { id: 15, name: 'Gestao de Consentimentos', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Banner interativo CMP com categorias granulares e revogacao' },
-        { id: 16, name: 'Politica de Cookies', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Pagina publica em /cookies.html especificando cada cookie e tempo de vida' },
-        { id: 17, name: 'Direitos dos Titulares', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Portal DSR ativo em /compliance.html e API /api/lgpd/request' },
-        { id: 18, name: 'Execucao de Dados', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Exportacao completa de dados em JSON via /api/lgpd/export' },
-        { id: 19, name: 'Retencao de Dados', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Politica formal de ciclo de vida e script de expurgo periodico' },
-        { id: 20, name: 'Contratos dos Operadores', category: 'LGPD', status: 'IMPLEMENTADO', evidence: 'Termo DPA declarando subprocessadores (Turso, Render, WhatsApp Cloud API)' },
-        { id: 21, name: 'Termo de Uso', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Termos de servico transparentes disponiveis publicamente em /termos.html' },
-        { id: 22, name: 'Transparencia de Preco', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Catalogo claro com precos, duracao e sem taxas ocultas' },
-        { id: 23, name: 'Cobranca de Transparencia', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Descricao clara de pagamentos presenciais ou PIX e comprovantes' },
-        { id: 24, name: 'Cancelamento de Assinaturas', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Fluxo facilitado sem barreiras ou dark patterns' },
-        { id: 25, name: 'Politica de Reembolso', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Direito de arrependimento em 7 dias (Art. 49 CDC) documentado' },
-        { id: 26, name: 'Identificacao do Fornecedor', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'CNPJ, razao social, endereco e contato visiveis no rodape' },
-        { id: 27, name: 'Publicidade Transparente', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Comunicacoes promocionais devidamente rotuladas com opt-out' },
-        { id: 28, name: 'Depoimentos Autenticos', category: 'CDC', status: 'IMPLEMENTADO', evidence: 'Politica de reviews autenticos de clientes reais atendidos' },
-        { id: 29, name: 'Licenca de Uso', category: 'Propriedade', status: 'IMPLEMENTADO', evidence: 'Termos de licenca de software e propriedade intelectual definidos' },
-        { id: 30, name: 'Transparencia sobre IA', category: 'IA/Etica', status: 'IMPLEMENTADO', evidence: 'Declaracao de automacoes algoritmicas e assistente WhatsApp sem vies' },
-        { id: 31, name: 'Backups Automaticos', category: 'SecOps', status: 'IMPLEMENTADO', evidence: 'Rotina de backup automatizado do banco com retencao e snapshot' },
-        { id: 32, name: 'Logins Seguros', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Mitigacao de forca-bruta, expiracao de sessao e hash seguro' },
-        { id: 33, name: 'Monitoramento de Seguranca', category: 'SecOps', status: 'IMPLEMENTADO', evidence: 'Trilha de auditoria SecOps ativa registrando eventos de seguranca' },
-        { id: 34, name: 'Resposta ao Incidente', category: 'Governanca', status: 'IMPLEMENTADO', evidence: 'Plano formal IRP com triagem, contencao, erradicacao e recuperacao' },
-        { id: 35, name: 'Notificacao de Incidente', category: 'Governanca', status: 'IMPLEMENTADO', evidence: 'Procedimento formal de notificacao a ANPD e titulares em 48h' },
-        { id: 36, name: 'Teste de Seguranca', category: 'QA/SecOps', status: 'IMPLEMENTADO', evidence: 'Bateria de testes automatizados de seguranca integrados no CI' },
-        { id: 37, name: 'Seguranca de Codigo', category: 'DevSecOps', status: 'IMPLEMENTADO', evidence: 'SAST, linting rigoroso, variaveis de ambiente e zero secrets no git' },
-        { id: 38, name: 'Privilegio Administrativo', category: 'Seguranca', status: 'IMPLEMENTADO', evidence: 'Principio do menor privilegio com trilha de auditoria para admins' },
-        { id: 39, name: 'Gestao de Vulnerabilidade', category: 'SecOps', status: 'IMPLEMENTADO', evidence: 'Arquivo RFC 9116 security.txt ativo em /.well-known/security.txt' },
-        { id: 40, name: 'Auditoria de Conformidade', category: 'Governanca', status: 'IMPLEMENTADO', evidence: 'Painel visual e relatorio completo de conformidade' },
-      ];
-
+      const audit = runComplianceAudit();
       return {
         status: 200,
         body: {
           success: true,
-          total_requisitos: requirements.length,
-          conformidade_percentual: '100%',
-          status_geral: 'COMPLIANT',
-          data_auditoria: new Date().toISOString(),
-          requisitos: requirements,
+          ...audit,
         },
       };
     },

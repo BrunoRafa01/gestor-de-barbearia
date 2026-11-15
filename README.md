@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22.5+-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Dual--Database-SQLite%20%7C%20Turso-000000?style=flat&logo=sqlite&logoColor=white)](https://turso.tech/)
-[![Security & LGPD](https://img.shields.io/badge/Seguran%C3%A7a%20%26%20LGPD-40%2F40%20(100%25)-10B981?style=flat)](/compliance.html)
+[![Security & LGPD](https://img.shields.io/badge/Controles-LGPD%20%26%20CDC-10B981?style=flat)](/compliance.html)
 [![Meta WhatsApp Cloud API](https://img.shields.io/badge/Meta%20WhatsApp-Cloud%20API-25D366?style=flat&logo=whatsapp&logoColor=white)](https://developers.facebook.com/)
 
 ---
@@ -72,10 +72,10 @@ Landing page com transição atmosférica **Preto → Azul Elétrico → Branco 
 ## ⚡ Funcionalidades Comerciais
 
 ### 1. Página Pública de Agendamento (`/agendar` e `/b/:slug`)
-* **Apresentação Profissional:** Banner de capa, logo oficial, badge de estabelecimento verificado, horário semanal, nota média (★ 4.9) e links rápidos para WhatsApp, Instagram e Google Maps.
+* **Apresentação Profissional:** Banner de capa, logo oficial, horário dinâmico de atendimento, nota média e links rápidos para WhatsApp, Instagram e Google Maps.
 * **Galeria de Cortes:** Apresentação dos estilos executados pela casa (Degradê navalhado, Barboterapia tradicional, Social clássico, Platinado texturizado).
 * **Apresentação da Equipe:** Cards com foto/avatar, especialidades técnicas, mini-bio e avaliações.
-* **Avaliações Autênticas:** Sistema de reviews verificadas de clientes atendidos, em conformidade com o Código de Defesa do Consumidor (CDC).
+* **Avaliações de Clientes:** Espaço para registro de avaliações públicas na página da barbearia.
 * **Fluxo em 4 Passos:**
   1. *Serviço:* Nome, descrição, duração, preço transparente e categoria.
   2. *Profissional:* Seleção de barbeiro específico ou a opção "Qualquer profissional disponível" para quem busca o primeiro horário livre.
@@ -108,50 +108,16 @@ Landing page com transição atmosférica **Preto → Azul Elétrico → Branco 
 
 ---
 
-## 🛡️ Segurança, Privacidade & Conformidade (40 Requisitos)
+## 🛡️ Segurança, Privacidade & Controles LGPD / CDC
 
-O sistema foi submetido a uma auditoria rigorosa de DevSecOps, atingindo **100% de conformidade** nos 40 requisitos obrigatórios de segurança, Código de Defesa do Consumidor (CDC) e Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018):
+O sistema implementa **controles técnicos alinhados à LGPD (Lei nº 13.709/2018) e ao CDC**, separando verificações automatizadas em código de itens documentais ou operacionais do estabelecimento:
 
-1. **Autenticação Segura:** Tokens de sessão criptográficos gerados com `crypto.randomBytes(32)` e verificação timing-safe.
-2. **Controle de Acesso (RBAC):** Isolamento total entre rotas públicas e rotas administrativas autenticadas.
-3. **Criptografia de Dados:** Criptografia AES-256-GCM para dados sensíveis e hash seguro para credenciais.
-4. **HTTPS / TLS & HSTS:** Cabeçalhos `Strict-Transport-Security`, `Secure` e `HttpOnly` em cookies de sessão.
-5. **Rotina de Senhas Fortes:** Validação de complexidade (mínimo 8 dígitos, maiúsculas, minúsculas, números e caracteres especiais).
-6. **Prevenção a SQL Injection:** 100% das consultas ao SQLite/Turso são estritamente parametrizadas.
-7. **Proteção contra XSS:** Content Security Policy (CSP) robusto ativo e sanitização contextual de entradas.
-8. **Rate Limiting:** Limitadores dedicados por IP para endpoints públicos, agendamento, tentativas de login e portal DSR.
-9. **Proteção e Anonimização de IP:** Anonimização automática de endereços IP em logs de auditoria.
-10. **Auditoria de Dependências:** Script `npm run audit:deps` e pipeline livre de vulnerabilidades conhecidas.
-11. **Política de Privacidade:** Página pública em `/privacidade.html` mapeando o ciclo de vida dos dados.
-12. **Bases Legais Mapeadas:** Tratamento fundado no Art. 7, V (execução de contrato) e Art. 7, IX (legítimo interesse).
-13. **Minimização de Dados:** Coleta restrita a nome e telefone com DDD estritamente necessários para o atendimento.
-14. **Finalidade Declarada:** Avisos visuais na interface declarando a finalidade de cada informação fornecida.
-15. **Gestão de Consentimento (CMP):** Banner interativo de cookies granulares em `/js/consent.js` com API de registro `/api/lgpd/consent`.
-16. **Política de Cookies:** Documentação completa em `/cookies.html` discriminando tempo de vida de cada cookie.
-17. **Portal DSR (Direitos dos Titulares):** Canal ativo em `/compliance.html` e endpoint `/api/lgpd/request` com geração de protocolo formal.
-18. **Portabilidade de Dados:** Exportação em formato JSON legível por máquina em `/api/lgpd/export`.
-19. **Retenção e Expurgo:** Script automatizado `npm run retention:purge` para anonimização periódica de dados inativos.
-20. **Contratos de Subprocessadores (DPA):** Termos declarando provedores de infraestrutura (Turso libSQL, Meta WhatsApp e Render).
-21. **Termos de Uso Transparentes:** Página pública em `/termos.html` com regras comerciais e de uso do software.
-22. **Transparência de Preço:** Tabela pública sem taxas ocultas ou cobranças surpresa no agendamento.
-23. **Cobrança Transparente:** Discriminação de pagamento presencial ou PIX direto na barbearia.
-24. **Cancelamento Facilitado:** Reagendamento e cancelamento pelo link de autoatendimento sem necessidade de contato telefônico.
-25. **Política de Reembolso:** Respeito integral ao direito de arrependimento (Art. 49 do CDC) em cobranças antecipadas.
-26. **Identificação do Fornecedor:** CNPJ, Razão Social, endereço físico e e-mail de SAC visíveis no rodapé.
-27. **Publicidade Ética:** Comunicações promocionais devidamente rotuladas com opção de opt-out.
-28. **Depoimentos Autênticos:** Sistema de avaliações verificadas de atendimentos reais.
-29. **Licença de Uso (EULA):** Termos claros de propriedade intelectual e licença de uso do SaaS.
-30. **Transparência sobre IA:** Declaração explícita sobre automações algorítmicas de agendamento e assistente WhatsApp.
-31. **Backups Automáticos:** Rotina de snapshot do banco com exportação JSON (`npm run backup`).
-32. **Logins Seguros:** Bloqueio temporário após 8 tentativas consecutivas de falha.
-33. **Monitoramento SecOps:** Trilha de auditoria administrativa ativa em `/api/admin/security-logs`.
-34. **Plano de Resposta a Incidentes (IRP):** Procedimento formal de triagem, contenção e recuperação.
-35. **Notificação de Incidentes:** Protocolo de comunicação à ANPD e aos titulares em até 48 horas.
-36. **Testes de Segurança:** Bateria automatizada de testes de penetração e estresse no CI.
-37. **Segurança de Código:** Zero segredos versionados no repositório e uso estrito de variáveis de ambiente.
-38. **Privilégio Administrativo:** Princípio do menor privilégio em todas as operações do sistema.
-39. **Gestão de Vulnerabilidades:** Arquivo RFC 9116 ativo em `/.well-known/security.txt`.
-40. **Auditoria de Conformidade:** Script validador `npm run audit:compliance` com 100% de sucesso.
+* **Autenticação e Sessão:** Senhas com hash `scrypt` (salt aleatório), comparação `timingSafeEqual`, cookies `HttpOnly` assinados com HMAC-SHA256 e troca obrigatória da senha provisória no primeiro acesso.
+* **Controle de Acesso e Anti-Abuso:** Isolamento entre rotas públicas (`auth: false`) e painel administrativo (`assertAuthenticated`), proteção CSRF por `Origin`, CSP (`script-src 'self'`), HSTS em HTTPS e rate limiters por IP.
+* **Prevenção a SQL Injection e XSS:** Consultas parametrizadas no SQLite / Turso e sanitização de entradas de texto.
+* **Privacidade e Titulares (LGPD):** Páginas públicas (`/privacidade.html`, `/cookies.html`, `/termos.html`, `/compliance.html`), banner de consentimento (`/js/consent.js`), portal de solicitações DSR (`/api/lgpd/request`) e exportação JSON (`/api/lgpd/export`).
+* **Backup e Auditoria:** Backup manual via `npm run backup` (`scripts/backup-db.mjs`) ou exportação/restauração JSON no painel (`/api/backup`), trilha de eventos em `/api/admin/security-logs`, arquivo `/.well-known/security.txt` e verificação técnica via `npm run audit:compliance`.
+* **Itens dependentes de operação (autodeclarados/pendentes):** Revisão jurídica dos textos legais, preenchimento dos dados empresariais (CNPJ/razão social do estabelecimento quando aplicável), formalização de contratos DPA e eventual adição de SAST/pentest dedicado no CI.
 
 ---
 
