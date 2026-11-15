@@ -50,14 +50,18 @@
           <span class="booking-open-pill"><span class="booking-open-dot" aria-hidden="true"></span>Agenda online</span>
         </div>
 
-        <!-- Apresentacao Publica Oficial da Barbearia -->
-        <div class="shop-presentation-card" id="shop-presentation">
+        <!-- Apresentacao Publica Estilo Booksy -->
+        <div class="shop-presentation-card booksy-hero-card" id="shop-presentation">
           <div class="shop-cover-banner">
             <div class="shop-cover-pattern"></div>
+            <div class="booksy-rating-badge" aria-label="Avaliação 4.9 de 5">
+              <span class="booksy-rating-score">4.9 ★</span>
+              <span class="booksy-rating-count">128 avaliações</span>
+            </div>
           </div>
           <div class="shop-profile-row">
             <div class="shop-avatar-logo" id="shop-logo">
-              <svg viewBox="0 0 32 32" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 32 32" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="8" cy="8" r="3"/>
                 <circle cx="8" cy="24" r="3"/>
                 <line x1="26" y1="6" x2="10.5" y2="21.5"/>
@@ -83,19 +87,15 @@
         <!-- Abas de Navegacao Publica -->
         <div class="shop-view-tabs" id="view-tabs">
           <button type="button" class="shop-tab-btn active" data-tab="booking">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Agendar
+            Serviços
           </button>
           <button type="button" class="shop-tab-btn" data-tab="cuts">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            Cortes
+            Portfólio
           </button>
           <button type="button" class="shop-tab-btn" data-tab="team">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Profissionais
+            Equipe
           </button>
           <button type="button" class="shop-tab-btn" data-tab="reviews">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             Avaliações
           </button>
         </div>
@@ -122,6 +122,17 @@
           <div class="empty"><div class="spinner" style="margin:0 auto 12px"></div>Carregando...</div>
         </div>
       </main>
+
+      <!-- Barra inferior sticky estilo Booksy (aparece ao selecionar serviço no mobile) -->
+      <div class="booksy-sticky-bar hidden" id="booksy-sticky-bar" aria-live="polite">
+        <div class="booksy-sticky-info">
+          <strong class="booksy-sticky-price" id="booksy-sticky-price">R$ 0,00</strong>
+          <span class="booksy-sticky-meta" id="booksy-sticky-meta">Selecione um serviço</span>
+        </div>
+        <button type="button" class="btn btn-primary booksy-sticky-cta" id="booksy-sticky-cta">
+          Continuar
+        </button>
+      </div>
 
       <footer class="booking-footer">
         <div class="footer-contacts" id="shop-contact"></div>

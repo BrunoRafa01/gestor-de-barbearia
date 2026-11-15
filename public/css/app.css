@@ -1942,22 +1942,17 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 
 @media (min-width: 960px) {
   .booking-page {
-    max-width: 780px;
-    padding: 0 24px calc(36px + env(safe-area-inset-bottom, 0px));
+    max-width: 1020px;
+    padding: 0 28px calc(48px + env(safe-area-inset-bottom, 0px));
   }
 }
 
 .booking-header {
-  padding-top: calc(18px + env(safe-area-inset-top, 0px));
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
 }
 
 .booking-top-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 20px;
+  display: none;
 }
 
 .booking-open-pill {
@@ -2069,16 +2064,51 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .shop-cover-banner {
-  height: 124px;
+  height: 176px;
   background:
-    linear-gradient(180deg, rgba(7, 8, 11, 0.15) 0%, rgba(14, 16, 21, 0.92) 100%),
+    linear-gradient(180deg, rgba(7, 8, 11, 0.12) 0%, rgba(14, 16, 21, 0.92) 100%),
     url('/img/barber-studio-hero.jpg?v=20261114b') center 48% / cover no-repeat;
   border-bottom: 1px solid var(--border);
   position: relative;
   display: flex;
   align-items: flex-end;
-  padding: 16px 20px;
+  justify-content: flex-end;
+  padding: 14px 16px;
   overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .shop-cover-banner {
+    height: 220px;
+    padding: 18px 22px;
+  }
+}
+
+.booksy-rating-badge {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(7, 8, 11, 0.86);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.booksy-rating-score {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.1;
+}
+
+.booksy-rating-count {
+  font-size: 10px;
+  color: #94A3B8;
+  margin-top: 2px;
 }
 
 .shop-cover-pattern {
@@ -3444,6 +3474,324 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .topbar-actions { gap: 6px; }
   .hero-title { font-size: 17px; }
   .card { padding: 14px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Booksy-Inspired Public Booking Layout (/agendar)
+   --------------------------------------------------------------------------- */
+
+.booking-body .progress-wrap {
+  display: none;
+}
+
+.booking-body .shop-presentation-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  margin-bottom: 12px;
+}
+
+.booking-body .shop-cover-banner {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.booking-body .shop-profile-row {
+  margin-top: 14px;
+  padding: 0 0 8px;
+  align-items: center;
+}
+
+.booking-body .shop-avatar-logo {
+  width: 44px;
+  height: 44px;
+  box-shadow: none;
+}
+
+.booking-body .shop-bio-text,
+.booking-body .shop-quick-actions {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.booksy-layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 920px) {
+  .booksy-layout-grid {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+  }
+}
+
+.booksy-services-card {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.booksy-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.booksy-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0E1117;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 0 14px;
+  min-height: 44px;
+  color: var(--text-dim);
+  transition: border-color 150ms var(--ease);
+}
+
+.booksy-search-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.booksy-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFFFFF;
+  font-size: 14px;
+  min-height: 42px;
+}
+
+.booksy-search-input::placeholder {
+  color: var(--text-faint);
+}
+
+.booksy-cat-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.booksy-cat-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.booksy-cat-pill {
+  background: #0E1117;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 36px;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease);
+}
+
+.booksy-cat-pill:hover {
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.booksy-cat-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+}
+
+/* Lista limpa estilo Booksy com divisor fino */
+.booksy-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.booksy-services-list .booksy-service-row {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+  padding: 14px 4px;
+  gap: 14px;
+}
+
+.booksy-services-list .booksy-service-row:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.booksy-services-list .booksy-service-row.selected {
+  background: rgba(59, 130, 246, 0.08);
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
+
+/* Card lateral sticky no desktop */
+.booksy-aside-col {
+  display: none;
+}
+
+@media (min-width: 920px) {
+  .booksy-aside-col {
+    display: block;
+    position: sticky;
+    top: 20px;
+  }
+}
+
+.booksy-aside-card {
+  background: #0E1117;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.booksy-aside-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.booksy-aside-empty,
+.booksy-aside-addr {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.booksy-aside-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.booksy-aside-item strong {
+  font-size: 14px;
+  color: #FFFFFF;
+}
+
+.booksy-aside-item span {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: #60A5FA;
+}
+
+.booksy-aside-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.booksy-aside-meta > div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-dim);
+}
+
+.booksy-aside-meta strong {
+  color: #E2E8F0;
+  font-weight: 600;
+}
+
+.booksy-aside-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 16px 0;
+}
+
+.booksy-hours-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.booksy-hours-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.booksy-hours-row span:last-child {
+  font-family: var(--font-mono);
+  color: #E2E8F0;
+}
+
+/* Barra inferior sticky estilo Booksy no mobile */
+.booksy-sticky-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(11, 13, 18, 0.96);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.booksy-sticky-bar.hidden {
+  display: none;
+}
+
+@media (min-width: 920px) {
+  .booksy-sticky-bar {
+    display: none !important;
+  }
+}
+
+.booksy-sticky-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.booksy-sticky-price {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.booksy-sticky-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.booksy-sticky-cta {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 18px;
 }
 
 /* Acessibilidade de movimento reduzido */

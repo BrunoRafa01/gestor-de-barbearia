@@ -24,6 +24,8 @@ const state = {
   barbers: [],
   reviews: [],
   currentTab: 'booking',
+  serviceSearch: '',
+  serviceCategory: 'all',
   serviceId: null,
   barberId: null,
   date: null,
@@ -63,6 +65,7 @@ function setStep(active) {
   if (indicator) {
     indicator.textContent = `${active} / 4`;
   }
+  updateBooksyChrome();
 }
 
 function currentStep() {
@@ -85,96 +88,133 @@ function revealSection(id) {
 /* ---------------------------------- Layout -------------------------------- */
 
 function skeletonHtml() {
+  const shopName = state.shop?.name || 'Barbearia';
+  const shopAddr = state.shop?.address || 'Atendimento com hora marcada';
   return `
-    <div class="card booking-card" id="sec-service">
-      <div class="cuts-showcase-strip" id="cuts-showcase">
-        <div class="cuts-showcase-head">
-          <span class="cuts-showcase-label">Exemplos de cortes</span>
-          <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver galeria →</button>
+  <div class="booksy-layout-grid">
+    <div class="booksy-main-col">
+      <div class="card booking-card booksy-services-card" id="sec-service">
+        <div class="booksy-toolbar">
+          <div class="booksy-search-wrap">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="search" id="service-search" class="booksy-search-input" placeholder="Buscar serviço..." value="${esc(state.serviceSearch)}" aria-label="Buscar serviço" />
+          </div>
+          <div class="booksy-cat-pills" role="tablist" aria-label="Categorias de serviços">
+            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'all' ? ' active' : ''}" data-cat="all">Todos</button>
+            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'cortes' ? ' active' : ''}" data-cat="cortes">Cortes</button>
+            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'barba' ? ' active' : ''}" data-cat="barba">Barba</button>
+            <button type="button" class="booksy-cat-pill${state.serviceCategory === 'combos' ? ' active' : ''}" data-cat="combos">Combos</button>
+          </div>
         </div>
-        <div class="cuts-showcase-grid">
-          <button type="button" class="cut-mini-card" data-open-tab="cuts">
-            <img class="cut-mini-img" src="/img/cuts/cut-degrade.jpg" alt="Degradê Navalhado" loading="lazy" />
-            <span class="cut-mini-title">Degradê</span>
-          </button>
-          <button type="button" class="cut-mini-card" data-open-tab="cuts">
-            <img class="cut-mini-img" src="/img/cuts/cut-social.jpg" alt="Corte Social" loading="lazy" />
-            <span class="cut-mini-title">Social</span>
-          </button>
-          <button type="button" class="cut-mini-card" data-open-tab="cuts">
-            <img class="cut-mini-img" src="/img/cuts/cut-barboterapia.jpg" alt="Barboterapia" loading="lazy" />
-            <span class="cut-mini-title">Barboterapia</span>
-          </button>
-          <button type="button" class="cut-mini-card" data-open-tab="cuts">
-            <img class="cut-mini-img" src="/img/cuts/cut-platinado.jpg" alt="Texturizado &amp; Fade" loading="lazy" />
-            <span class="cut-mini-title">Texturizado</span>
-          </button>
+
+        <div class="card-section-head" style="margin-bottom:8px">
+          <div>
+            <h3>Serviços</h3>
+          </div>
+        </div>
+        <div class="choice-list booksy-services-list" id="service-grid"></div>
+
+        <div class="cuts-showcase-strip" id="cuts-showcase" style="margin-top:24px">
+          <div class="cuts-showcase-head">
+            <span class="cuts-showcase-label">Portfólio · Exemplos de cortes</span>
+            <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver todos →</button>
+          </div>
+          <div class="cuts-showcase-grid">
+            <button type="button" class="cut-mini-card" data-open-tab="cuts">
+              <img class="cut-mini-img" src="/img/cuts/cut-degrade.jpg" alt="Degradê Navalhado" loading="lazy" />
+              <span class="cut-mini-title">Degradê</span>
+            </button>
+            <button type="button" class="cut-mini-card" data-open-tab="cuts">
+              <img class="cut-mini-img" src="/img/cuts/cut-social.jpg" alt="Corte Social" loading="lazy" />
+              <span class="cut-mini-title">Social</span>
+            </button>
+            <button type="button" class="cut-mini-card" data-open-tab="cuts">
+              <img class="cut-mini-img" src="/img/cuts/cut-barboterapia.jpg" alt="Barboterapia" loading="lazy" />
+              <span class="cut-mini-title">Barboterapia</span>
+            </button>
+            <button type="button" class="cut-mini-card" data-open-tab="cuts">
+              <img class="cut-mini-img" src="/img/cuts/cut-platinado.jpg" alt="Texturizado &amp; Fade" loading="lazy" />
+              <span class="cut-mini-title">Texturizado</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="card-section-head">
-        <div>
-          <h3>Serviços disponíveis</h3>
-          <p class="section-sub">Selecione o corte ou procedimento desejado</p>
+      <div class="card booking-card hidden" id="sec-barber">
+        <div class="card-section-head">
+          <div>
+            <h3>Profissional</h3>
+            <p class="section-sub">Com qual barbeiro você deseja agendar?</p>
+          </div>
         </div>
+        <div class="choice-list" id="barber-grid"></div>
       </div>
-      <div class="choice-list" id="service-grid"></div>
+
+      <div class="card booking-card hidden" id="sec-date">
+        <div class="card-section-head">
+          <div>
+            <h3>Dia e horário</h3>
+            <p class="section-sub">Horários livres atualizados em tempo real</p>
+          </div>
+        </div>
+        <div class="day-strip" id="day-strip"></div>
+        <div id="slot-area" style="margin-top:20px"></div>
+      </div>
+
+      <div class="card booking-card hidden" id="sec-form">
+        <div class="card-section-head">
+          <div>
+            <h3>Seus dados</h3>
+            <p class="section-sub">Enviaremos a confirmação direta no seu WhatsApp</p>
+          </div>
+        </div>
+        <div class="form-grid" style="grid-template-columns:1fr;gap:14px">
+          <div class="field">
+            <label for="pk-name">Seu nome completo</label>
+            <input id="pk-name" name="name" placeholder="Ex: João Silva" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="pk-phone">WhatsApp</label>
+            <input id="pk-phone" name="phone" placeholder="(11) 99999-9999" inputmode="tel" autocomplete="tel" />
+          </div>
+          <div class="field">
+            <label for="pk-email">E-mail (opcional)</label>
+            <input id="pk-email" name="email" type="email" placeholder="voce@email.com" autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="pk-notes">Observações (opcional)</label>
+            <textarea id="pk-notes" name="notes" placeholder="Alguma preferência ou detalhe para o barbeiro?"></textarea>
+          </div>
+        </div>
+        <div class="booking-summary" id="summary" style="margin-top:20px"></div>
+        <button class="btn btn-primary btn-block" id="pk-confirm" type="button" style="margin-top:20px">
+          ${icon('check')} Confirmar agendamento
+        </button>
+        <p class="faint" style="margin-top:12px;font-size:12px;text-align:center">
+          Reserva pontual e segura. Sem cobrança antecipada.
+        </p>
+      </div>
     </div>
 
-    <div class="card booking-card hidden" id="sec-barber">
-      <div class="card-section-head">
-        <div>
-          <h3>Profissional</h3>
-          <p class="section-sub">Com qual barbeiro você deseja agendar?</p>
+    <aside class="booksy-aside-col">
+      <div class="booksy-aside-card">
+        <div class="booksy-aside-section" id="booksy-aside-summary">
+          <span class="booksy-aside-kicker">Sua reserva</span>
+          <p class="booksy-aside-empty">Selecione um serviço ao lado para iniciar seu agendamento.</p>
+        </div>
+        <div class="booksy-aside-divider"></div>
+        <div class="booksy-aside-section">
+          <span class="booksy-aside-kicker">Sobre · ${esc(shopName)}</span>
+          <p class="booksy-aside-addr">${esc(shopAddr)}</p>
+          <div class="booksy-hours-list">
+            <div class="booksy-hours-row"><span>Segunda – Sexta</span><span>09:00 – 20:00</span></div>
+            <div class="booksy-hours-row"><span>Sábado</span><span>09:00 – 19:00</span></div>
+            <div class="booksy-hours-row"><span>Domingo</span><span>Fechado</span></div>
+          </div>
         </div>
       </div>
-      <div class="choice-list" id="barber-grid"></div>
-    </div>
-
-    <div class="card booking-card hidden" id="sec-date">
-      <div class="card-section-head">
-        <div>
-          <h3>Dia e horário</h3>
-          <p class="section-sub">Horários livres atualizados em tempo real</p>
-        </div>
-      </div>
-      <div class="day-strip" id="day-strip"></div>
-      <div id="slot-area" style="margin-top:20px"></div>
-    </div>
-
-    <div class="card booking-card hidden" id="sec-form">
-      <div class="card-section-head">
-        <div>
-          <h3>Seus dados</h3>
-          <p class="section-sub">Enviaremos a confirmação direta no seu WhatsApp</p>
-        </div>
-      </div>
-      <div class="form-grid" style="grid-template-columns:1fr;gap:14px">
-        <div class="field">
-          <label for="pk-name">Seu nome completo</label>
-          <input id="pk-name" name="name" placeholder="Ex: João Silva" autocomplete="name" />
-        </div>
-        <div class="field">
-          <label for="pk-phone">WhatsApp</label>
-          <input id="pk-phone" name="phone" placeholder="(11) 99999-9999" inputmode="tel" autocomplete="tel" />
-        </div>
-        <div class="field">
-          <label for="pk-email">E-mail (opcional)</label>
-          <input id="pk-email" name="email" type="email" placeholder="voce@email.com" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="pk-notes">Observações (opcional)</label>
-          <textarea id="pk-notes" name="notes" placeholder="Alguma preferência ou detalhe para o barbeiro?"></textarea>
-        </div>
-      </div>
-      <div class="booking-summary" id="summary" style="margin-top:20px"></div>
-      <button class="btn btn-primary btn-block" id="pk-confirm" type="button" style="margin-top:20px">
-        ${icon('check')} Confirmar agendamento
-      </button>
-      <p class="faint" style="margin-top:12px;font-size:12px;text-align:center">
-        🔒 Reserva pontual e segura. Sem cobrança antecipada.
-      </p>
-    </div>`;
+    </aside>
+  </div>`;
 }
 
 /* ------------------------------ Disponibilidade --------------------------- */
@@ -268,9 +308,106 @@ function servicePhoto(name = '') {
   return '/img/cuts/cut-degrade.jpg';
 }
 
+function serviceCategoryOf(service = {}) {
+  const n = `${service.name || ''} ${service.description || ''}`.toLowerCase();
+  if (n.includes('combo') || n.includes('+') || (n.includes('corte') && n.includes('barba'))) return 'combos';
+  if (n.includes('barba') || n.includes('barboterapia') || n.includes('bigode')) return 'barba';
+  return 'cortes';
+}
+
+function updateBooksyChrome() {
+  const selectedService = state.services.find((s) => String(s.id) === String(state.serviceId));
+  const selectedBarber = state.barbers.find((b) => String(b.id) === String(state.barberId));
+
+  // Barra sticky mobile Booksy
+  const stickyBar = document.getElementById('booksy-sticky-bar');
+  const stickyPrice = document.getElementById('booksy-sticky-price');
+  const stickyMeta = document.getElementById('booksy-sticky-meta');
+  const stickyCta = document.getElementById('booksy-sticky-cta');
+  if (stickyBar && stickyPrice && stickyMeta && stickyCta) {
+    if (!selectedService || state.currentTab !== 'booking') {
+      stickyBar.classList.add('hidden');
+    } else {
+      stickyBar.classList.remove('hidden');
+      stickyPrice.textContent = money(selectedService.price);
+      const parts = [selectedService.name, `${Number(selectedService.duration_min)} min`];
+      if (state.time) parts.push(`${formatDateBR(state.date)} · ${state.time}`);
+      stickyMeta.textContent = parts.join(' · ');
+      stickyCta.textContent = state.time ? 'Finalizar reserva' : 'Escolher horário';
+    }
+  }
+
+  // Card lateral desktop Booksy
+  const asideSummary = document.getElementById('booksy-aside-summary');
+  if (asideSummary) {
+    if (!selectedService) {
+      asideSummary.innerHTML = `
+        <span class="booksy-aside-kicker">Sua reserva</span>
+        <p class="booksy-aside-empty">Selecione um serviço ao lado para ver horários livres em tempo real.</p>`;
+    } else {
+      const barberLabel = state.isAnyBarber
+        ? 'Qualquer profissional'
+        : selectedBarber?.name || 'A escolher';
+      const dateLabel = state.date && state.time ? `${formatDateBR(state.date)} às ${state.time}` : 'A escolher';
+      asideSummary.innerHTML = `
+        <span class="booksy-aside-kicker">Sua reserva</span>
+        <div class="booksy-aside-item">
+          <strong>${esc(selectedService.name)}</strong>
+          <span>${esc(money(selectedService.price))}</span>
+        </div>
+        <div class="booksy-aside-meta">
+          <div><span>Duração</span><strong>${Number(selectedService.duration_min)} min</strong></div>
+          <div><span>Profissional</span><strong>${esc(barberLabel)}</strong></div>
+          <div><span>Horário</span><strong>${esc(dateLabel)}</strong></div>
+        </div>`;
+    }
+  }
+}
+
+function wireBooksyToolbar() {
+  const searchInput = document.getElementById('service-search');
+  if (searchInput && !searchInput.dataset.wired) {
+    searchInput.dataset.wired = '1';
+    searchInput.addEventListener('input', (event) => {
+      state.serviceSearch = event.target.value || '';
+      renderServices();
+    });
+  }
+  document.querySelectorAll('.booksy-cat-pill').forEach((btn) => {
+    if (btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      state.serviceCategory = btn.dataset.cat || 'all';
+      document.querySelectorAll('.booksy-cat-pill').forEach((b) =>
+        b.classList.toggle('active', b === btn)
+      );
+      renderServices();
+    });
+  });
+}
+
 function renderServices() {
+  wireBooksyToolbar();
   const grid = document.getElementById('service-grid');
-  grid.innerHTML = state.services
+  if (!grid) return;
+
+  const term = state.serviceSearch.trim().toLowerCase();
+  const filtered = state.services.filter((service) => {
+    const matchesCat = state.serviceCategory === 'all' || serviceCategoryOf(service) === state.serviceCategory;
+    const matchesTerm =
+      !term ||
+      String(service.name || '').toLowerCase().includes(term) ||
+      String(service.description || '').toLowerCase().includes(term);
+    return matchesCat && matchesTerm;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<p class="muted" style="padding:18px 0;font-size:13px">Nenhum serviço encontrado para "${esc(state.serviceSearch)}".</p>`;
+    updateBooksyChrome();
+    return;
+  }
+
+  grid.innerHTML = filtered
     .map(
       (service) => {
         const isSelected = String(state.serviceId) === String(service.id);
@@ -305,6 +442,8 @@ function renderServices() {
       setStep(currentStep());
     })
   );
+
+  updateBooksyChrome();
 }
 
 function renderBarbers() {
@@ -1101,6 +1240,10 @@ async function boot() {
     content().innerHTML = skeletonHtml();
     renderServices();
     document.getElementById('pk-confirm').addEventListener('click', submit);
+    document.getElementById('booksy-sticky-cta')?.addEventListener('click', () => {
+      const targetId = state.time ? 'sec-form' : state.barberId ? 'sec-date' : 'sec-barber';
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     document.getElementById('pk-phone').addEventListener('blur', (event) => {
       event.target.value = formatPhone(event.target.value);
     });
