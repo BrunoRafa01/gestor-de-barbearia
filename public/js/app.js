@@ -363,10 +363,10 @@ function shellHtml() {
             <button class="icon-btn" id="theme-toggle" type="button" title="${getStoredTheme() === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro'}" aria-label="Alternar tema">${themeIconSvg(getStoredTheme())}</button>
             ${
               state.me?.user?.email
-                ? `<div class="user-menu-wrap hide-mobile">
+                ? `<div class="user-menu-wrap">
                     <button class="user-pill user-pill-btn" id="user-menu-btn" type="button" aria-expanded="false" title="${esc(state.me.user.email)}">
                       <span class="user-pill-avatar">${esc(state.me.user.email.slice(0, 1).toUpperCase())}</span>
-                      <span class="user-pill-label">${esc(state.me.user.email)}</span>
+                      <span class="user-pill-label hide-mobile">${esc(state.me.user.email)}</span>
                     </button>
                     <div class="user-menu-dropdown" id="user-menu-dropdown">
                       <div class="user-menu-head">

@@ -352,7 +352,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   position: relative;
   background: rgba(59, 130, 246, 0.08);
   border-color: rgba(59, 130, 246, 0.14);
-  color: #F4F4F5;
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -1517,7 +1517,7 @@ table.data td {
   padding: 14px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.045);
   font-size: 13px;
-  color: #F4F4F5;
+  color: var(--text);
   font-variant-numeric: tabular-nums;
   vertical-align: middle;
 }
@@ -4424,7 +4424,10 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none !important;
+  }
   html, body {
     overflow-x: hidden;
     max-width: 100%;
@@ -4450,7 +4453,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
     flex: 1 1 auto;
   }
   .topbar-title h1 {
-    font-size: 15px;
+    font-size: 16px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4463,26 +4466,32 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
     flex-shrink: 0;
   }
   .topbar .btn-primary {
-    padding: 7px 10px;
-    font-size: 12px;
+    padding: 8px 11px;
+    font-size: 13px;
     white-space: nowrap;
   }
   .user-pill-btn {
-    padding: 4px 8px;
-    gap: 4px;
-  }
-  .user-pill-btn span {
-    display: none;
+    padding: 4px;
+    gap: 0;
   }
   .toolbar {
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
   }
+  .toolbar .grow {
+    display: none;
+  }
+  .toolbar .search-input,
   .toolbar .search,
   .toolbar .field {
     width: 100%;
     min-width: 0;
+    flex: 1 1 100%;
+  }
+  .toolbar .btn {
+    width: 100%;
+    justify-content: center;
   }
   .ct-header {
     align-items: stretch;
@@ -4518,13 +4527,27 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .ct-title {
     font-size: 19px;
   }
+  .content .table-wrap,
   .table-wrap {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
   }
-  .table-wrap table {
+  .table-wrap table,
+  .content .table-wrap table.data {
     min-width: 560px;
+  }
+  .content .table-wrap table.data th,
+  .content .table-wrap table.data td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+  .content .table-wrap table.data .cell-sub {
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
