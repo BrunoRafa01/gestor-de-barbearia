@@ -2132,22 +2132,22 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 
 .shop-quick-actions {
   display: flex;
-  gap: 10px;
-  padding: 0 20px 18px;
+  gap: 6px;
+  padding: 0 20px 14px;
   flex-wrap: wrap;
 }
 
 .shop-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 500;
   text-decoration: none;
   transition: all 0.15s ease;
-  min-height: 38px;
+  min-height: 32px;
 }
 
 .shop-action-btn.whats {
@@ -3065,35 +3065,35 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .notice {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 0 28px 14px;
-  padding: 12px 14px;
+  gap: 10px;
+  margin: 0 28px 10px;
+  padding: 7px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  border-radius: 8px;
+  background: var(--surface);
 }
 
 .notice-icon {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   flex: none;
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   background: var(--gold-soft);
   color: var(--gold);
 }
 
 .notice strong {
-  display: block;
-  font-size: 13px;
+  display: inline;
+  font-size: 12px;
   font-weight: 600;
+  margin-right: 6px;
 }
 
 .notice span {
-  display: block;
-  margin-top: 2px;
-  font-size: 11.5px;
+  display: inline;
+  font-size: 12px;
   color: var(--text-dim);
 }
 

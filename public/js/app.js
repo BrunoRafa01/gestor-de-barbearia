@@ -655,7 +655,6 @@ async function viewDashboard() {
         </div>
         <div class="finity-goals-list">
           <div class="finity-goal-row">
-            ${ringSvg(confirmPct, '#3B82F6')}
             <div class="finity-goal-info">
               <span>Confirmados hoje</span>
               <strong class="mono">${today.confirmed} / ${today.total}</strong>
@@ -663,7 +662,6 @@ async function viewDashboard() {
             <span class="finity-goal-pct mono">${confirmPct}%</span>
           </div>
           <div class="finity-goal-row">
-            ${ringSvg(completePct, '#34D399')}
             <div class="finity-goal-info">
               <span>Concluídos hoje</span>
               <strong class="mono">${today.completed} / ${today.total}</strong>
@@ -671,7 +669,6 @@ async function viewDashboard() {
             <span class="finity-goal-pct mono">${completePct}%</span>
           </div>
           <div class="finity-goal-row">
-            ${ringSvg(ticketPct, '#60A5FA')}
             <div class="finity-goal-info">
               <span>Ticket médio (mês)</span>
               <strong class="mono">${esc(money(month.average_ticket))}</strong>
@@ -679,7 +676,6 @@ async function viewDashboard() {
             <span class="finity-goal-pct mono">${month.completed} atend.</span>
           </div>
           <div class="finity-goal-row">
-            ${ringSvg(newClientsPct, '#60A5FA')}
             <div class="finity-goal-info">
               <span>Novos clientes (mês)</span>
               <strong class="mono">${month.new_clients}</strong>
