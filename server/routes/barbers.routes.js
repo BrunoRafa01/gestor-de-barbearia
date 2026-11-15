@@ -109,15 +109,15 @@ export const barberRoutes = [
   {
     method: 'PUT',
     path: '/api/barbers/:id',
-    handler: async ({ params, body }) => {
+    handler: async ({ params, body, shopId = 1 }) => {
       const id = requiredId(params.id, 'profissional');
-      const existing = await get('SELECT * FROM barbers WHERE id = ?', [id]);
+      const existing = await get('SELECT * FROM barbers WHERE id = ? AND shop_id = ?', [id, shopId]);
       if (!existing) throw new HttpError(404, 'Profissional nao encontrado.');
 
       await run(
         `UPDATE barbers
             SET name = ?, phone = ?, email = ?, color = ?, commission = ?, active = ?
-          WHERE id = ?`,
+          WHERE id = ? AND shop_id = ?`,
         [
           requiredString(body.name, 'nome do profissional', { max: 120 }),
           optionalString(body.phone, 'telefone', 30),
@@ -126,25 +126,26 @@ export const barberRoutes = [
           optionalNumber(body.commission, 'comissao', { min: 0, max: 100 }) ?? 0,
           boolFlag(body.active, existing.active),
           id,
+          shopId,
         ]
       );
 
-      const barber = mapBarber(await get('SELECT * FROM barbers WHERE id = ?', [id]));
+      const barber = mapBarber(await get('SELECT * FROM barbers WHERE id = ? AND shop_id = ?', [id, shopId]));
       return { status: 200, body: { ...barber, hours: await hoursFor(id) } };
     },
   },
   {
     method: 'DELETE',
     path: '/api/barbers/:id',
-    handler: async ({ params }) => {
+    handler: async ({ params, shopId = 1 }) => {
       const id = requiredId(params.id, 'profissional');
-      const existing = await get('SELECT * FROM barbers WHERE id = ?', [id]);
+      const existing = await get('SELECT * FROM barbers WHERE id = ? AND shop_id = ?', [id, shopId]);
       if (!existing) throw new HttpError(404, 'Profissional nao encontrado.');
 
-      const inUse = await get('SELECT COUNT(*) AS total FROM appointments WHERE barber_id = ?', [id]);
+      const inUse = await get('SELECT COUNT(*) AS total FROM appointments WHERE barber_id = ? AND shop_id = ?', [id, shopId]);
 
       if (Number(inUse?.total || 0) > 0) {
-        await run('UPDATE barbers SET active = 0 WHERE id = ?', [id]);
+        await run('UPDATE barbers SET active = 0 WHERE id = ? AND shop_id = ?', [id, shopId]);
         return {
           status: 200,
           body: {
@@ -155,7 +156,7 @@ export const barberRoutes = [
         };
       }
 
-      await run('DELETE FROM barbers WHERE id = ?', [id]);
+      await run('DELETE FROM barbers WHERE id = ? AND shop_id = ?', [id, shopId]);
       invalidateBarberHours(id);
       return { status: 200, body: { deleted: true, id } };
     },
@@ -163,9 +164,9 @@ export const barberRoutes = [
   {
     method: 'GET',
     path: '/api/barbers/:id/hours',
-    handler: async ({ params }) => {
+    handler: async ({ params, shopId = 1 }) => {
       const id = requiredId(params.id, 'profissional');
-      const existing = await get('SELECT * FROM barbers WHERE id = ?', [id]);
+      const existing = await get('SELECT * FROM barbers WHERE id = ? AND shop_id = ?', [id, shopId]);
       if (!existing) throw new HttpError(404, 'Profissional nao encontrado.');
       return { status: 200, body: await hoursFor(id) };
     },
@@ -173,9 +174,9 @@ export const barberRoutes = [
   {
     method: 'PUT',
     path: '/api/barbers/:id/hours',
-    handler: async ({ params, body }) => {
+    handler: async ({ params, body, shopId = 1 }) => {
       const id = requiredId(params.id, 'profissional');
-      const existing = await get('SELECT * FROM barbers WHERE id = ?', [id]);
+      const existing = await get('SELECT * FROM barbers WHERE id = ? AND shop_id = ?', [id, shopId]);
       if (!existing) throw new HttpError(404, 'Profissional nao encontrado.');
 
       const days = Array.isArray(body.days) ? body.days : [];

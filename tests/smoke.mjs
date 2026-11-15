@@ -879,6 +879,30 @@ async function run() {
     meEmail.status === 200 && meEmail.body?.user?.email === 'dono.teste@barbearia.local' && typeof meEmail.body?.oauth_providers?.google === 'boolean'
   );
 
+  const shop2Clients = await call('/api/clients', { auth: false, headers: { Cookie: emailLoginCookie } });
+  const shop2Barbers = await call('/api/barbers', { auth: false, headers: { Cookie: emailLoginCookie } });
+  const shop2Services = await call('/api/services', { auth: false, headers: { Cookie: emailLoginCookie } });
+  const shop2Appts = await call('/api/appointments', { auth: false, headers: { Cookie: emailLoginCookie } });
+  const shop2CrossRead = await call('/api/appointments/1', { auth: false, headers: { Cookie: emailLoginCookie } });
+  const shop2Reports = await call('/api/reports', { auth: false, headers: { Cookie: emailLoginCookie } });
+
+  check(
+    'isolamento multi-tenant bloqueia vazamento de clientes, barbeiros, servicos e agenda',
+    Array.isArray(shop2Clients.body) &&
+      shop2Clients.body.length === 0 &&
+      Array.isArray(shop2Barbers.body) &&
+      shop2Barbers.body.length === 0 &&
+      Array.isArray(shop2Services.body) &&
+      shop2Services.body.length === 0 &&
+      Array.isArray(shop2Appts.body) &&
+      shop2Appts.body.length === 0
+  );
+  check('isolamento multi-tenant retorna 404 para agendamento de outra barbearia', shop2CrossRead.status === 404);
+  check(
+    'isolamento multi-tenant zera relatorios para nova barbearia',
+    shop2Reports.status === 200 && shop2Reports.body?.totals?.appointments === 0
+  );
+
   /* --------------------------- 17. Rate limiting -------------------------- */
   const attackerIp = '198.51.100.77';
   let blockedAt = 0;

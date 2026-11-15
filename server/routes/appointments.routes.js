@@ -22,8 +22,9 @@ export const appointmentRoutes = [
   {
     method: 'GET',
     path: '/api/appointments',
-    handler: async ({ query }) => {
+    handler: async ({ query, shopId = 1 }) => {
       const filters = {
+        shopId,
         from: query.from,
         to: query.to,
         barberId: query.barber_id,
@@ -41,8 +42,8 @@ export const appointmentRoutes = [
   {
     method: 'GET',
     path: '/api/appointments/:id',
-    handler: async ({ params }) => {
-      const appointment = await getAppointmentById(requiredId(params.id, 'agendamento'));
+    handler: async ({ params, shopId = 1 }) => {
+      const appointment = await getAppointmentById(requiredId(params.id, 'agendamento'), shopId);
       if (!appointment) throw new HttpError(404, 'Agendamento nao encontrado.');
       return { status: 200, body: appointment };
     },
@@ -50,8 +51,8 @@ export const appointmentRoutes = [
   {
     method: 'GET',
     path: '/api/appointments/:id/whatsapp',
-    handler: async ({ params, query }) => {
-      const appointment = await getAppointmentById(requiredId(params.id, 'agendamento'));
+    handler: async ({ params, query, shopId = 1 }) => {
+      const appointment = await getAppointmentById(requiredId(params.id, 'agendamento'), shopId);
       if (!appointment) throw new HttpError(404, 'Agendamento nao encontrado.');
 
       const messages = buildMessages({
@@ -83,8 +84,8 @@ export const appointmentRoutes = [
   {
     method: 'POST',
     path: '/api/appointments',
-    handler: async ({ body }) => {
-      const created = await createAppointment({ ...body, source: 'admin' });
+    handler: async ({ body, shopId = 1 }) => {
+      const created = await createAppointment({ ...body, shop_id: shopId, source: 'admin' });
       try {
         await notifyAppointmentCreatedOrConfirmed(created);
       } catch (err) {
@@ -99,10 +100,10 @@ export const appointmentRoutes = [
   {
     method: 'PUT',
     path: '/api/appointments/:id',
-    handler: async ({ params, body }) => {
+    handler: async ({ params, body, shopId = 1 }) => {
       const id = requiredId(params.id, 'agendamento');
-      const existing = await getAppointmentById(id);
-      const updated = await updateAppointment(id, body);
+      const existing = await getAppointmentById(id, shopId);
+      const updated = await updateAppointment(id, body, new Date(), { shopId });
 
       try {
         if (existing && (existing.date !== updated.date || existing.start_time !== updated.start_time)) {
@@ -127,10 +128,10 @@ export const appointmentRoutes = [
   {
     method: 'PATCH',
     path: '/api/appointments/:id/status',
-    handler: async ({ params, body }) => {
+    handler: async ({ params, body, shopId = 1 }) => {
       const id = requiredId(params.id, 'agendamento');
-      const existing = await getAppointmentById(id);
-      const updated = await setAppointmentStatus(id, body.status);
+      const existing = await getAppointmentById(id, shopId);
+      const updated = await setAppointmentStatus(id, body.status, { shopId });
 
       try {
         if (body.status === 'cancelled') {
@@ -151,10 +152,10 @@ export const appointmentRoutes = [
   {
     method: 'DELETE',
     path: '/api/appointments/:id',
-    handler: async ({ params }) => {
+    handler: async ({ params, shopId = 1 }) => {
       const id = requiredId(params.id, 'agendamento');
-      const existing = await getAppointmentById(id);
-      const result = await deleteAppointment(id);
+      const existing = await getAppointmentById(id, shopId);
+      const result = await deleteAppointment(id, { shopId });
 
       try {
         if (existing && existing.status !== 'cancelled') {

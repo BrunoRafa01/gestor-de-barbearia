@@ -34,9 +34,10 @@ export function ratio(part, total) {
   return total > 0 ? Number((part / total).toFixed(2)) : 0;
 }
 
-export async function buildReport(query = {}) {
+export async function buildReport(query = {}, shopId = 1) {
   const { from, to } = resolveRange(query);
   const barberId = optionalId(query.barber_id, 'profissional');
+  const sid = Number(shopId) || 1;
 
   const barberFilter = barberId ? ' AND a.barber_id = ?' : '';
   const barberParams = barberId ? [barberId] : [];
@@ -49,9 +50,9 @@ export async function buildReport(query = {}) {
     all(
       `SELECT status, COUNT(*) AS total, COALESCE(SUM(price), 0) AS revenue
          FROM appointments a
-        WHERE a.date BETWEEN ? AND ?${barberFilter}
+        WHERE a.shop_id = ? AND a.date BETWEEN ? AND ?${barberFilter}
         GROUP BY status`,
-      [from, to, ...barberParams]
+      [sid, from, to, ...barberParams]
     ),
     all(
       `SELECT b.id AS barber_id, b.name AS name, b.commission AS commission,
@@ -61,19 +62,19 @@ export async function buildReport(query = {}) {
               COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS realized,
               COALESCE(SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed
          FROM appointments a JOIN barbers b ON b.id = a.barber_id
-        WHERE a.date BETWEEN ? AND ?${barberFilter}
+        WHERE a.shop_id = ? AND a.date BETWEEN ? AND ?${barberFilter}
         GROUP BY a.barber_id
         ORDER BY revenue DESC, completed DESC, total_appointments DESC`,
-      [from, to, ...barberParams]
+      [sid, from, to, ...barberParams]
     ),
     all(
       `SELECT a.service_id AS service_id, COALESCE(s.name, 'Serviço removido') AS name, COUNT(*) AS total,
               COALESCE(SUM(a.price), 0) AS revenue
          FROM appointments a LEFT JOIN services s ON s.id = a.service_id
-        WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}
+        WHERE a.shop_id = ? AND a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}
         GROUP BY a.service_id
         ORDER BY total DESC, revenue DESC`,
-      [from, to, ...barberParams]
+      [sid, from, to, ...barberParams]
     ),
     all(
       `SELECT a.date AS date,
@@ -84,33 +85,33 @@ export async function buildReport(query = {}) {
               COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS revenue,
               COALESCE(SUM(CASE WHEN a.status IN ('pending', 'confirmed', 'completed') THEN a.price ELSE 0 END), 0) AS revenue_expected
          FROM appointments a
-        WHERE a.date BETWEEN ? AND ?${barberFilter}
+        WHERE a.shop_id = ? AND a.date BETWEEN ? AND ?${barberFilter}
         GROUP BY a.date
         ORDER BY a.date ASC`,
-      [from, to, ...barberParams]
+      [sid, from, to, ...barberParams]
     ),
     all(
-      `SELECT COUNT(*) AS total FROM clients WHERE date(created_at) BETWEEN ? AND ?`,
-      [from, to]
+      `SELECT COUNT(*) AS total FROM clients WHERE shop_id = ? AND date(created_at) BETWEEN ? AND ?`,
+      [sid, from, to]
     ),
     all(
       `SELECT COUNT(*) AS appointments,
               COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS revenue_realized
          FROM appointments a
-        WHERE a.date BETWEEN ? AND ?${barberFilter}`,
-      [prevFrom, prevTo, ...barberParams]
+        WHERE a.shop_id = ? AND a.date BETWEEN ? AND ?${barberFilter}`,
+      [sid, prevFrom, prevTo, ...barberParams]
     ),
     all(
       `SELECT COUNT(DISTINCT a.client_id) AS unique_clients,
               COUNT(DISTINCT CASE
                 WHEN EXISTS (
                   SELECT 1 FROM appointments p
-                   WHERE p.client_id = a.client_id AND p.status = 'completed' AND p.date < ?
+                   WHERE p.shop_id = ? AND p.client_id = a.client_id AND p.status = 'completed' AND p.date < ?
                 ) THEN a.client_id
               END) AS returning_clients
          FROM appointments a
-        WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}`,
-      [from, from, to, ...barberParams]
+        WHERE a.shop_id = ? AND a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}`,
+      [sid, from, sid, from, to, ...barberParams]
     ),
   ]);
 

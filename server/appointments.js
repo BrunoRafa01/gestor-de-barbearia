@@ -42,7 +42,11 @@ function mapRow(row) {
   return { ...row, id: Number(row.id), price: Number(row.price || 0) };
 }
 
-export async function getAppointmentById(id) {
+export async function getAppointmentById(id, shopId = null) {
+  if (shopId) {
+    const row = await get(`${APPOINTMENT_SELECT} WHERE a.id = ? AND a.shop_id = ?`, [Number(id), Number(shopId)]);
+    return mapRow(row);
+  }
   const row = await get(`${APPOINTMENT_SELECT} WHERE a.id = ?`, [Number(id)]);
   return mapRow(row);
 }
@@ -57,6 +61,10 @@ export async function listAppointments(filters = {}) {
   const where = [];
   const params = [];
 
+  if (filters.shopId) {
+    where.push('a.shop_id = ?');
+    params.push(Number(filters.shopId));
+  }
   if (filters.from) {
     where.push('a.date >= ?');
     params.push(filters.from);
@@ -92,8 +100,10 @@ export async function listAppointments(filters = {}) {
   return rows.map(mapRow);
 }
 
-async function loadService(serviceId, { requireActive = false } = {}) {
-  const service = await get('SELECT * FROM services WHERE id = ?', [serviceId]);
+async function loadService(serviceId, { requireActive = false, shopId = null } = {}) {
+  const service = shopId
+    ? await get('SELECT * FROM services WHERE id = ? AND shop_id = ?', [serviceId, Number(shopId)])
+    : await get('SELECT * FROM services WHERE id = ?', [serviceId]);
   if (!service) throw new HttpError(404, 'Servico nao encontrado.');
   if (requireActive && !service.active) {
     throw new HttpError(409, 'Este servico esta inativo.');
@@ -101,8 +111,10 @@ async function loadService(serviceId, { requireActive = false } = {}) {
   return service;
 }
 
-async function loadBarber(barberId, { requireActive = false } = {}) {
-  const barber = await get('SELECT * FROM barbers WHERE id = ?', [barberId]);
+async function loadBarber(barberId, { requireActive = false, shopId = null } = {}) {
+  const barber = shopId
+    ? await get('SELECT * FROM barbers WHERE id = ? AND shop_id = ?', [barberId, Number(shopId)])
+    : await get('SELECT * FROM barbers WHERE id = ?', [barberId]);
   if (!barber) throw new HttpError(404, 'Profissional nao encontrado.');
   if (requireActive && !barber.active) {
     throw new HttpError(409, 'Este profissional esta inativo.');
@@ -118,8 +130,10 @@ function parsePrice(value) {
   return Math.round(parsed * 100) / 100;
 }
 
-async function loadClient(clientId) {
-  const client = await get('SELECT * FROM clients WHERE id = ?', [clientId]);
+async function loadClient(clientId, shopId = null) {
+  const client = shopId
+    ? await get('SELECT * FROM clients WHERE id = ? AND shop_id = ?', [clientId, Number(shopId)])
+    : await get('SELECT * FROM clients WHERE id = ?', [clientId]);
   if (!client) throw new HttpError(404, 'Cliente nao encontrado.');
   return client;
 }
@@ -129,6 +143,7 @@ async function loadClient(clientId) {
  * Retorna `null` quando houve conflito (outra requisicao gravou no meio).
  */
 async function insertIfFree({
+  shopId = 1,
   clientId,
   barberId,
   serviceId,
@@ -143,8 +158,8 @@ async function insertIfFree({
 }) {
   const info = await run(
     `INSERT INTO appointments
-       (client_id, barber_id, service_id, date, start_time, end_time, status, price, notes, source, cancel_token)
-     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+       (shop_id, client_id, barber_id, service_id, date, start_time, end_time, status, price, notes, source, cancel_token)
+     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       WHERE NOT EXISTS (
         SELECT 1 FROM appointments a
          WHERE a.barber_id = ?
@@ -154,7 +169,7 @@ async function insertIfFree({
            AND a.end_time   > ?
       )`,
     [
-      clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, source, cancelToken,
+      shopId, clientId, barberId, serviceId, date, startTime, endTime, status, price, notes, source, cancelToken,
       barberId, date, endTime, startTime,
     ]
   );
@@ -162,6 +177,7 @@ async function insertIfFree({
 }
 
 export async function createAppointment(input, now = new Date()) {
+  const shopId = Number(input.shop_id) || 1;
   const clientId = requiredId(input.client_id, 'cliente');
   const barberId = requiredId(input.barber_id, 'profissional');
   const serviceId = requiredId(input.service_id, 'servico');
@@ -181,9 +197,9 @@ export async function createAppointment(input, now = new Date()) {
   }
 
   await Promise.all([
-    loadClient(clientId),
-    loadBarber(barberId, { requireActive: true }),
-    loadService(serviceId, { requireActive: true }),
+    loadClient(clientId, shopId),
+    loadBarber(barberId, { requireActive: true, shopId }),
+    loadService(serviceId, { requireActive: true, shopId }),
   ]);
 
   const availability = await assertSlotAvailable({ barberId, serviceId, date, startTime, now });
@@ -196,6 +212,7 @@ export async function createAppointment(input, now = new Date()) {
   const cancelToken = input.cancel_token || randomBytes(16).toString('hex');
 
   const id = await insertIfFree({
+    shopId,
     clientId,
     barberId,
     serviceId,
@@ -213,13 +230,14 @@ export async function createAppointment(input, now = new Date()) {
     throw new HttpError(409, 'Este horario acabou de ser reservado. Escolha outro horario livre.');
   }
 
-  return getAppointmentById(id);
+  return getAppointmentById(id, shopId);
 }
 
-export async function updateAppointment(id, input, now = new Date()) {
+export async function updateAppointment(id, input, now = new Date(), { shopId = null } = {}) {
   const appointmentId = Number(id);
-  const current = await getAppointmentById(appointmentId);
+  const current = await getAppointmentById(appointmentId, shopId);
   if (!current) throw new HttpError(404, 'Agendamento nao encontrado.');
+  const effectiveShopId = shopId || Number(current.shop_id) || 1;
 
   const clientId = input.client_id ? requiredId(input.client_id, 'cliente') : current.client_id;
   const barberId = input.barber_id ? requiredId(input.barber_id, 'profissional') : current.barber_id;
@@ -238,9 +256,9 @@ export async function updateAppointment(id, input, now = new Date()) {
   const notes =
     input.notes === undefined ? current.notes : optionalString(input.notes, 'observacoes', 500);
 
-  await loadClient(clientId);
-  await loadBarber(barberId, { requireActive: barberId !== current.barber_id });
-  const service = await loadService(serviceId, { requireActive: serviceId !== current.service_id });
+  await loadClient(clientId, effectiveShopId);
+  await loadBarber(barberId, { requireActive: barberId !== current.barber_id, shopId: effectiveShopId });
+  const service = await loadService(serviceId, { requireActive: serviceId !== current.service_id, shopId: effectiveShopId });
   const isCancelled = status === 'cancelled' || status === 'no_show';
 
   if (!isCancelled) {
@@ -293,9 +311,9 @@ export async function updateAppointment(id, input, now = new Date()) {
   return getAppointmentById(appointmentId);
 }
 
-export async function setAppointmentStatus(id, status) {
+export async function setAppointmentStatus(id, status, { shopId = null } = {}) {
   const appointmentId = Number(id);
-  const appointment = await getAppointmentById(appointmentId);
+  const appointment = await getAppointmentById(appointmentId, shopId);
   if (!appointment) throw new HttpError(404, 'Agendamento nao encontrado.');
 
   const nextStatus = requiredEnum(
@@ -343,29 +361,42 @@ export async function setAppointmentStatus(id, status) {
   return getAppointmentById(appointmentId);
 }
 
-export async function deleteAppointment(id) {
-  const appointment = await getAppointmentById(id);
+export async function deleteAppointment(id, { shopId = null } = {}) {
+  const appointment = await getAppointmentById(id, shopId);
   if (!appointment) throw new HttpError(404, 'Agendamento nao encontrado.');
-  await run('DELETE FROM appointments WHERE id = ?', [Number(id)]);
+  if (shopId) {
+    await run('DELETE FROM appointments WHERE id = ? AND shop_id = ?', [Number(id), Number(shopId)]);
+  } else {
+    await run('DELETE FROM appointments WHERE id = ?', [Number(id)]);
+  }
   return { deleted: true, id: Number(id) };
 }
 
 /** Cria/reaproveita o cliente pelo telefone de forma atomica (usado no agendamento publico). */
-export async function upsertClientByPhone({ name, phone, email = null }) {
+export async function upsertClientByPhone({ name, phone, email = null, shopId = 1 }) {
   const digits = String(phone || '').replace(/\D/g, '');
   if (!digits) throw new HttpError(400, 'Informe um telefone valido.');
+
+  const existing = await get('SELECT * FROM clients WHERE shop_id = ? AND phone = ?', [Number(shopId), digits]);
+  if (existing) {
+    if ((!existing.email || existing.email === '') && email) {
+      await run('UPDATE clients SET email = ? WHERE id = ? AND shop_id = ?', [email, existing.id, Number(shopId)]);
+      return get('SELECT * FROM clients WHERE id = ? AND shop_id = ?', [existing.id, Number(shopId)]);
+    }
+    return existing;
+  }
 
   // Nao sobrescreve o nome ja cadastrado pelo telefone no formulario publico;
   // preenche apenas campos vazios (ex.: e-mail).
   await run(
-    `INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)
+    `INSERT INTO clients (shop_id, name, phone, email) VALUES (?, ?, ?, ?)
      ON CONFLICT(phone) DO UPDATE SET
        email = CASE
          WHEN (clients.email IS NULL OR clients.email = '') AND excluded.email IS NOT NULL
          THEN excluded.email
          ELSE clients.email
        END`,
-    [name, digits, email]
+    [Number(shopId), name, digits, email]
   );
   return get('SELECT * FROM clients WHERE phone = ?', [digits]);
 }

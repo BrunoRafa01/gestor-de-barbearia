@@ -55,13 +55,13 @@ export const serviceRoutes = [
   {
     method: 'PUT',
     path: '/api/services/:id',
-    handler: async ({ params, body }) => {
+    handler: async ({ params, body, shopId = 1 }) => {
       const id = requiredId(params.id, 'servico');
-      const existing = await get('SELECT * FROM services WHERE id = ?', [id]);
+      const existing = await get('SELECT * FROM services WHERE id = ? AND shop_id = ?', [id, shopId]);
       if (!existing) throw new HttpError(404, 'Servico nao encontrado.');
 
       await run(
-        'UPDATE services SET name = ?, description = ?, duration_min = ?, price = ?, active = ? WHERE id = ?',
+        'UPDATE services SET name = ?, description = ?, duration_min = ?, price = ?, active = ? WHERE id = ? AND shop_id = ?',
         [
           requiredString(body.name, 'nome do servico', { max: 120 }),
           optionalString(body.description, 'descricao', 300),
@@ -69,25 +69,26 @@ export const serviceRoutes = [
           requiredNumber(body.price, 'preco', { min: 0, max: 100000 }),
           boolFlag(body.active, existing.active),
           id,
+          shopId,
         ]
       );
 
-      return { status: 200, body: mapService(await get('SELECT * FROM services WHERE id = ?', [id])) };
+      return { status: 200, body: mapService(await get('SELECT * FROM services WHERE id = ? AND shop_id = ?', [id, shopId])) };
     },
   },
   {
     method: 'DELETE',
     path: '/api/services/:id',
-    handler: async ({ params }) => {
+    handler: async ({ params, shopId = 1 }) => {
       const id = requiredId(params.id, 'servico');
-      const existing = await get('SELECT * FROM services WHERE id = ?', [id]);
+      const existing = await get('SELECT * FROM services WHERE id = ? AND shop_id = ?', [id, shopId]);
       if (!existing) throw new HttpError(404, 'Servico nao encontrado.');
 
-      const inUse = await get('SELECT COUNT(*) AS total FROM appointments WHERE service_id = ?', [id]);
+      const inUse = await get('SELECT COUNT(*) AS total FROM appointments WHERE service_id = ? AND shop_id = ?', [id, shopId]);
 
       if (Number(inUse?.total || 0) > 0) {
         // Mantem o historico: apenas desativa o servico.
-        await run('UPDATE services SET active = 0 WHERE id = ?', [id]);
+        await run('UPDATE services SET active = 0 WHERE id = ? AND shop_id = ?', [id, shopId]);
         return {
           status: 200,
           body: {
@@ -98,7 +99,7 @@ export const serviceRoutes = [
         };
       }
 
-      await run('DELETE FROM services WHERE id = ?', [id]);
+      await run('DELETE FROM services WHERE id = ? AND shop_id = ?', [id, shopId]);
       return { status: 200, body: { deleted: true, id } };
     },
   },

@@ -15,8 +15,8 @@ function monthRange(date) {
 }
 
 /** Taxa de ocupacao do dia: minutos disponiveis x minutos agendados. */
-async function occupancyFor(date) {
-  const barbers = await all('SELECT id FROM barbers WHERE active = 1', []);
+async function occupancyFor(date, shopId = 1) {
+  const barbers = await all('SELECT id FROM barbers WHERE shop_id = ? AND active = 1', [shopId]);
   let availableMinutes = 0;
 
   for (const barber of barbers) {
@@ -24,7 +24,7 @@ async function occupancyFor(date) {
     for (const [start, end] of windows) availableMinutes += end - start;
   }
 
-  const appointments = (await listAppointments({ from: date, to: date })).filter((item) =>
+  const appointments = (await listAppointments({ shopId, from: date, to: date })).filter((item) =>
     ['pending', 'confirmed', 'completed'].includes(item.status)
   );
   const bookedMinutes = appointments.reduce(
@@ -45,11 +45,11 @@ export const dashboardRoutes = [
   {
     method: 'GET',
     path: '/api/dashboard',
-    handler: async ({ query }) => {
+    handler: async ({ query, shopId = 1 }) => {
       const date = /^\d{4}-\d{2}-\d{2}$/.test(query.date || '') ? query.date : todayISO();
       const today = todayISO();
 
-      const dayAppointments = (await listAppointments({ from: date, to: date })).sort((a, b) =>
+      const dayAppointments = (await listAppointments({ shopId, from: date, to: date })).sort((a, b) =>
         a.start_time.localeCompare(b.start_time)
       );
       const countByStatus = dayAppointments.reduce((acc, item) => {
@@ -59,23 +59,23 @@ export const dashboardRoutes = [
 
       const weekStart = startOfWeek(date);
       const weekEnd = endOfWeek(date);
-      const weekAppointments = (await listAppointments({ from: weekStart, to: weekEnd })).filter(
+      const weekAppointments = (await listAppointments({ shopId, from: weekStart, to: weekEnd })).filter(
         (item) => ['pending', 'confirmed', 'completed'].includes(item.status)
       );
       const completedWeek = weekAppointments.filter((item) => item.status === 'completed');
 
       const { start: monthStart, end: monthEnd } = monthRange(date);
-      const monthAppointments = (await listAppointments({ from: monthStart, to: monthEnd })).filter(
+      const monthAppointments = (await listAppointments({ shopId, from: monthStart, to: monthEnd })).filter(
         (item) => ['pending', 'confirmed', 'completed'].includes(item.status)
       );
       const completedMonth = monthAppointments.filter((item) => item.status === 'completed');
 
       const newClients = await get(
-        'SELECT COUNT(*) AS total FROM clients WHERE date(created_at) BETWEEN ? AND ?',
-        [monthStart, monthEnd]
+        'SELECT COUNT(*) AS total FROM clients WHERE shop_id = ? AND date(created_at) BETWEEN ? AND ?',
+        [shopId, monthStart, monthEnd]
       );
 
-      const upcoming = (await listAppointments({ from: today }))
+      const upcoming = (await listAppointments({ shopId, from: today }))
         .filter((item) => ['pending', 'confirmed'].includes(item.status))
         .sort((a, b) => `${a.date} ${a.start_time}`.localeCompare(`${b.date} ${b.start_time}`))
         .slice(0, 6);
@@ -84,9 +84,9 @@ export const dashboardRoutes = [
         await all(
           `SELECT COALESCE(s.name, 'Serviço removido') AS name, COUNT(*) AS total, COALESCE(SUM(a.price), 0) AS revenue
              FROM appointments a LEFT JOIN services s ON s.id = a.service_id
-            WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'
+            WHERE a.shop_id = ? AND a.date BETWEEN ? AND ? AND a.status = 'completed'
             GROUP BY a.service_id ORDER BY total DESC, revenue DESC LIMIT 5`,
-          [monthStart, monthEnd]
+          [shopId, monthStart, monthEnd]
         )
       ).map((row) => ({ ...row, total: Number(row.total), revenue: Number(row.revenue || 0) }));
 
@@ -94,9 +94,9 @@ export const dashboardRoutes = [
         await all(
           `SELECT b.name AS name, COUNT(*) AS total, COALESCE(SUM(a.price), 0) AS revenue
              FROM appointments a JOIN barbers b ON b.id = a.barber_id
-            WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'
+            WHERE a.shop_id = ? AND a.date BETWEEN ? AND ? AND a.status = 'completed'
             GROUP BY a.barber_id ORDER BY total DESC, revenue DESC LIMIT 5`,
-          [monthStart, monthEnd]
+          [shopId, monthStart, monthEnd]
         )
       ).map((row) => ({ ...row, total: Number(row.total), revenue: Number(row.revenue || 0) }));
 
@@ -116,7 +116,7 @@ export const dashboardRoutes = [
             ),
             revenue_realized: sumBy(dayAppointments, (item) => item.status === 'completed'),
             appointments: dayAppointments,
-            occupancy: await occupancyFor(date),
+            occupancy: await occupancyFor(date, shopId),
           },
           week: {
             start: weekStart,

@@ -6,9 +6,9 @@ export const reportRoutes = [
   {
     method: 'GET',
     path: '/api/reports',
-    handler: async ({ query }) => ({
+    handler: async ({ query, shopId = 1 }) => ({
       status: 200,
-      body: await buildReport(query),
+      body: await buildReport(query, shopId),
     }),
   },
 ];
