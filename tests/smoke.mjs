@@ -524,6 +524,31 @@ async function run() {
   });
   check('duplicidade publica responde 409', publicDuplicate.status === 409, `status ${publicDuplicate.status}`);
 
+  const availAfterPublic = await call(
+    `/api/public/availability?barber_id=${barberId}&service_id=${serviceId}&date=${targetDate}`,
+    { auth: false }
+  );
+  const thirdSlot = availAfterPublic.body?.slots?.[0];
+  if (thirdSlot) {
+    const renameAttempt = await call('/api/public/appointments', {
+      method: 'POST',
+      auth: false,
+      body: {
+        name: 'Nome Invasor',
+        phone: '(11) 95555-4444',
+        barber_id: barberId,
+        service_id: serviceId,
+        date: targetDate,
+        start_time: thirdSlot,
+      },
+    });
+    check(
+      'agendamento publico com telefone existente nao renomeia cliente',
+      renameAttempt.status === 201 && renameAttempt.body?.appointment?.client_name === 'Maria Publica',
+      `status ${renameAttempt.status} nome ${renameAttempt.body?.appointment?.client_name}`
+    );
+  }
+
   const publicLookup = await call(`/api/public/appointments/${cancelToken}`, { auth: false });
   check('consulta publica por token responde 200', publicLookup.status === 200);
   check('consulta publica traz dados do agendamento', publicLookup.body?.client_name === 'Maria Publica');

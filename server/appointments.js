@@ -327,8 +327,13 @@ export async function upsertClientByPhone({ name, phone, email = null }) {
 
   const existing = await get('SELECT * FROM clients WHERE phone = ?', [digits]);
   if (existing) {
-    await run('UPDATE clients SET name = ? WHERE id = ?', [name, existing.id]);
-    return get('SELECT * FROM clients WHERE id = ?', [existing.id]);
+    // Nao sobrescreve o nome ja cadastrado pelo telefone no formulario publico;
+    // preenche apenas campos vazios (ex.: e-mail).
+    if (!existing.email && email) {
+      await run('UPDATE clients SET email = ? WHERE id = ?', [email, existing.id]);
+      return get('SELECT * FROM clients WHERE id = ?', [existing.id]);
+    }
+    return existing;
   }
 
   const info = await run('INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)', [
