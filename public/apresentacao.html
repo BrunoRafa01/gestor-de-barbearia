@@ -3,1140 +3,453 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#06070A">
-  <title>Gestor de Barbearia | Operação em Tempo Real</title>
-  <meta name="description" content="Sistema de agendamento online, agenda por profissional e controle financeiro para barbearias.">
+  <meta name="theme-color" content="#07080B">
+  <title>Gestor de Barbearia | Sua agenda online com a cara da sua barbearia</title>
+  <meta name="description" content="Sistema de agendamento online, agenda por barbeiro, lembretes no WhatsApp e controle de caixa e comissões para barbearias.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/icon-192.png">
   <style>
     :root {
-      --bg-dark: #06070A;
-      --blue: #2563EB;
-      --blue-bright: #3B82F6;
+      --bg: #07080B;
+      --bg-soft: #0C0E14;
+      --card: #10131B;
+      --card-hover: #151924;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text: #F4F4F5;
+      --muted: #A1A1AA;
+      --faint: #71717A;
+      --blue: #3B82F6;
+      --blue-strong: #2563EB;
       --blue-soft: #60A5FA;
-      --blue-ice: #93C5FD;
-      --ice-bg: #080A0F;
-      --ice-card: #0E1117;
-      --ice-border: rgba(255, 255, 255, 0.08);
-      --ink-dark: #F4F4F5;
-      --ink-muted: #A1A1AA;
+      --green: #10B981;
       --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      --font-serif: 'Newsreader', Georgia, serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
       --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      padding: 0;
       font-family: var(--font);
-      background: var(--bg-dark);
-      color: #F4F4F5;
+      background: var(--bg);
+      color: var(--text);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    a { color: inherit; text-decoration: none; }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* ---------------- HERO ATMOSPHERE (OBSIDIAN + DISCIPLINED BLUE) ---------------- */
-    .hero-band {
-      position: relative;
-      background:
-        radial-gradient(ellipse 52% 48% at 82% 18%, rgba(37, 99, 235, 0.16) 0%, rgba(15, 23, 42, 0.08) 55%, transparent 100%),
-        #06070A;
-      overflow: hidden;
-      padding-bottom: 88px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .hero-band::after {
-      display: none;
-    }
-
-    .hero-grid-lines {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-      background-size: 72px 72px;
-      -webkit-mask-image: radial-gradient(ellipse 92% 74% at 62% 38%, #000 22%, transparent 90%);
-      mask-image: radial-gradient(ellipse 92% 74% at 62% 38%, #000 22%, transparent 90%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .hero-spotlight {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1;
-      background: radial-gradient(480px circle at var(--mx, 72%) var(--my, 46%), rgba(96, 165, 250, 0.14), transparent 65%);
-      transition: opacity 250ms ease;
-    }
-
-    /* ---------------- HEADER ---------------- */
-    .lp-nav-bar {
+    /* ---------------- NAVBAR ---------------- */
+    .nav-wrap {
       position: sticky;
       top: 0;
-      z-index: 50;
-      background: rgba(6, 7, 10, 0.74);
-      -webkit-backdrop-filter: blur(18px);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 40;
+      background: rgba(7, 8, 11, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
     }
-
-    .lp-nav-inner {
-      max-width: 1200px;
+    .nav-inner {
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 13px 28px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 24px;
+      gap: 16px;
     }
-
-    .lp-logo {
+    .brand {
       display: inline-flex;
       align-items: center;
       gap: 10px;
       font-weight: 600;
       font-size: 15px;
       letter-spacing: -0.02em;
-      color: #FAFAFA;
     }
-
-    .lp-logo-mark {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      background: rgba(37, 99, 235, 0.18);
-      border: 1px solid rgba(96, 165, 250, 0.5);
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: var(--blue-soft);
       display: grid;
       place-items: center;
-      color: #60A5FA;
     }
-
-    .lp-nav-links {
+    .nav-links {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 26px;
+      font-size: 13.5px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-ghost {
+      padding: 9px 14px;
+      border-radius: 10px;
       font-size: 13.5px;
       font-weight: 500;
-      color: #A1A1AA;
+      color: var(--muted);
+      transition: color 150ms var(--ease), background 150ms var(--ease);
     }
-
-    .lp-nav-links a {
-      transition: color 150ms var(--ease);
-    }
-
-    .lp-nav-links a:hover {
+    .btn-ghost:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+    .btn-primary-nav {
+      padding: 9px 16px;
+      border-radius: 10px;
+      background: var(--blue-strong);
       color: #FFFFFF;
-    }
-
-    .lp-nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-nav-ghost {
-      font-size: 13px;
-      font-weight: 500;
-      color: #E4E4E7;
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.03);
-      transition: background 150ms var(--ease), border-color 150ms var(--ease);
-    }
-
-    .btn-nav-ghost:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.28);
-    }
-
-    .btn-nav-white {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 600;
-      color: #09090B;
-      padding: 8px 15px;
-      border-radius: 8px;
-      background: #FFFFFF;
-      border: 1px solid #FFFFFF;
-      transition: transform 120ms var(--ease), background 150ms var(--ease);
+      transition: background 150ms var(--ease);
     }
+    .btn-primary-nav:hover { background: #1D4ED8; }
 
-    .btn-nav-white:hover {
-      background: #E2E8F0;
-    }
-
-    .btn-nav-white:active {
-      transform: scale(0.98);
-    }
-
-    /* ---------------- HERO CONTENT + KINETIC 3D STAGE ---------------- */
-    .hero-container {
+    /* ---------------- CENTERED EDITORIAL HERO (ZELO-INSPIRED) ---------------- */
+    .hero {
       position: relative;
-      z-index: 3;
-      max-width: 1200px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 76px 28px 40px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-      gap: 40px;
-      align-items: center;
+      padding: 72px 20px 56px;
+      text-align: center;
     }
-
-    .hero-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 24px;
-      animation: fadeUp 520ms var(--ease) both;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #A1A1AA;
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .hero-badge strong {
-      color: #60A5FA;
-      font-weight: 600;
-    }
-
-    .pulse-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #60A5FA;
-      box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.6);
-      animation: pulseRing 2.2s infinite;
-    }
-
-    .hero-h1 {
-      margin: 0 0 20px;
-      font-size: clamp(2.9rem, 5.5vw, 4.5rem);
-      font-weight: 600;
-      line-height: 1.01;
-      letter-spacing: -0.045em;
-      animation: fadeUp 620ms var(--ease) 60ms both;
-    }
-
-    .hero-h1 .line-muted {
-      display: block;
-      color: #A1A1AA;
-    }
-
-    .hero-h1 .line-solid {
-      display: block;
-      color: #FFFFFF;
-    }
-
-    .hero-sub {
-      margin: 0 0 32px;
-      max-width: 48ch;
-      font-size: 16px;
-      line-height: 1.55;
-      color: #D4D4D8;
-      animation: fadeUp 680ms var(--ease) 120ms both;
-    }
-
-    .hero-cta-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 14px;
-      animation: fadeUp 740ms var(--ease) 180ms both;
-    }
-
-    .btn-split-blue {
-      display: inline-flex;
-      align-items: stretch;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #2563EB;
-      border: 1px solid rgba(191, 219, 254, 0.45);
-      color: #FFFFFF;
-      font-size: 14px;
-      font-weight: 600;
-      transition: transform 140ms var(--ease), background 160ms var(--ease), box-shadow 180ms var(--ease);
-    }
-
-    .btn-split-blue:hover {
-      background: #1D4ED8;
-      box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.7);
-    }
-
-    .btn-split-blue:active {
-      transform: scale(0.98);
-    }
-
-    .btn-split-label {
-      padding: 12px 18px;
-    }
-
-    .btn-split-arrow {
-      padding: 12px 14px;
-      background: rgba(0, 0, 0, 0.2);
-      border-left: 1px solid rgba(255, 255, 255, 0.16);
-      display: grid;
-      place-items: center;
-      transition: transform 160ms var(--ease);
-    }
-
-    .btn-split-blue:hover .btn-split-arrow {
-      transform: translateX(2px);
-    }
-
-    .btn-hero-secondary {
-      padding: 12px 18px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(6, 7, 10, 0.45);
-      color: #FAFAFA;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background 150ms var(--ease), border-color 150ms var(--ease);
-    }
-
-    .btn-hero-secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.28);
-    }
-
-    .hero-trust {
-      margin-top: 56px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 28px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.68);
-      animation: fadeUp 800ms var(--ease) 240ms both;
-    }
-
-    .hero-trust-item {
+    .hero-pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-    }
-
-    .hero-trust-dot {
-      width: 6px;
-      height: 6px;
+      padding: 4px 12px 4px 5px;
       border-radius: 999px;
-      background: #60A5FA;
-    }
-
-    /* ---------------- STUDIO PRODUCT PREVIEW WINDOW ---------------- */
-    .hero-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #60A5FA;
-      margin-bottom: 18px;
-    }
-
-    .studio-window {
-      background: #0B0D12;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
-    }
-
-    .studio-window-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: #0F1218;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      gap: 12px;
-    }
-
-    .studio-window-title {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      color: #A1A1AA;
-    }
-
-    .studio-window-tabs {
-      display: inline-flex;
-      background: #07080B;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 7px;
-      padding: 2px;
-    }
-
-    .studio-tab {
-      background: transparent;
-      border: 0;
-      color: #A1A1AA;
-      font-family: var(--font);
-      font-size: 11.5px;
-      font-weight: 500;
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 140ms var(--ease), color 140ms var(--ease);
-    }
-
-    .studio-tab.active {
-      background: #1C2230;
-      color: #F4F4F5;
-    }
-
-    .studio-window-body {
-      padding: 16px;
-    }
-
-    .studio-metrics-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .studio-metric {
-      background: #0F1218;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .studio-metric span {
-      display: block;
-      font-size: 11px;
-      color: #71717A;
-      margin-bottom: 4px;
-    }
-
-    .studio-metric strong {
-      font-family: var(--font-mono);
-      font-size: 15px;
-      font-weight: 600;
-      color: #F4F4F5;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .studio-rows {
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .studio-row {
-      display: grid;
-      grid-template-columns: 56px 1fr auto;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      background: #0B0D12;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 13px;
-    }
-
-    .studio-row:first-child {
-      border-top: 0;
-    }
-
-    .studio-row-time {
-      font-family: var(--font-mono);
+      background: var(--card);
+      border: 1px solid var(--border);
       font-size: 12px;
-      color: #93C5FD;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .studio-row-main strong {
-      display: block;
+      color: var(--muted);
       font-weight: 500;
-      color: #F4F4F5;
-      font-size: 13px;
+      margin-bottom: 24px;
     }
-
-    .studio-row-main span {
-      font-size: 11.5px;
-      color: #71717A;
-    }
-
-    .studio-row-tag {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      color: #60A5FA;
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.22);
-    }
-
-    .studio-row-tag.ok {
-      color: #34D399;
-      background: rgba(52, 211, 153, 0.1);
-      border-color: rgba(52, 211, 153, 0.22);
-    }
-
-    .studio-row-tag.free {
-      color: #A1A1AA;
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.08);
-    }
-
-    /* ---------------- INTERACTIVE 3D ISOMETRIC STACK ---------------- */
-    .iso-stage {
-      position: relative;
-      height: 440px;
-      display: grid;
-      place-items: center;
-      perspective: 1300px;
-    }
-
-    .iso-crosshair {
-      position: absolute;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.28);
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .iso-stack {
-      position: relative;
-      width: 310px;
-      height: 310px;
-      transform-style: preserve-3d;
-      transform: rotateX(58deg) rotateZ(-42deg);
-      transition: transform 220ms ease-out;
-    }
-
-    .iso-plane {
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-    }
-
-    .iso-plane-1 {
-      background:
-        linear-gradient(135deg, rgba(37, 99, 235, 0.24), rgba(15, 23, 42, 0.4)),
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 24px);
-      box-shadow: 0 28px 70px rgba(37, 99, 235, 0.42);
-      transform: translateZ(0px);
-      animation: isoFloat1 6.5s ease-in-out infinite;
-    }
-
-    .iso-plane-2 {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.38), rgba(147, 197, 253, 0.14));
-      border-color: rgba(147, 197, 253, 0.6);
-      backdrop-filter: blur(10px);
-      transform: translateZ(62px);
-      animation: isoFloat2 6.5s ease-in-out infinite;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-    }
-
-    .iso-plane-3 {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(59, 130, 246, 0.08));
-      border-color: rgba(255, 255, 255, 0.55);
-      transform: translateZ(128px);
-      animation: isoFloat3 6.5s ease-in-out infinite;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .iso-tag {
-      display: inline-block;
-      align-self: flex-start;
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #FFFFFF;
-      background: rgba(37, 99, 235, 0.78);
-      border: 1px solid rgba(191, 219, 254, 0.65);
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-
-    .iso-mini-bars {
-      display: grid;
-      gap: 8px;
-    }
-
-    .iso-mini-bar {
-      height: 7px;
+    .hero-pill-tag {
+      padding: 2px 9px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.28);
-    }
-
-    .iso-mini-bar.blue {
-      background: #BFDBFE;
-      width: 76%;
-    }
-
-    .iso-node-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #FFFFFF;
-      box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.35);
-      align-self: flex-end;
-    }
-
-    .iso-callout {
-      position: absolute;
-      right: 8px;
-      top: 38px;
-      background: rgba(6, 7, 10, 0.88);
-      border: 1px solid rgba(147, 197, 253, 0.38);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #FAFAFA;
-      backdrop-filter: blur(12px);
-      z-index: 4;
-      animation: fadeUp 800ms var(--ease) 260ms both;
-      min-width: 210px;
-    }
-
-    .iso-callout span {
-      display: block;
-      font-size: 9.5px;
-      color: #60A5FA;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .iso-callout-bottom {
-      position: absolute;
-      left: 10px;
-      bottom: 36px;
-      background: rgba(6, 7, 10, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #FAFAFA;
-      backdrop-filter: blur(12px);
-      z-index: 4;
-      animation: fadeUp 860ms var(--ease) 340ms both;
-    }
-
-    .iso-callout-bottom span {
-      display: block;
-      font-size: 9.5px;
-      color: #34D399;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    /* ---------------- ICE WHITE SECTION 1 (4-COLUMN INTERACTIVE DIAGRAMS) ---------------- */
-    .ice-section {
-      background: var(--ice-bg);
-      color: var(--ink-dark);
-      padding: 72px 28px 88px;
-      position: relative;
-      z-index: 3;
-    }
-
-    .ice-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .ice-head {
-      max-width: 720px;
-      margin-bottom: 48px;
-    }
-
-    .ice-h2 {
-      margin: 0 0 14px;
-      font-size: clamp(2.1rem, 4vw, 3.35rem);
+      background: rgba(59, 130, 246, 0.16);
+      color: var(--blue-soft);
       font-weight: 600;
-      line-height: 1.05;
+      font-size: 11px;
+    }
+    .hero h1 {
+      margin: 0 auto;
+      max-width: 780px;
+      font-size: clamp(2.25rem, 5.4vw, 3.85rem);
+      font-weight: 700;
+      line-height: 1.09;
       letter-spacing: -0.035em;
-      color: var(--ink-dark);
+      color: var(--text);
     }
-
-    .ice-h2 span {
-      display: block;
-      color: #60A5FA;
-    }
-
-    .ice-sub {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.55;
-      color: var(--ink-muted);
-    }
-
-    .four-col-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      border: 1px solid var(--ice-border);
-      border-radius: 16px;
-      background: var(--ice-card);
-      overflow: hidden;
-      box-shadow: 0 12px 32px -18px rgba(15, 23, 42, 0.08);
-    }
-
-    .four-col-item {
-      padding: 26px 22px 28px;
-      border-right: 1px solid var(--ice-border);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 22px;
-      transition: background 200ms var(--ease);
-    }
-
-    .four-col-item:last-child {
-      border-right: none;
-    }
-
-    .four-col-item:hover {
-      background: #121722;
-    }
-
-    .four-col-item svg polygon,
-    .four-col-item svg rect,
-    .four-col-item svg circle {
-      transition: transform 280ms var(--ease);
-    }
-
-    .four-col-item:hover .diag-lift {
-      transform: translateY(-6px);
-    }
-
-    .four-col-item:hover .diag-drop {
-      transform: translateY(4px);
-    }
-
-    .col-index {
+    .slot-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 14px;
+      margin: 0 4px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border-strong);
       font-family: var(--font-mono);
-      font-size: 10.5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #64748B;
+      font-size: 0.68em;
+      font-weight: 600;
+      vertical-align: middle;
+      color: var(--text);
+    }
+    .slot-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+    }
+    .editorial-italic {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 1.12em;
+      color: var(--blue-soft);
+    }
+    .underline-accent {
+      position: relative;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .underline-accent::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 3px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.28);
+      z-index: -1;
+    }
+    .hero-sub {
+      margin: 22px auto 0;
+      max-width: 560px;
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .hero-ctas {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    .cta-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 12px;
+      background: var(--blue-strong);
+      color: #FFFFFF;
+      font-size: 14.5px;
+      font-weight: 600;
+      transition: background 150ms var(--ease);
+    }
+    .cta-main:hover { background: #1D4ED8; }
+    .cta-sec {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      font-size: 14.5px;
+      font-weight: 600;
+      transition: background 150ms var(--ease);
+    }
+    .cta-sec:hover { background: var(--card-hover); }
+    .hero-notes {
+      margin-top: 18px;
+      font-size: 12.5px;
+      color: var(--faint);
     }
 
-    .col-diagram {
-      height: 132px;
+    /* ---------------- SCREEN SHOWCASE (REAL SYSTEM PREVIEWS) ---------------- */
+    .section {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 56px 20px;
+    }
+    .section-head {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 32px;
+    }
+    .section-kicker {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue-soft);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      margin: 0 0 10px;
+      font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .section-sub {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .showcase-tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .showcase-tab {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms var(--ease);
+    }
+    .showcase-tab.active, .showcase-tab:hover {
+      background: rgba(59, 130, 246, 0.14);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: var(--text);
+    }
+    .showcase-frame {
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      background: var(--card);
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+    .showcase-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--faint);
+    }
+    .showcase-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .showcase-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .showcase-img {
+      display: block;
+      width: 100%;
+      max-height: 580px;
+      object-fit: cover;
+      object-position: top center;
+      background: #07080B;
+    }
+
+    /* ---------------- FEATURES GRID (CRISP LUCIDE ICONS) ---------------- */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .feat-card {
+      padding: 24px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: border-color 160ms var(--ease), background 160ms var(--ease);
+    }
+    .feat-card:hover {
+      border-color: rgba(59, 130, 246, 0.35);
+      background: var(--card-hover);
+    }
+    .feat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      color: var(--blue-soft);
       display: grid;
       place-items: center;
+      margin-bottom: 16px;
     }
-
-    .col-title {
+    .feat-card h3 {
       margin: 0 0 8px;
       font-size: 16px;
       font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--ink-dark);
+      letter-spacing: -0.015em;
     }
-
-    .col-desc {
+    .feat-card p {
       margin: 0;
       font-size: 13.5px;
       line-height: 1.55;
-      color: var(--ink-muted);
+      color: var(--muted);
     }
 
-    .ice-link-row {
-      margin-top: 22px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #2563EB;
-    }
-
-    .ice-link-row:hover {
-      text-decoration: underline;
-    }
-
-    /* ---------------- ICE WHITE SECTION 2 (INTERACTIVE TELEMETRY SHOWCASE) ---------------- */
-    .ice-analytics {
-      background: linear-gradient(180deg, var(--ice-bg) 0%, #EBF1FC 100%);
-      color: var(--ink-dark);
-      padding: 40px 28px 96px;
-    }
-
-    .ice-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-
-    .signal-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #2563EB;
-      margin-top: 14px;
-    }
-
-    .period-switch {
-      display: inline-flex;
-      background: #FFFFFF;
-      border: 1px solid #CBD5E1;
-      border-radius: 10px;
-      padding: 4px;
-      gap: 4px;
-    }
-
-    .period-btn {
-      border: none;
-      background: transparent;
-      color: #64748B;
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: background 150ms var(--ease), color 150ms var(--ease);
-    }
-
-    .period-btn.active {
-      background: #2563EB;
-      color: #FFFFFF;
-    }
-
-    .analytics-bento {
+    /* ---------------- STUDIO GALLERY ---------------- */
+    .gallery-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr 1.08fr;
+      grid-template-columns: 1.35fr 1fr;
       gap: 16px;
-      margin-top: 32px;
-      align-items: stretch;
     }
-
-    .ana-card {
-      background: var(--ice-card);
-      border: 1px solid var(--ice-border);
-      border-radius: 12px;
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .ana-card-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .ana-card-title {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--ink-dark);
-    }
-
-    .ana-card-sub {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      color: #71717A;
-      text-transform: uppercase;
-    }
-
-    .ana-kpis {
-      display: flex;
-      gap: 28px;
-      margin-bottom: 16px;
-    }
-
-    .ana-kpi strong {
-      display: block;
-      font-size: 24px;
-      font-weight: 600;
-      letter-spacing: -0.025em;
-      font-variant-numeric: tabular-nums;
-      color: var(--ink-dark);
-    }
-
-    .ana-kpi span {
-      font-size: 11.5px;
-      color: var(--ink-muted);
-    }
-
-    .dot-matrix {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 6px;
-      padding-top: 8px;
-    }
-
-    .dot-cell {
-      aspect-ratio: 1;
-      border-radius: 999px;
-      background: #1C2230;
-      transition: transform 150ms var(--ease), background 150ms var(--ease);
-      cursor: crosshair;
-    }
-
-    .dot-cell:hover {
-      transform: scale(1.28);
-    }
-
-    .dot-cell.b1 { background: #1E3A8A; }
-    .dot-cell.b2 { background: #3B82F6; }
-    .dot-cell.b3 { background: #60A5FA; }
-
-    .dot-tooltip {
-      margin-top: 10px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #A1A1AA;
-      min-height: 16px;
-    }
-
-    .digest-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .digest-item {
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--ice-border);
-      background: #11151E;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: border-color 150ms var(--ease), background 150ms var(--ease), transform 120ms var(--ease);
-    }
-
-    .digest-item:hover,
-    .digest-item.active {
-      border-color: #3B82F6;
-      background: #161D2C;
-    }
-
-    .digest-item:active {
-      transform: scale(0.99);
-    }
-
-    .digest-item strong {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink-dark);
-    }
-
-    .digest-item span {
-      font-size: 11.5px;
-      color: var(--ink-muted);
-    }
-
-    .digest-badge {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
-      color: #60A5FA;
-      background: rgba(37, 99, 235, 0.1);
-      padding: 4px 8px;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
-
-    /* ---------------- DARK STUDIO GALLERY + FOOTER ---------------- */
-    .dark-studio-band {
-      background: #06070A;
-      color: #F4F4F5;
-      padding: 84px 28px 40px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .studio-pair {
-      display: grid;
-      grid-template-columns: 7fr 5fr;
-      gap: 16px;
-      margin-bottom: 52px;
-    }
-
-    .studio-photo-card {
-      position: relative;
-      border-radius: 16px;
+    .gallery-card {
+      border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      aspect-ratio: 16 / 9;
-      margin: 0;
+      border: 1px solid var(--border);
+      background: var(--card);
     }
-
-    .studio-photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .gallery-card img {
       display: block;
-      transition: transform 420ms var(--ease);
+      width: 100%;
+      height: 290px;
+      object-fit: cover;
     }
-
-    .studio-photo-card:hover img {
-      transform: scale(1.03);
-    }
-
-    .studio-photo-cap {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(6, 7, 10, 0) 45%, rgba(6, 7, 10, 0.92) 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 22px 24px;
-    }
-
-    .studio-photo-cap span {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #60A5FA;
-      margin-bottom: 4px;
-    }
-
-    .studio-photo-cap strong {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: #FFFFFF;
-    }
-
-    .lp-footer-bar {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding-top: 28px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    .gallery-caption {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ---------------- BOTTOM CTA & FOOTER ---------------- */
+    .cta-box {
+      border-radius: 18px;
+      padding: 48px 24px;
+      text-align: center;
+      background: linear-gradient(180deg, #101420 0%, #0B0D13 100%);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+    .cta-box h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      letter-spacing: -0.03em;
+    }
+    .cta-box p {
+      margin: 0 auto 24px;
+      max-width: 500px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 20px;
+      text-align: center;
       font-size: 12.5px;
-      color: #71717A;
+      color: var(--faint);
     }
 
-    .lp-footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
+    @media (max-width: 900px) {
+      .feat-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: 1fr; }
     }
-
-    .lp-footer-links a:hover {
-      color: #60A5FA;
-    }
-
-    /* ---------------- REVEAL & KEYFRAMES ---------------- */
-    .reveal {
-      opacity: 1;
-      transform: none;
-      transition: opacity 460ms var(--ease), transform 460ms var(--ease);
-    }
-
-    .reveal.in {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulseRing {
-      0% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.65); }
-      70% { box-shadow: 0 0 0 6px rgba(96, 165, 250, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
-    }
-
-    @keyframes isoFloat1 {
-      0%, 100% { transform: translateZ(0px); }
-      50% { transform: translateZ(8px); }
-    }
-
-    @keyframes isoFloat2 {
-      0%, 100% { transform: translateZ(62px); }
-      50% { transform: translateZ(74px); }
-    }
-
-    @keyframes isoFloat3 {
-      0%, 100% { transform: translateZ(128px); }
-      50% { transform: translateZ(146px); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-      }
-      .reveal { opacity: 1; transform: none; }
-    }
-
-    @media (max-width: 1024px) {
-      .hero-container { grid-template-columns: 1fr; padding-top: 48px; }
-      .four-col-grid { grid-template-columns: repeat(2, 1fr); }
-      .four-col-item { border-bottom: 1px solid var(--ice-border); }
-      .analytics-bento { grid-template-columns: 1fr; }
-      .studio-pair { grid-template-columns: 1fr; }
-    }
-
     @media (max-width: 640px) {
-      .lp-nav-links { display: none; }
-      .four-col-grid { grid-template-columns: 1fr; }
-      .four-col-item { border-right: none; }
-      .iso-stage { height: 320px; }
-      .iso-stack { width: 220px; height: 220px; }
+      .nav-links { display: none; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .hero { padding: 48px 16px 36px; }
     }
   </style>
 </head>
 <body>
-  <header class="lp-nav-bar">
-    <div class="lp-nav-inner">
-      <a href="/apresentacao.html" class="lp-logo">
-        <span class="lp-logo-mark" aria-hidden="true">
+  <header class="nav-wrap">
+    <div class="nav-inner">
+      <a href="/apresentacao" class="brand">
+        <span class="brand-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/>
             <line x1="20" y1="4" x2="8.2" y2="15.8"/><line x1="14.5" y1="14.5" x2="20" y2="20"/>
@@ -1145,311 +458,170 @@
         <span>Gestor de Barbearia</span>
       </a>
 
-      <nav class="lp-nav-links" aria-label="Navegação principal">
-        <a href="#fluxo">Fluxo</a>
-        <a href="#telemetria">Operação</a>
+      <nav class="nav-links" aria-label="Navegação">
+        <a href="#telas">Telas reais</a>
+        <a href="#recursos">Funcionalidades</a>
         <a href="#estudio">Estúdio</a>
         <a href="/agendar">Agendar</a>
       </nav>
 
-      <div class="lp-nav-actions">
-        <a href="/" class="btn-nav-ghost">Painel</a>
-        <a href="/agendar" class="btn-nav-white">Ver agendamento</a>
+      <div class="nav-actions">
+        <a href="/" class="btn-ghost">Entrar no painel</a>
+        <a href="/agendar" class="btn-primary-nav">Testar agendamento</a>
       </div>
     </div>
   </header>
 
   <main>
-    <!-- HERO -->
-    <section class="hero-band" id="hero-band">
-      <div class="hero-container">
-        <div>
-          <h1 class="hero-h1">
-            <span class="line-muted">Agenda cheia,</span>
-            <span class="line-solid">zero fila no balcão.</span>
-          </h1>
+    <!-- HERO CENTRALIZADO -->
+    <section class="hero">
+      <div class="hero-pill">
+        <span class="hero-pill-tag">NOVO</span>
+        <span>Para barbearias, barbeiros autônomos e estúdios</span>
+      </div>
 
-          <p class="hero-sub">
-            Seu cliente agenda corte e barba pelo link da bio em menos de um minuto. Você controla horários por barbeiro, lembretes no WhatsApp e fechamento de caixa em um só painel.
-          </p>
+      <h1>
+        Sua agenda online
+        <span class="slot-chip"><span class="slot-dot" aria-hidden="true"></span><span id="live-slot-clock">14:30</span></span>
+        com a <span class="editorial-italic">cara</span> da <span class="underline-accent">sua barbearia.</span>
+      </h1>
 
-          <div class="hero-cta-wrap">
-            <a href="/agendar" class="btn-split-blue">
-              <span class="btn-split-label">Ver página de agendamento</span>
-              <span class="btn-split-arrow" aria-hidden="true">→</span>
-            </a>
-            <a href="/" class="btn-hero-secondary">Abrir painel da barbearia</a>
-          </div>
+      <p class="hero-sub">
+        Página exclusiva no link da bio para o cliente agendar em segundos, sem baixar aplicativo. Controle horários por barbeiro, WhatsApp e caixa no mesmo lugar.
+      </p>
 
-          <div class="hero-trust">
-            <span class="hero-trust-item"><i class="hero-trust-dot"></i>Sem aplicativo para baixar</span>
-            <span class="hero-trust-item"><i class="hero-trust-dot"></i>Bloqueio de horário duplicado</span>
-            <span class="hero-trust-item"><i class="hero-trust-dot"></i>Comissão por profissional</span>
-          </div>
+      <div class="hero-ctas">
+        <a href="/agendar" class="cta-main">
+          Testar agendamento agora
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <a href="/" class="cta-sec">Abrir painel administrativo</a>
+      </div>
+
+      <p class="hero-notes">Sem aplicativo para o cliente baixar · Trava automática contra conflito de horário</p>
+    </section>
+
+    <!-- PREVIEW DE TELAS REAIS DO SISTEMA -->
+    <section class="section" id="telas">
+      <div class="section-head">
+        <span class="section-kicker">Produto real</span>
+        <h2 class="section-title">Veja o sistema funcionando por dentro</h2>
+        <p class="section-sub">Alterne entre o painel do gestor, a grade da agenda e a tela financeira de comissões.</p>
+      </div>
+
+      <div class="showcase-tabs" role="tablist" aria-label="Telas do sistema">
+        <button type="button" class="showcase-tab active" data-shot="/img/screens/dashboard.png" data-label="gestor-de-barbearia / dashboard">Dashboard</button>
+        <button type="button" class="showcase-tab" data-shot="/img/screens/agenda.png" data-label="gestor-de-barbearia / agenda">Agenda por Barbeiro</button>
+        <button type="button" class="showcase-tab" data-shot="/img/screens/relatorios.png" data-label="gestor-de-barbearia / caixa-e-comissoes">Caixa &amp; Comissões</button>
+        <button type="button" class="showcase-tab" data-shot="/img/screens/clientes.png" data-label="gestor-de-barbearia / clientes">Clientes</button>
+      </div>
+
+      <div class="showcase-frame">
+        <div class="showcase-bar">
+          <div class="showcase-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span id="showcase-url">gestor-de-barbearia / dashboard</span>
+          <span>Ao vivo</span>
         </div>
-
-        <figure style="margin:0;border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;background:#0B0D12">
-          <img src="/img/barber-studio-hero.jpg" alt="Interior da barbearia atendendo com hora marcada" style="display:block;width:100%;height:360px;object-fit:cover" />
-          <figcaption style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-top:1px solid rgba(255,255,255,0.08);font-size:12.5px;color:#A1A1AA">
-            <span>Agendamento online direto pelo link da bio</span>
-            <span style="color:#60A5FA;font-weight:600">WhatsApp + Calendário</span>
-          </figcaption>
-        </figure>
+        <img id="showcase-img" class="showcase-img" src="/img/screens/dashboard.png" alt="Tela real do Gestor de Barbearia">
       </div>
     </section>
 
-    <!-- FLUXO COMERCIAL DIRETO -->
-    <section class="ice-section" id="fluxo">
-      <div class="ice-inner">
-        <div class="ice-head reveal">
-          <h2 class="ice-h2">
-            Como funciona
-            <span>na rotina da barbearia</span>
-          </h2>
-          <p class="ice-sub">
-            Do link no Instagram até o fechamento do caixa no fim do dia, sem planilhas paralelas.
-          </p>
-        </div>
+    <!-- FUNCIONALIDADES COM ÍCONES PROFISSIONAIS -->
+    <section class="section" id="recursos">
+      <div class="section-head">
+        <span class="section-kicker">Recursos completos</span>
+        <h2 class="section-title">Tudo o que uma barbearia precisa no dia a dia</h2>
+        <p class="section-sub">Pensado para reduzir faltas na cadeira e organizar o repasse da equipe sem planilhas.</p>
+      </div>
 
-        <div class="four-col-grid reveal" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-          <article class="four-col-item" style="gap:14px">
-            <span class="col-index" style="color:#60A5FA">01 · Agendamento</span>
-            <div>
-              <h3 class="col-title">Reserva direto pelo celular</h3>
-              <p class="col-desc">O cliente escolhe serviço, profissional (ou qualquer disponível), dia e horário sem criar conta nem baixar app.</p>
-            </div>
-          </article>
+      <div class="feat-grid">
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <h3>Agendamento pelo Link da Bio</h3>
+          <p>O cliente escolhe serviço, barbeiro (ou qualquer disponível) e horário livre direto pelo celular em 4 passos rápidos.</p>
+        </article>
 
-          <article class="four-col-item" style="gap:14px">
-            <span class="col-index" style="color:#60A5FA">02 · Confirmação</span>
-            <div>
-              <h3 class="col-title">Sem dois clientes no mesmo horário</h3>
-              <p class="col-desc">O banco trava o intervalo na hora da reserva e gera link próprio para o cliente cancelar ou consultar sozinho.</p>
-            </div>
-          </article>
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3>Trava Anti-Conflito no Banco</h3>
+          <p>Transação atômica no SQLite/Turso impede dois clientes de reservarem o mesmo profissional no mesmo horário.</p>
+        </article>
 
-          <article class="four-col-item" style="gap:14px">
-            <span class="col-index" style="color:#60A5FA">03 · Caixa e repasse</span>
-            <div>
-              <h3 class="col-title">Comissão calculada no fechamento</h3>
-              <p class="col-desc">Separa o que já entrou no caixa do que ainda está previsto no dia e calcula a porcentagem de cada barbeiro.</p>
-            </div>
-          </article>
-        </div>
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Lembretes via WhatsApp Cloud</h3>
+          <p>Integração oficial com a Meta API para confirmação, aviso de cancelamento e lembrete automático 24h antes.</p>
+        </article>
 
-        <a href="/agendar" class="ice-link-row">Testar agendamento agora →</a>
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3>Caixa &amp; Comissão Automática</h3>
+          <p>Separa receita prevista de realizada e calcula automaticamente o repasse de cada barbeiro com exportação CSV.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M20 14v7h-7"/></svg>
+          </div>
+          <h3>QR Code de Balcão Pronto</h3>
+          <p>Gere o QR Code oficial do seu link de agendamento direto no painel para imprimir no espelho ou na recepção.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Segurança &amp; LGPD Completos</h3>
+          <p>Sessão HMAC HttpOnly, proteção CSRF, rate limit, portal de titular (DSR) e exportação/backup com 1 clique.</p>
+        </article>
       </div>
     </section>
 
-    <!-- TABELA DE RECURSOS REAIS -->
-    <section class="ice-analytics" id="telemetria">
-      <div class="ice-inner">
-        <div class="ice-head reveal" style="margin-bottom:28px">
-          <h2 class="ice-h2">
-            O que já vem pronto
-            <span>para usar hoje</span>
-          </h2>
+    <!-- FOTOS REAIS DO ESTÚDIO -->
+    <section class="section" id="estudio">
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <img src="/img/barber-chair-studio.jpg" alt="Cadeira e espelho do estúdio de barbearia">
+          <div class="gallery-caption">
+            <span>Atendimento com hora marcada e sem espera no balcão</span>
+            <strong style="color:var(--blue-soft)">/agendar</strong>
+          </div>
         </div>
-
-        <div style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;background:#0E1117">
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;color:#71717A;font-weight:600">
-            <span>Área</span>
-            <span>O que resolve na prática</span>
-          </div>
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px">
-            <strong style="color:#F4F4F5">Link da Bio &amp; QR Code</strong>
-            <span style="color:#A1A1AA">Página exclusiva da sua barbearia (/agendar ou /b/sua-loja) com QR Code pronto para imprimir no balcão.</span>
-          </div>
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px">
-            <strong style="color:#F4F4F5">Agenda por Profissional</strong>
-            <span style="color:#A1A1AA">Grade diária e semanal por barbeiro, bloqueio de folgas/feriados e encaixe rápido no painel.</span>
-          </div>
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px">
-            <strong style="color:#F4F4F5">WhatsApp &amp; Calendário</strong>
-            <span style="color:#A1A1AA">Confirmação e lembretes automáticos via WhatsApp Cloud API + arquivo .ics para Google/Apple Calendar.</span>
-          </div>
-          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;padding:16px 20px;font-size:14px">
-            <strong style="color:#F4F4F5">Financeiro &amp; Backup</strong>
-            <span style="color:#A1A1AA">Faturamento realizado vs previsto, comissão por barbeiro e exportação CSV/JSON com um clique.</span>
+        <div class="gallery-card">
+          <img src="/img/barber-craft-tools.jpg" alt="Ferramentas profissionais de barbearia">
+          <div class="gallery-caption">
+            <span>Gestão por profissional e serviço</span>
+            <strong style="color:var(--blue-soft)">/painel</strong>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- DARK STUDIO GALLERY + FOOTER -->
-    <section class="dark-studio-band" id="estudio">
-      <div class="ice-inner">
-        <div class="studio-pair reveal">
-          <figure class="studio-photo-card">
-            <img src="/img/barber-chair-studio.jpg?v=20261114e" alt="Estúdio de barbearia preto fosco com espelho iluminado em azul" loading="lazy">
-            <figcaption class="studio-photo-cap">
-              <span>Presença de marca</span>
-              <strong>Experiência de estúdio do link da bio até a cadeira</strong>
-            </figcaption>
-          </figure>
-          <figure class="studio-photo-card">
-            <img src="/img/barber-craft-tools.jpg?v=20261114e" alt="Tesoura e navalha de barbearia sobre pedra escura" loading="lazy">
-            <figcaption class="studio-photo-cap">
-              <span>Precisão operacional</span>
-              <strong>Cada atendimento e repasse registrado sem planilhas</strong>
-            </figcaption>
-          </figure>
+    <!-- CTA FINAL -->
+    <section class="section">
+      <div class="cta-box">
+        <h2>Pronto para testar na prática?</h2>
+        <p>Acesse a demonstração completa agora mesmo: faça um agendamento como cliente ou entre no painel da equipe.</p>
+        <div class="hero-ctas" style="margin-top:0">
+          <a href="/agendar" class="cta-main">Fazer agendamento teste</a>
+          <a href="/" class="cta-sec">Entrar no painel</a>
         </div>
-
-        <footer class="lp-footer-bar">
-          <div>Nova Runtime Tecnologia Ltda &bull; CNPJ 48.912.834/0001-90</div>
-          <div class="lp-footer-links">
-            <a href="/agendar">Agendar</a>
-            <a href="/">Painel</a>
-            <a href="/termos.html">Termos</a>
-            <a href="/privacidade.html">Privacidade</a>
-            <a href="/transparencia.html">Transparência</a>
-            <a href="/compliance.html">Conformidade</a>
-          </div>
-        </footer>
       </div>
     </section>
   </main>
 
-  <script>
-    (function () {
-      // 1. Cursor spotlight + subtle 3D parallax on hero isometric stack
-      const heroBand = document.getElementById('hero-band');
-      const spotlight = document.getElementById('hero-spotlight');
-      const isoStack = document.getElementById('iso-stack');
-      if (heroBand && spotlight) {
-        heroBand.addEventListener('mousemove', (e) => {
-          const rect = heroBand.getBoundingClientRect();
-          const x = ((e.clientX - rect.left) / rect.width) * 100;
-          const y = ((e.clientY - rect.top) / rect.height) * 100;
-          spotlight.style.setProperty('--mx', x.toFixed(1) + '%');
-          spotlight.style.setProperty('--my', y.toFixed(1) + '%');
-          if (isoStack) {
-            const rx = 58 + ((y - 50) * 0.08);
-            const rz = -42 + ((x - 50) * 0.08);
-            isoStack.style.transform = `rotateX(${rx.toFixed(1)}deg) rotateZ(${rz.toFixed(1)}deg)`;
-          }
-        });
-      }
+  <footer>
+    Gestor de Barbearia · Agendamento Online, Agenda por Profissional e Caixa · <a href="/compliance.html" style="color:var(--blue-soft)">Privacidade &amp; LGPD</a>
+  </footer>
 
-      // 2. Live rotating booking ticker on the 3D stage
-      const tickerTag = document.getElementById('live-ticker-tag');
-      const tickerText = document.getElementById('live-ticker-text');
-      const tickerData = [
-        ['Horário reservado', '10:30 · Degradê + Barba'],
-        ['Cadeira 02 confirmada', '11:15 · Barboterapia · Mateus'],
-        ['Lembrete enviado', '14:00 · Corte Social · Carlos']
-      ];
-      // 2. Interactive Studio Preview Tabs (Agenda / Caixa)
-      const previewBody = document.getElementById('studio-preview-body');
-      const previewTabs = document.querySelectorAll('.studio-tab');
-      const previewTemplates = {
-        agenda: previewBody ? previewBody.innerHTML : '',
-        caixa: `
-          <div class="studio-metrics-row">
-            <div class="studio-metric"><span>Caixa do dia</span><strong>R$ 540,00</strong></div>
-            <div class="studio-metric"><span>Comissões (50%)</span><strong>R$ 270,00</strong></div>
-            <div class="studio-metric"><span>Líquido casa</span><strong>R$ 270,00</strong></div>
-          </div>
-          <div class="studio-rows">
-            <div class="studio-row">
-              <span class="studio-row-time">Bruno</span>
-              <div class="studio-row-main"><strong>4 atendimentos concluídos</strong><span>Repasse 50% · R$ 110,00</span></div>
-              <span class="studio-row-tag ok">R$ 220,00</span>
-            </div>
-            <div class="studio-row">
-              <span class="studio-row-time">Diego</span>
-              <div class="studio-row-main"><strong>3 atendimentos concluídos</strong><span>Repasse 50% · R$ 95,00</span></div>
-              <span class="studio-row-tag ok">R$ 190,00</span>
-            </div>
-            <div class="studio-row">
-              <span class="studio-row-time">Rafael</span>
-              <div class="studio-row-main"><strong>2 atendimentos concluídos</strong><span>Repasse 50% · R$ 65,00</span></div>
-              <span class="studio-row-tag ok">R$ 130,00</span>
-            </div>
-            <div class="studio-row">
-              <span class="studio-row-time">Previsto</span>
-              <div class="studio-row-main"><strong>5 horários confirmados ainda hoje</strong><span>Projeção de fechamento</span></div>
-              <span class="studio-row-tag">R$ 440,00</span>
-            </div>
-          </div>`
-      };
-      previewTabs.forEach((tab) => {
-        tab.addEventListener('click', () => {
-          previewTabs.forEach((t) => t.classList.remove('active'));
-          tab.classList.add('active');
-          const key = tab.dataset.preview;
-          if (previewBody && previewTemplates[key]) {
-            previewBody.innerHTML = previewTemplates[key];
-          }
-        });
-      });
-
-      // 3. Interactive dot-matrix heatmap
-      const matrix = document.getElementById('dot-matrix');
-      const tooltip = document.getElementById('dot-tooltip');
-      const hours = ['09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h', '20h'];
-      const days = ['Ter', 'Qua', 'Qui', 'Sex'];
-      const levels = [0, 1, 2, 3, 2, 3, 3, 2, 1, 0, 2, 3, 1, 2, 3, 3, 2, 1, 2, 3, 3, 2, 1, 2, 0, 1, 2, 2, 3, 3, 2, 1, 2, 3, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 1, 2, 3];
-      if (matrix) {
-        levels.forEach((lvl, i) => {
-          const dot = document.createElement('span');
-          dot.className = 'dot-cell' + (lvl ? ` b${lvl}` : '');
-          const day = days[Math.floor(i / 12)];
-          const hour = hours[i % 12];
-          const pct = [22, 48, 76, 94][lvl];
-          dot.addEventListener('mouseenter', () => {
-            if (tooltip) tooltip.textContent = `${day} ${hour} · ${pct}% de ocupação nas cadeiras`;
-          });
-          matrix.appendChild(dot);
-        });
-      }
-
-      // 4. Period switcher (7d / 30d / 90d)
-      const periodStats = {
-        '7d': { label: 'Últimos 7 dias', short: '7 dias', occ: '89%', appts: '108', show: '97,2%', rev: 'R$ 6.480' },
-        '30d': { label: 'Últimos 30 dias', short: '30 dias', occ: '84%', appts: '412', show: '96,4%', rev: 'R$ 24.890' },
-        '90d': { label: 'Últimos 90 dias', short: '90 dias', occ: '86%', appts: '1.240', show: '95,8%', rev: 'R$ 74.120' }
-      };
-      document.querySelectorAll('.period-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.period-btn').forEach((b) => b.classList.remove('active'));
-          btn.classList.add('active');
-          const s = periodStats[btn.dataset.period];
-          if (!s) return;
-          document.getElementById('hm-period-label').textContent = s.label;
-          document.getElementById('fn-period-label').textContent = s.short;
-          document.getElementById('kpi-occ').textContent = s.occ;
-          document.getElementById('kpi-appts').textContent = s.appts;
-          document.getElementById('kpi-show').textContent = s.show;
-          document.getElementById('kpi-rev').textContent = s.rev;
-        });
-      });
-
-      // 5. Interactive digest selection + scroll reveal
-      const items = document.querySelectorAll('.digest-item');
-      items.forEach((item) => {
-        item.addEventListener('click', () => {
-          items.forEach((i) => i.classList.remove('active'));
-          item.classList.add('active');
-        });
-      });
-
-      const reveals = document.querySelectorAll('.reveal');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('in');
-              io.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.12 });
-        reveals.forEach((el) => io.observe(el));
-      } else {
-        reveals.forEach((el) => el.classList.add('in'));
-      }
-    })();
-  </script>
+  <script src="/js/apresentacao.js" defer></script>
 </body>
 </html>
