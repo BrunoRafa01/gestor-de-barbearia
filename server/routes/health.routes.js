@@ -11,8 +11,12 @@ export const healthRoutes = [
     path: '/health',
     auth: false,
     handler: async () => {
+      const started = Date.now();
       const database = await healthCheck();
       const ok = database.ok;
+      const latency_ms = Number.isFinite(database.latency_ms)
+        ? database.latency_ms
+        : Date.now() - started;
 
       return {
         status: ok ? 200 : 503,
@@ -22,7 +26,7 @@ export const healthRoutes = [
           company: 'Nova Runtime',
           uptime_seconds: Math.round((Date.now() - startedAt) / 1000),
           driver: driverKind(),
-          database: { ok },
+          database: { ok, latency_ms },
           timestamp: new Date().toISOString(),
         },
       };

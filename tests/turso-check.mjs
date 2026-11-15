@@ -140,8 +140,10 @@ async function call(path, { method = 'GET', body, auth = true } = {}) {
   return { status: response.status, body: payload, headers: response.headers, text };
 }
 
+let currentPassword = PASSWORD;
+
 async function login() {
-  const response = await call('/api/auth/login', { method: 'POST', auth: false, body: { password: PASSWORD } });
+  const response = await call('/api/auth/login', { method: 'POST', auth: false, body: { password: currentPassword } });
   return response.status === 200;
 }
 
@@ -166,6 +168,14 @@ async function run() {
   check('health informa latencia do banco', Number(database.latency_ms) >= 0);
 
   check('login funciona no driver turso', await login());
+
+  const pwChange = await call('/api/settings/password', {
+    method: 'POST',
+    body: { current_password: currentPassword, new_password: 'TursoSenhaForte123' },
+  });
+  if (pwChange.status === 200) {
+    currentPassword = 'TursoSenhaForte123';
+  }
 
   const service = await call('/api/services', {
     method: 'POST',
@@ -236,8 +246,10 @@ async function run() {
   check('login funciona apos o reinicio', await login());
 
   const clientsAfter = await call('/api/clients');
-  const keptClient = (clientsAfter.body || []).find((row) => row.id === clientId);
-  check('cliente sobreviveu ao reinicio', Boolean(keptClient), 'cliente perdido');
+  const keptClient = Array.isArray(clientsAfter.body)
+    ? clientsAfter.body.find((row) => row.id === clientId)
+    : null;
+  check('cliente sobreviveu ao reinicio', Boolean(keptClient), `status ${clientsAfter.status}`);
 
   const appointmentAfter = await call(`/api/appointments/${appointmentId}`);
   check('agendamento sobreviveu ao reinicio', appointmentAfter.status === 200, `status ${appointmentAfter.status}`);
