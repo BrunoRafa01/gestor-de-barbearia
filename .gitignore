@@ -31,6 +31,8 @@ Thumbs.db
 .vscode/
 
 # Ferramentas locais de agentes/IDE (nao fazem parte do projeto)
+.agent/
+.agents/
 .trae/
 .cursor/
 .ai_completion/
