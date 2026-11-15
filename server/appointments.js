@@ -228,10 +228,13 @@ export async function updateAppointment(id, input, now = new Date()) {
   }
 
   const endTime = endTimeFor(startTime, service.duration_min);
-  const price =
-    input.price === undefined || input.price === null || input.price === ''
+  const hasExplicitPrice = input.price !== undefined && input.price !== null && input.price !== '';
+  const serviceChanged = serviceId !== current.service_id;
+  const price = hasExplicitPrice
+    ? Number(input.price)
+    : serviceChanged
       ? Number(service.price)
-      : Number(input.price);
+      : Number(current.price);
 
   const updateInfo = await run(
     `UPDATE appointments

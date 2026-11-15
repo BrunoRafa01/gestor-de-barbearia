@@ -375,6 +375,19 @@ async function run() {
   check('confirmar agendamento responde 200', statusUpdate.status === 200);
   check('status atualizado para confirmado', statusUpdate.body?.status === 'confirmed');
 
+  // Preco personalizado preservado ao editar apenas observacoes
+  const customPriceSet = await call(`/api/appointments/${appointmentId}`, {
+    method: 'PUT',
+    body: { price: 32.5 },
+  });
+  check('define preco personalizado', customPriceSet.status === 200 && customPriceSet.body?.price === 32.5);
+  const notesOnlyUpdate = await call(`/api/appointments/${appointmentId}`, {
+    method: 'PUT',
+    body: { notes: 'Desconto VIP' },
+  });
+  check('editar observacoes preserva preco personalizado', notesOnlyUpdate.status === 200 && notesOnlyUpdate.body?.price === 32.5);
+  await call(`/api/appointments/${appointmentId}`, { method: 'PUT', body: { price: 45.5 } });
+
   const badStatus = await call(`/api/appointments/${appointmentId}/status`, {
     method: 'PATCH',
     body: { status: 'inexistente' },
