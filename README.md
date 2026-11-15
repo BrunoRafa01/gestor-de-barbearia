@@ -215,7 +215,6 @@ A **Nova Runtime Tecnologia** é uma empresa de engenharia de software especiali
 * **Website Institucional:** [https://novaruntime.com.br](https://novaruntime.com.br)
 * **Contato Comercial:** `contato@novaruntime.com.br`
 * **Privacidade e DPO:** `dpo@novaruntime.com.br`
-* **Localização:** Av. Paulista, 1106, 14º Andar, Bela Vista, São Paulo - SP
 
 ---
 
