@@ -87,6 +87,31 @@ function revealSection(id) {
 function skeletonHtml() {
   return `
     <div class="card booking-card" id="sec-service">
+      <div class="cuts-showcase-strip" id="cuts-showcase">
+        <div class="cuts-showcase-head">
+          <span class="cuts-showcase-label">Exemplos de cortes</span>
+          <button type="button" class="cuts-showcase-link" data-open-tab="cuts">Ver galeria →</button>
+        </div>
+        <div class="cuts-showcase-grid">
+          <button type="button" class="cut-mini-card" data-open-tab="cuts">
+            <img class="cut-mini-img" src="/img/cuts/cut-degrade.jpg" alt="Degradê Navalhado" loading="lazy" />
+            <span class="cut-mini-title">Degradê</span>
+          </button>
+          <button type="button" class="cut-mini-card" data-open-tab="cuts">
+            <img class="cut-mini-img" src="/img/cuts/cut-social.jpg" alt="Corte Social" loading="lazy" />
+            <span class="cut-mini-title">Social</span>
+          </button>
+          <button type="button" class="cut-mini-card" data-open-tab="cuts">
+            <img class="cut-mini-img" src="/img/cuts/cut-barboterapia.jpg" alt="Barboterapia" loading="lazy" />
+            <span class="cut-mini-title">Barboterapia</span>
+          </button>
+          <button type="button" class="cut-mini-card" data-open-tab="cuts">
+            <img class="cut-mini-img" src="/img/cuts/cut-platinado.jpg" alt="Texturizado &amp; Fade" loading="lazy" />
+            <span class="cut-mini-title">Texturizado</span>
+          </button>
+        </div>
+      </div>
+
       <div class="card-section-head">
         <div>
           <h3>Serviços disponíveis</h3>
@@ -233,26 +258,38 @@ async function loadSlots() {
 
 /* --------------------------------- Render --------------------------------- */
 
+function servicePhoto(name = '') {
+  const n = String(name).toLowerCase();
+  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg';
+  if (n.includes('social') || n.includes('clássico') || n.includes('classico')) return '/img/cuts/cut-social.jpg';
+  if (n.includes('platinado') || n.includes('pigment') || n.includes('luzes') || n.includes('textur')) {
+    return '/img/cuts/cut-platinado.jpg';
+  }
+  return '/img/cuts/cut-degrade.jpg';
+}
+
 function renderServices() {
   const grid = document.getElementById('service-grid');
   grid.innerHTML = state.services
     .map(
-      (service) => `
-      <button type="button" class="choice service-choice${String(state.serviceId) === String(service.id) ? ' selected' : ''}" data-service="${service.id}">
+      (service) => {
+        const isSelected = String(state.serviceId) === String(service.id);
+        return `
+      <button type="button" class="choice service-choice booksy-service-row${isSelected ? ' selected' : ''}" data-service="${service.id}">
+        <img class="service-thumb" src="${esc(servicePhoto(service.name))}" alt="${esc(service.name)}" loading="lazy" />
         <div class="service-left">
           <div class="service-title-row">
             <strong class="service-name">${esc(service.name)}</strong>
-            <span class="service-duration-badge">${icon('clock')} ${Number(service.duration_min)} min</span>
+            <span class="service-duration-badge">${Number(service.duration_min)} min</span>
           </div>
           ${service.description ? `<p class="service-desc">${esc(service.description)}</p>` : ''}
         </div>
         <div class="service-right">
           <span class="service-price">${esc(money(service.price))}</span>
-          <div class="selection-pill" aria-hidden="true">
-            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
-          </div>
+          <span class="booksy-reserve-btn">${isSelected ? 'Selecionado' : 'Reservar'}</span>
         </div>
-      </button>`
+      </button>`;
+      }
     )
     .join('');
 
@@ -779,13 +816,24 @@ function renderBookingTab() {
 }
 
 function renderCutsTab() {
-  const cuts = state.shop?.cuts_gallery || [];
+  const defaultCuts = [
+    { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: '/img/cuts/cut-degrade.jpg' },
+    { tag: 'Barba', title: 'Barboterapia Tradicional', desc: 'Toalha quente, espuma hidratante e alinhamento na navalha.', img: '/img/cuts/cut-barboterapia.jpg' },
+    { tag: 'Clássico', title: 'Corte Social na Tesoura', desc: 'Corte alinhado clássico com finalização em pomada matte.', img: '/img/cuts/cut-social.jpg' },
+    { tag: 'Estilo', title: 'Texturizado / Platinado', desc: 'Acabamento moderno com textura e degradê limpo nas laterais.', img: '/img/cuts/cut-platinado.jpg' },
+  ];
+  const rawCuts = state.shop?.cuts_gallery?.length ? state.shop.cuts_gallery : defaultCuts;
+  const cuts = rawCuts.map((cut, idx) => ({
+    ...cut,
+    img: cut.img || servicePhoto(cut.title || cut.tag) || defaultCuts[idx % defaultCuts.length].img,
+  }));
+
   content().innerHTML = `
     <div class="card booking-card">
       <div class="card-section-head">
         <div>
-          <h3>Galeria de Estilos e Cortes</h3>
-          <p class="section-sub">Trabalhos executados pelos nossos mestres barbeiros</p>
+          <h3>Exemplos de Cortes &amp; Trabalhos</h3>
+          <p class="section-sub">Fotos reais de estilos executados pela nossa equipe</p>
         </div>
       </div>
       <div class="cuts-grid">
@@ -793,19 +841,15 @@ function renderCutsTab() {
           .map(
             (cut) => `
           <div class="cut-card">
-            <div class="cut-thumb-placeholder">
+            <div class="cut-thumb-photo-wrap">
+              <img class="cut-thumb-img" src="${esc(cut.img)}" alt="${esc(cut.title)}" loading="lazy" />
               <span class="cut-thumb-tag">${esc(cut.tag || 'Corte')}</span>
-              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
-                <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/>
-                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
-              </svg>
             </div>
             <div class="cut-card-body">
               <h4 class="cut-card-title">${esc(cut.title)}</h4>
               <p class="cut-card-desc">${esc(cut.desc)}</p>
               <button type="button" class="btn btn-sm btn-block btn-primary" style="margin-top:10px" data-action="pick-cut">
-                Quero Este Estilo
+                Agendar este estilo
               </button>
             </div>
           </div>`
@@ -1046,6 +1090,13 @@ async function boot() {
       document.getElementById('steps')?.classList.add('hidden');
       return;
     }
+
+    content().addEventListener('click', (event) => {
+      const openTabBtn = event.target.closest('[data-open-tab]');
+      if (!openTabBtn) return;
+      const targetTab = openTabBtn.getAttribute('data-open-tab');
+      document.querySelector(`[data-tab="${targetTab}"]`)?.click();
+    });
 
     content().innerHTML = skeletonHtml();
     renderServices();

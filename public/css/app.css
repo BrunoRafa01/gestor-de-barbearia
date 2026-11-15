@@ -2224,16 +2224,18 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   border: 1px solid var(--border);
 }
 
-/* Abas de Navegação Pública */
+/* Abas de Navegação Pública (estilo Booksy: linha inferior limpa) */
 .shop-view-tabs {
   display: flex;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 4px;
+  border-bottom: 1px solid var(--border);
   gap: 4px;
   margin-bottom: 20px;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.shop-view-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .shop-tab-btn {
@@ -2241,28 +2243,32 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   min-width: 100px;
   background: transparent;
   border: none;
+  border-bottom: 2px solid transparent;
   color: var(--text-dim);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
+  padding: 11px 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: background-color 150ms var(--ease), color 150ms var(--ease), transform 120ms var(--ease);
+  transition: color 150ms var(--ease), border-color 150ms var(--ease);
   white-space: nowrap;
+  min-height: 44px;
+}
+
+.shop-tab-btn:hover {
+  color: var(--text);
 }
 
 .shop-tab-btn:active {
-  transform: scale(0.98);
+  opacity: 0.85;
 }
 
 .shop-tab-btn.active {
-  background: var(--accent);
   color: #FFFFFF;
-  box-shadow: none;
+  border-bottom-color: var(--accent);
 }
 
 /* Galeria de Cortes */
@@ -2284,8 +2290,9 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   border-color: var(--border-strong);
 }
 
+.cut-thumb-photo-wrap,
 .cut-thumb-placeholder {
-  height: 120px;
+  height: 164px;
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -2293,18 +2300,119 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   justify-content: center;
   color: var(--accent);
   position: relative;
+  overflow: hidden;
+}
+
+.cut-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+  transition: transform 280ms var(--ease);
+}
+
+.cut-card:hover .cut-thumb-img {
+  transform: scale(1.03);
 }
 
 .cut-thumb-tag {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(8, 11, 18, 0.85);
-  color: var(--text-dim);
+  top: 10px;
+  left: 10px;
+  background: rgba(7, 8, 11, 0.84);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #E2E8F0;
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Vitrine compacta de exemplos de cortes acima dos serviços */
+.cuts-showcase-strip {
+  margin-bottom: 18px;
+}
+
+.cuts-showcase-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cuts-showcase-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.cuts-showcase-link {
+  background: none;
+  border: none;
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.cuts-showcase-link:hover {
+  text-decoration: underline;
+}
+
+.cuts-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.cut-mini-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), transform 140ms var(--ease);
+}
+
+.cut-mini-card:hover {
+  border-color: rgba(59, 130, 246, 0.45);
+  transform: translateY(-1px);
+}
+
+.cut-mini-img {
+  width: 100%;
+  height: 76px;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+
+.cut-mini-title {
+  display: block;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #E2E8F0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 560px) {
+  .cuts-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cut-mini-img {
+    height: 84px;
+  }
 }
 
 .cut-card-body {
@@ -2526,6 +2634,66 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   border-left: 3px solid #3B82F6;
   background: rgba(37, 99, 235, 0.10);
   box-shadow: none;
+}
+
+.booksy-service-row {
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+.service-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: center 20%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface-2);
+}
+
+.booksy-reserve-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #FFFFFF;
+  border: 1px solid transparent;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease);
+}
+
+.service-choice:hover .booksy-reserve-btn {
+  background: var(--accent-hover, #2563EB);
+}
+
+.service-choice.selected .booksy-reserve-btn {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #93C5FD;
+}
+
+@media (max-width: 480px) {
+  .booksy-service-row {
+    gap: 10px;
+    padding: 12px;
+  }
+  .service-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
+  .service-left {
+    padding-right: 6px;
+  }
+  .booksy-reserve-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
 }
 
 .service-left {
