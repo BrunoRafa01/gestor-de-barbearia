@@ -43,7 +43,7 @@ export function applySecurityHeaders(res, { secure = false, requestId = null } =
 
 /** 127.0.0.1 / IP real por tras de proxy confiavel (usa o IP adicionado pelo proxy). */
 export function clientIp(req) {
-  const trustProxy = process.env.TRUST_PROXY === 'true' || process.env.NODE_ENV === 'production';
+  const trustProxy = process.env.TRUST_PROXY === 'true';
   if (trustProxy) {
     const forwarded = req.headers['x-forwarded-for'];
     if (typeof forwarded === 'string' && forwarded.length) {
@@ -88,6 +88,10 @@ export function createRateLimiter({ windowMs, max, message }) {
     check(key) {
       const now = Date.now();
       if (hits.size > 5000) prune(now);
+      if (hits.size >= 5000) {
+        const oldestKey = hits.keys().next().value;
+        if (oldestKey !== undefined) hits.delete(oldestKey);
+      }
 
       let entry = hits.get(key);
       if (!entry || entry.resetAt <= now) {

@@ -122,6 +122,12 @@ export async function rotateSessionSecret() {
   return secret;
 }
 
+export async function revokeAllSessions() {
+  const nextVer = (Number(getSetting('session_version', '1')) || 1) + 1;
+  await setSetting('session_version', String(nextVer));
+  return nextVer;
+}
+
 export function verifySessionToken(token) {
   if (!token || typeof token !== 'string') return false;
   const separator = token.lastIndexOf('.');

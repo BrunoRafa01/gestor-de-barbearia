@@ -129,7 +129,8 @@ export const publicRoutes = [
     method: 'GET',
     path: '/api/public/config',
     auth: false,
-    handler: async ({ query }) => {
+    handler: async ({ req, res, query }) => {
+      enforceLimit(req, res, publicReadLimiter, 'public-config');
       const shopSlug = query?.shop || 'nova-barbearia';
       const [shop, services, barbers, reviews] = await Promise.all([
         shopPayload(shopSlug),
@@ -424,7 +425,8 @@ export const publicRoutes = [
     method: 'GET',
     path: '/api/public/shops',
     auth: false,
-    handler: async () => {
+    handler: async ({ req, res }) => {
+      enforceLimit(req, res, publicReadLimiter, 'public-shops');
       const rows = await all(
         'SELECT id, slug, name, company, description, logo_url, phone, whatsapp, address, instagram, primary_color FROM barbershops WHERE active = 1 ORDER BY name ASC',
         []
@@ -436,7 +438,8 @@ export const publicRoutes = [
     method: 'GET',
     path: '/api/public/reviews',
     auth: false,
-    handler: async ({ query }) => {
+    handler: async ({ req, res, query }) => {
+      enforceLimit(req, res, publicReadLimiter, 'public-reviews');
       const shopSlug = query?.shop || 'nova-barbearia';
       const reviews = await getShopReviews(shopSlug);
       return { status: 200, body: reviews };
@@ -451,8 +454,8 @@ export const publicRoutes = [
       const shopSlug = body?.shop_slug || 'nova-barbearia';
       const clientName = requiredString(body?.client_name, 'seu nome', { max: 100 });
       const rating = Number(body?.rating);
-      if (!rating || rating < 1 || rating > 5) {
-        throw new HttpError(400, 'A nota da avaliação deve ser entre 1 e 5 estrelas.');
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        throw new HttpError(400, 'A nota da avaliação deve ser um inteiro entre 1 e 5 estrelas.');
       }
       const comment = optionalString(body?.comment, 'comentário', 500);
       const appointmentId = body?.appointment_id ? Number(body.appointment_id) : null;

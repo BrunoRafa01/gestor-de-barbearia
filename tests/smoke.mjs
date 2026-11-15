@@ -654,6 +654,23 @@ async function run() {
   const searchPercent = await call(`/api/appointments?search=${encodeURIComponent('%')}`);
   check('busca com % escapado nao retorna todos agendamentos', searchPercent.status === 200 && Array.isArray(searchPercent.body) && searchPercent.body.length === 0);
 
+  const searchClientPercent = await call(`/api/clients?search=${encodeURIComponent('%')}`);
+  check('busca de clientes com % escapado nao retorna todos', searchClientPercent.status === 200 && Array.isArray(searchClientPercent.body) && searchClientPercent.body.length === 0);
+
+  const badWaVersion = await call('/api/settings', {
+    method: 'PUT',
+    body: { whatsapp_api_version: '../v18.0/me' },
+  });
+  check('whatsapp_api_version com path traversal responde 400', badWaVersion.status === 400);
+
+  const badBusinessHour = await call('/api/business-hours', {
+    method: 'PUT',
+    body: {
+      days: [{ weekday: 1, is_open: true, open_time: '29:99', close_time: '29:99' }],
+    },
+  });
+  check('horario de funcionamento invalido (29:99) responde 400', badBusinessHour.status === 400);
+
   /* ------------------------------ 14. Backup ------------------------------ */
   const backup = await call('/api/backup');
   check('exportar backup responde 200', backup.status === 200);

@@ -2,6 +2,7 @@ import {
   endSession,
   isAuthenticated,
   isUsingDefaultPassword,
+  revokeAllSessions,
   startSession,
   verifyPassword,
 } from '../auth.js';
@@ -55,7 +56,10 @@ export const authRoutes = [
     method: 'POST',
     path: '/api/auth/logout',
     auth: false,
-    handler: ({ req, res }) => {
+    handler: async ({ req, res }) => {
+      if (isAuthenticated(req)) {
+        await revokeAllSessions();
+      }
       endSession(res, { secure: isSecureRequest(req) });
       return { status: 200, body: { authenticated: false } };
     },

@@ -30,6 +30,8 @@ services:
         value: 0.0.0.0
       - key: TZ
         value: America/Sao_Paulo
+      - key: TRUST_PROXY
+        value: "true"
       # Senha inicial do painel: o Render gera um valor forte automaticamente.
       # Veja em: Dashboard do servico > Environment > ADMIN_PASSWORD.
       - key: ADMIN_PASSWORD
@@ -41,4 +43,7 @@ services:
       - key: TURSO_DATABASE_URL
         sync: false
       - key: TURSO_AUTH_TOKEN
+        sync: false
+      # Segredo da Meta para validar X-Hub-Signature-256 no webhook do WhatsApp
+      - key: WHATSAPP_APP_SECRET
         sync: false

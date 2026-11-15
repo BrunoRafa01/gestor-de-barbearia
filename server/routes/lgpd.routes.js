@@ -11,8 +11,12 @@ import {
   dsrLimiter,
   getSecurityLogs,
   logSecurityEvent,
+  publicReadLimiter,
   sanitizeInput,
 } from '../security.js';
+
+let complianceAuditCache = null;
+let complianceAuditCacheAt = 0;
 
 export const lgpdRoutes = [
   /**
@@ -184,13 +188,22 @@ export const lgpdRoutes = [
     method: 'GET',
     path: '/api/compliance/status',
     auth: false,
-    handler: async () => {
-      const audit = runComplianceAudit();
+    handler: async ({ req, res }) => {
+      const limit = publicReadLimiter.check(`compliance:${clientIp(req)}`);
+      if (!limit.allowed) {
+        res.setHeader('Retry-After', String(limit.retryAfterSeconds));
+        throw new HttpError(429, limit.message || 'Muitas requisicoes. Tente novamente em instantes.');
+      }
+      const now = Date.now();
+      if (!complianceAuditCache || now - complianceAuditCacheAt > 60_000) {
+        complianceAuditCache = runComplianceAudit();
+        complianceAuditCacheAt = now;
+      }
       return {
         status: 200,
         body: {
           success: true,
-          ...audit,
+          ...complianceAuditCache,
         },
       };
     },

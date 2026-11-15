@@ -37,12 +37,18 @@ export const clientRoutes = [
       const where = [];
       const params = [];
       if (query.search) {
-        where.push('(c.name LIKE ? OR c.phone LIKE ? OR c.email LIKE ?)');
-        const term = `%${query.search}%`;
+        where.push("(c.name LIKE ? ESCAPE '\\' OR c.phone LIKE ? ESCAPE '\\' OR c.email LIKE ? ESCAPE '\\')");
+        const escaped = String(query.search).replace(/[\\%_]/g, '\\$&');
+        const term = `%${escaped}%`;
         params.push(term, term, term);
       }
+      const limit = query.limit ? Math.min(500, Math.max(1, Number(query.limit) || 100)) : null;
+      const offset = query.offset ? Math.max(0, Number(query.offset) || 0) : 0;
+      const paginationSql = limit ? ' LIMIT ? OFFSET ?' : '';
+      if (limit) params.push(limit, offset);
+
       const sql = `${CLIENT_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-                   ORDER BY c.name COLLATE NOCASE ASC`;
+                   ORDER BY c.name COLLATE NOCASE ASC${paginationSql}`;
       const rows = await all(sql, params);
       return { status: 200, body: rows.map(mapClient) };
     },

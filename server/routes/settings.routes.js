@@ -10,6 +10,7 @@ import {
   verifyPassword,
 } from '../auth.js';
 import { isSecureRequest } from '../security.js';
+import { isValidTime } from '../time.js';
 import {
   digitsOnly,
   optionalString,
@@ -79,10 +80,22 @@ function normalizeSetting(key, value) {
       }
       return trimmed;
     }
-    case 'whatsapp_phone_number_id':
+    case 'whatsapp_phone_number_id': {
+      const val = optionalString(value, key, 200) || '';
+      if (val && !/^\d{5,30}$/.test(val)) {
+        throw new HttpError(400, 'Phone Number ID do WhatsApp deve conter apenas digitos.');
+      }
+      return val;
+    }
+    case 'whatsapp_api_version': {
+      const val = optionalString(value, key, 200) || '';
+      if (val && !/^v\d+\.\d+$/.test(val)) {
+        throw new HttpError(400, 'Versao da Graph API deve seguir o formato vXX.X (ex.: v21.0).');
+      }
+      return val;
+    }
     case 'whatsapp_business_account_id':
     case 'whatsapp_admin_phone':
-    case 'whatsapp_api_version':
     case 'whatsapp_template_confirmation':
     case 'whatsapp_template_reminder':
     case 'whatsapp_template_cancellation':
@@ -193,8 +206,11 @@ export const settingsRoutes = [
         const breakStart = optionalString(day.break_start, 'inicio do intervalo', 5);
         const breakEnd = optionalString(day.break_end, 'fim do intervalo', 5);
 
-        if (!/^\d{2}:\d{2}$/.test(openTime) || !/^\d{2}:\d{2}$/.test(closeTime)) {
-          throw new HttpError(400, `No ${WEEKDAYS[weekday]} informe horarios no formato HH:MM.`);
+        if (!isValidTime(openTime) || !isValidTime(closeTime)) {
+          throw new HttpError(400, `No ${WEEKDAYS[weekday]} informe horarios validos no formato HH:MM.`);
+        }
+        if ((breakStart && !isValidTime(breakStart)) || (breakEnd && !isValidTime(breakEnd))) {
+          throw new HttpError(400, `No ${WEEKDAYS[weekday]} informe um intervalo valido no formato HH:MM.`);
         }
         if (isOpen && closeTime <= openTime) {
           throw new HttpError(
