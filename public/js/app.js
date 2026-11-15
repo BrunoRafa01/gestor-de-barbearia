@@ -142,29 +142,21 @@ function onboardingNotice() {
     </div>`;
 }
 
-/** Aviso exibido enquanto a senha inicial do painel nao for trocada. */
-function securityNotice() {
-  if (!state.me?.password_is_default) return '';
+/** Alerta discreto e unificado no topo do painel (seguranca e/ou demonstracao). */
+function topNotices() {
+  const parts = [];
+  if (state.me?.demo) {
+    parts.push('Modo demonstração (dados fictícios)');
+  }
+  if (state.me?.password_is_default) {
+    parts.push('Troque a senha inicial em <a href="#/settings" style="color:var(--accent-2);text-decoration:underline">Configurações</a>');
+  }
+  if (!parts.length) return '';
   return `
-    <div class="notice">
-      <div class="notice-icon">${icon('lock')}</div>
+    <div class="notice notice-compact">
+      <div class="notice-icon">${icon(state.me?.password_is_default ? 'lock' : 'sparkles')}</div>
       <div class="grow">
-        <strong>Troque a senha do painel</strong>
-        <span>O sistema ainda está com a senha inicial. Defina uma senha sua em Configurações > Segurança.</span>
-      </div>
-      <a class="btn btn-sm" href="#/settings">${icon('settings')} Trocar agora</a>
-    </div>`;
-}
-
-/** Aviso exibido quando o painel esta rodando em modo demonstracao. */
-function demoNotice() {
-  if (!state.me?.demo) return '';
-  return `
-    <div class="notice notice-demo">
-      <div class="notice-icon">${icon('sparkles')}</div>
-      <div class="grow">
-        <strong>Modo demonstração</strong>
-        <span>Todos os dados exibidos são fictícios e servem apenas para apresentar o sistema.</span>
+        <span>${parts.join(' · ')}</span>
       </div>
     </div>`;
 }
@@ -280,8 +272,7 @@ function shellHtml() {
             <button class="btn btn-primary" id="quick-new" type="button">${icon('plus')}<span class="hide-mobile">Novo agendamento</span></button>
           </div>
         </header>
-        ${securityNotice()}
-        ${demoNotice()}
+        ${topNotices()}
         <main class="content" id="content"></main>
       </div>
     </div>`;
@@ -461,8 +452,6 @@ async function viewDashboard() {
       <button class="btn" id="dash-today" type="button">Hoje</button>
       <button class="icon-btn" id="dash-next" type="button" aria-label="Próximo dia">${icon('right')}</button>
       <input class="control" type="date" id="dash-date" value="${esc(state.date)}" />
-      <span class="grow"></span>
-      <button class="btn btn-primary" id="dash-new" type="button">${icon('plus')} Novo agendamento</button>
     </div>`;
 
   const todayTimeline = today.appointments.length
@@ -479,7 +468,9 @@ async function viewDashboard() {
           </div>`
         )
         .join('')}</div>`
-    : emptyBlock('Nenhum agendamento neste dia', 'Clique em "Novo agendamento" para começar.');
+    : rate === null
+      ? emptyBlock('Barbearia fechada hoje', 'Não há expediente configurado para este dia.')
+      : emptyBlock('Nenhum agendamento neste dia', 'Use "Novo agendamento" no topo para registrar.');
 
   const rankTable = (rows, emptyLabel) => {
     if (!rows.length) return `<div class="empty">${esc(emptyLabel)}</div>`;
@@ -554,7 +545,7 @@ async function viewDashboard() {
             <div class="avatar">${esc(initials(item.client_name))}</div>
             <div class="finity-tx-meta">
               <strong>${esc(item.client_name)}</strong>
-              <span>${esc(item.start_time)} · ${esc(item.barber_name)}</span>
+              <span>${esc(formatDateBR(item.date))} · ${esc(item.start_time)} · ${esc(item.barber_name)}</span>
             </div>
             ${statusPill(item.status)}
           </div>`
@@ -868,9 +859,6 @@ async function viewDashboard() {
   });
   document.getElementById('dash-open-agenda').addEventListener('click', () => {
     location.hash = '#/agenda';
-  });
-  document.getElementById('dash-new').addEventListener('click', () => {
-    openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
   });
 
   const quickNew = document.getElementById('dash-quick-new');

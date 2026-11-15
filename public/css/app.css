@@ -328,6 +328,25 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   padding: 6px 12px 2px;
 }
 
+#logout {
+  color: #E2E8F0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+#logout:hover {
+  color: #FCA5A5;
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.notice-compact {
+  padding: 8px 14px;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+}
+
 .main {
   flex: 1;
   min-width: 0;
@@ -3270,7 +3289,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 
 .bar-row {
   display: grid;
-  grid-template-columns: 88px minmax(60px, 1fr) auto;
+  grid-template-columns: minmax(120px, 160px) minmax(60px, 1fr) auto;
   align-items: center;
   gap: 10px;
   font-size: 12px;
