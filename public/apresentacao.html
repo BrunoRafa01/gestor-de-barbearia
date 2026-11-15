@@ -3,1922 +3,625 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#05060A">
-  <title>Gestor de Barbearia | Operação e Agendamento em Tempo Real</title>
-  <meta name="description" content="Sistema de agendamento online, trava anti-conflito, lembretes no WhatsApp e controle de comissões em tempo real para barbearias.">
+  <meta name="theme-color" content="#07080B">
+  <title>Gestor de Barbearia | Sua agenda online com a cara da sua barbearia</title>
+  <meta name="description" content="Sistema de agendamento online, agenda por barbeiro, lembretes no WhatsApp e controle de caixa e comissões para barbearias.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Newsreader:ital,opsz,wght@1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/icon-192.png">
   <style>
     :root {
-      --bg-void: #040508;
-      --bg-dark: #06070C;
-      --blue-core: #1D4EFF;
-      --blue-electric: #2563EB;
-      --blue-bright: #3B82F6;
-      --blue-sky: #60A5FA;
-      --blue-ice: #93C5FD;
-      --ice-surface: #F3F6FC;
-      --ice-surface-2: #EBF0FA;
-      --ice-card: #FFFFFF;
-      --ice-line: #DCE4F2;
-      --ink: #090D16;
-      --ink-secondary: #475569;
-      --ink-muted: #64748B;
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --bg: #07080B;
+      --bg-soft: #0C0E14;
+      --card: #10131B;
+      --card-hover: #151924;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text: #F4F4F5;
+      --muted: #A1A1AA;
+      --faint: #71717A;
+      --blue: #3B82F6;
+      --blue-strong: #2563EB;
+      --blue-soft: #60A5FA;
+      --green: #10B981;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-serif: 'Newsreader', Georgia, serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      padding: 0;
-      font-family: var(--font-sans);
-      background: var(--bg-void);
-      color: #F8FAFC;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    a { color: inherit; text-decoration: none; }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* ==========================================================================
-       1. TOP NAVBAR (MINIMALIST KINETIC BAR)
-       ========================================================================== */
-    .kinetic-nav {
-      position: fixed;
+    /* ---------------- NAVBAR ---------------- */
+    .nav-wrap {
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: rgba(4, 5, 8, 0.68);
-      -webkit-backdrop-filter: blur(16px);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      transition: background 250ms ease, border-color 250ms ease;
+      z-index: 40;
+      background: rgba(7, 8, 11, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
     }
-
-    .kinetic-nav.is-light {
-      background: rgba(243, 246, 252, 0.88);
-      border-bottom-color: rgba(15, 23, 42, 0.08);
-      color: var(--ink);
-    }
-
-    .kinetic-nav-inner {
-      max-width: 1240px;
+    .nav-inner {
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 14px 28px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      gap: 16px;
     }
-
-    .brand-lockup {
+    .brand {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: -0.025em;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.02em;
     }
-
-    .brand-glyph {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-      background: rgba(59, 130, 246, 0.16);
-      border: 1px solid rgba(96, 165, 250, 0.4);
-      color: #60A5FA;
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: var(--blue-soft);
       display: grid;
       place-items: center;
     }
-
-    .kinetic-nav.is-light .brand-glyph {
-      background: #2563EB;
-      border-color: #1D4ED8;
-      color: #FFFFFF;
-    }
-
-    .nav-center-links {
+    .nav-links {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 26px;
       font-size: 13.5px;
+      color: var(--muted);
       font-weight: 500;
-      color: rgba(248, 250, 252, 0.72);
     }
-
-    .kinetic-nav.is-light .nav-center-links {
-      color: #475569;
-    }
-
-    .nav-center-links a {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: color 160ms ease;
-    }
-
-    .nav-center-links a:hover {
-      color: #FFFFFF;
-    }
-
-    .kinetic-nav.is-light .nav-center-links a:hover {
-      color: #090D16;
-    }
-
-    .nav-chevron {
-      font-size: 10px;
-      opacity: 0.6;
-    }
-
-    .nav-right-actions {
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-
-    .btn-nav-outline {
-      padding: 8px 15px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      background: rgba(6, 7, 12, 0.65);
-      color: #F8FAFC;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 180ms ease;
+    .btn-ghost {
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color 150ms var(--ease), background 150ms var(--ease);
     }
-
-    .btn-nav-outline:hover {
-      border-color: rgba(255, 255, 255, 0.48);
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .kinetic-nav.is-light .btn-nav-outline {
-      background: #090D16;
+    .btn-ghost:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+    .btn-primary-nav {
+      padding: 9px 16px;
+      border-radius: 10px;
+      background: var(--blue-strong);
       color: #FFFFFF;
-      border-color: #090D16;
-    }
-
-    .btn-nav-solid {
-      padding: 8px 16px;
-      border-radius: 6px;
-      background: #FFFFFF;
-      color: #090D16;
-      border: 1px solid #FFFFFF;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 600;
-      transition: all 180ms ease;
+      transition: background 150ms var(--ease);
     }
+    .btn-primary-nav:hover { background: #1D4ED8; }
 
-    .btn-nav-solid:hover {
-      background: #DBEAFE;
-      border-color: #DBEAFE;
-    }
-
-    .kinetic-nav.is-light .btn-nav-solid {
-      background: #FFFFFF;
-      color: #090D16;
-      border-color: #CBD5E1;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
-    }
-
-    /* ==========================================================================
-       2. HERO SECTION: DIAGONAL BLACK -> ELECTRIC BLUE -> ICE MELT
-       ========================================================================== */
-    .hero-stage {
+    /* ---------------- CENTERED EDITORIAL HERO (ZELO-INSPIRED) ---------------- */
+    .hero {
       position: relative;
-      min-height: 920px;
-      padding: 132px 28px 168px;
-      background:
-        radial-gradient(ellipse 92% 80% at 86% 90%, #BFDBFE 0%, #60A5FA 19%, #2563EB 42%, #102A7A 64%, #05060B 82%),
-        radial-gradient(ellipse 70% 58% at 55% 98%, rgba(37, 99, 235, 0.72) 0%, transparent 72%),
-        #040508;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 72px 20px 56px;
+      text-align: center;
     }
-
-    /* Smooth bottom transition into the ice-white section */
-    .hero-stage::after {
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px 4px 5px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 24px;
+    }
+    .hero-pill-tag {
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.16);
+      color: var(--blue-soft);
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .hero h1 {
+      margin: 0 auto;
+      max-width: 780px;
+      font-size: clamp(2.25rem, 5.4vw, 3.85rem);
+      font-weight: 700;
+      line-height: 1.09;
+      letter-spacing: -0.035em;
+      color: var(--text);
+    }
+    .slot-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 14px;
+      margin: 0 4px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border-strong);
+      font-family: var(--font-mono);
+      font-size: 0.68em;
+      font-weight: 600;
+      vertical-align: middle;
+      color: var(--text);
+    }
+    .slot-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+    }
+    .editorial-italic {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 1.12em;
+      color: var(--blue-soft);
+    }
+    .underline-accent {
+      position: relative;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .underline-accent::after {
       content: '';
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 0;
-      height: 180px;
-      background: linear-gradient(
-        180deg,
-        rgba(243, 246, 252, 0) 0%,
-        rgba(219, 234, 254, 0.45) 42%,
-        rgba(243, 246, 252, 0.92) 78%,
-        var(--ice-surface) 100%
-      );
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    /* Diagonal sweep glow controlled by GSAP on intro */
-    .hero-sweep-glow {
-      position: absolute;
-      inset: -15%;
-      background: radial-gradient(
-        circle at var(--cursor-x, 76%) var(--cursor-y, 64%),
-        rgba(147, 197, 253, 0.28) 0%,
-        rgba(37, 99, 235, 0.16) 32%,
-        transparent 64%
-      );
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .hero-inner {
-      position: relative;
-      z-index: 4;
-      max-width: 1240px;
-      width: 100%;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      align-items: center;
-      gap: 32px;
-    }
-
-    /* Kicker Badges (SOC2 / STATUS style from video 00:02) */
-    .hero-kicker-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 26px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .kicker-box {
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      background: rgba(255, 255, 255, 0.04);
-      color: rgba(248, 250, 252, 0.86);
-      font-weight: 500;
-    }
-
-    .kicker-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      color: rgba(248, 250, 252, 0.68);
-    }
-
-    .kicker-status strong {
-      color: #FFFFFF;
-      font-weight: 600;
-    }
-
-    .status-dot-live {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #60A5FA;
-      box-shadow: 0 0 10px #60A5FA;
-    }
-
-    /* Two-Tone Hero Headline ("Investigated before / it's a problem") */
-    .hero-headline {
-      margin: 0 0 20px;
-      font-size: clamp(2.75rem, 5.4vw, 4.55rem);
-      font-weight: 600;
-      line-height: 1.02;
-      letter-spacing: -0.04em;
-    }
-
-    .hero-headline .tone-silver {
-      display: block;
-      color: #94A3B8;
-    }
-
-    .hero-headline .tone-white {
-      display: block;
-      color: #FFFFFF;
-    }
-
-    .hero-lead {
-      margin: 0 0 34px;
-      max-width: 490px;
-      font-size: 16.5px;
-      line-height: 1.58;
-      color: rgba(226, 232, 240, 0.78);
-      font-weight: 400;
-    }
-
-    /* Split Electric Blue Button ("Get Early Access | ->") */
-    .hero-cta-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 84px;
-    }
-
-    .btn-split-electric {
-      display: inline-flex;
-      align-items: stretch;
-      border-radius: 6px;
-      background: #1D4EFF;
-      color: #FFFFFF;
-      font-size: 14px;
-      font-weight: 600;
-      border: 1px solid rgba(147, 197, 253, 0.45);
-      box-shadow:
-        0 14px 34px -8px rgba(29, 78, 255, 0.75),
-        inset 0 1px 0 rgba(255, 255, 255, 0.28);
-      overflow: hidden;
-      transition: transform 180ms var(--ease-out), background 180ms ease, box-shadow 180ms ease;
-    }
-
-    .btn-split-electric:hover {
-      background: #2563EB;
-      transform: translateY(-2px);
-      box-shadow:
-        0 20px 42px -8px rgba(37, 99, 235, 0.9),
-        inset 0 1px 0 rgba(255, 255, 255, 0.38);
-    }
-
-    .btn-split-text {
-      padding: 13px 20px;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .btn-split-icon {
-      padding: 13px 15px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-left: 1px solid rgba(255, 255, 255, 0.24);
-      background: rgba(0, 0, 0, 0.12);
-      transition: transform 180ms var(--ease-out);
-    }
-
-    .btn-split-electric:hover .btn-split-icon {
-      transform: translateX(2px);
-    }
-
-    .btn-secondary-glass {
-      padding: 13px 18px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      background: rgba(15, 23, 42, 0.42);
-      color: #F8FAFC;
-      font-size: 14px;
-      font-weight: 500;
-      backdrop-filter: blur(10px);
-      transition: background 180ms ease, border-color 180ms ease;
-    }
-
-    .btn-secondary-glass:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.42);
-    }
-
-    /* Bottom-left Trust Bar (Video 00:02 - 00:04) */
-    .hero-trust-block {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .hero-trust-caption {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(248, 250, 252, 0.62);
-    }
-
-    .hero-trust-logos {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 28px;
-      color: #FFFFFF;
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: -0.02em;
-      opacity: 0.92;
-    }
-
-    .trust-logo-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    /* Right Side: True Isometric 3D Glass & Wireframe Stage (Video 00:01 - 00:04) */
-    .hero-iso-viewport {
-      position: relative;
-      width: 100%;
-      height: 500px;
-      display: grid;
-      place-items: center;
-      perspective: 1200px;
-      user-select: none;
-    }
-
-    .hero-iso-svg {
-      width: 100%;
-      max-width: 620px;
-      height: auto;
-      overflow: visible;
-      transform-style: preserve-3d;
-      will-change: transform;
-      filter: drop-shadow(0 28px 60px rgba(10, 32, 110, 0.55));
-    }
-
-    /* Interactive HUD Callout Pill on Isometric Stage */
-    .iso-hud-badge {
-      position: absolute;
-      bottom: 34px;
-      right: 18px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 14px;
-      border-radius: 8px;
-      background: rgba(6, 9, 18, 0.78);
-      border: 1px solid rgba(147, 197, 253, 0.45);
-      backdrop-filter: blur(12px);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #E2E8F0;
-      box-shadow: 0 14px 30px rgba(4, 6, 12, 0.45);
-    }
-
-    .iso-hud-badge strong {
-      color: #93C5FD;
-    }
-
-    /* ==========================================================================
-       3. ICE-WHITE SECTION 1: 4-COLUMN ISOMETRIC ARCHITECTURE (VIDEO 00:05 - 00:08)
-       ========================================================================== */
-    .ice-arch-section {
-      position: relative;
-      z-index: 5;
-      background: var(--ice-surface);
-      color: var(--ink);
-      padding: 64px 0 96px;
-    }
-
-    .ice-container {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 0 28px;
-    }
-
-    .ice-header-block {
-      max-width: 680px;
-      margin-bottom: 56px;
-    }
-
-    .ice-title {
-      margin: 0 0 16px;
-      font-size: clamp(2.25rem, 4.5vw, 3.65rem);
-      font-weight: 600;
-      line-height: 1.04;
-      letter-spacing: -0.038em;
-      color: var(--ink);
-    }
-
-    .ice-title .tone-blue {
-      display: block;
-      color: var(--blue-electric);
-    }
-
-    .ice-subtitle {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.6;
-      color: var(--ink-secondary);
-    }
-
-    /* Full-bleed hairline 4-column grid matching video 00:06 - 00:08 */
-    .arch-grid-wrapper {
-      border-top: 1px solid var(--ice-line);
-      border-bottom: 1px solid var(--ice-line);
-      background: rgba(255, 255, 255, 0.46);
-    }
-
-    .arch-grid {
-      max-width: 1240px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .arch-col {
-      position: relative;
-      padding: 28px 28px 36px;
-      border-right: 1px solid var(--ice-line);
-      min-height: 430px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: background 240ms ease;
-      cursor: pointer;
-    }
-
-    .arch-col:first-child {
-      border-left: 1px solid var(--ice-line);
-    }
-
-    .arch-col:hover {
-      background: rgba(255, 255, 255, 0.92);
-    }
-
-    .arch-col-index {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: #94A3B8;
-    }
-
-    .arch-diagram-box {
-      height: 210px;
-      display: grid;
-      place-items: center;
-      margin: 12px 0;
-    }
-
-    .arch-diagram-svg {
-      width: 190px;
-      height: 170px;
-      overflow: visible;
-    }
-
-    .arch-col-title {
-      margin: 0 0 10px;
-      font-size: 16.5px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-    }
-
-    .arch-col-desc {
-      margin: 0;
-      font-size: 13.5px;
-      line-height: 1.58;
-      color: var(--ink-secondary);
-    }
-
-    .arch-bottom-bar {
-      max-width: 1240px;
-      margin: 22px auto 0;
-      padding: 0 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .arch-learn-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--ink);
-      padding: 6px 0;
-      transition: color 160ms ease, gap 160ms ease;
-    }
-
-    .arch-learn-link:hover {
-      color: var(--blue-electric);
-      gap: 12px;
-    }
-
-    /* ==========================================================================
-       4. ICE-WHITE SECTION 2: SIGNAL RECEIVED & 3 FLOATING TELEMETRY CARDS (00:09 - 00:11)
-       ========================================================================== */
-    .ice-telemetry-section {
-      position: relative;
-      z-index: 5;
-      background: linear-gradient(180deg, var(--ice-surface) 0%, #E7EEF9 100%);
-      color: var(--ink);
-      padding: 36px 0 112px;
-      border-bottom: 1px solid var(--ice-line);
-    }
-
-    .signal-trigger-row {
-      margin-top: 22px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ink);
-      cursor: pointer;
-      padding: 8px 14px 8px 0;
-      border: none;
-      background: transparent;
-      font-family: inherit;
-      transition: color 160ms ease;
-    }
-
-    .signal-trigger-row:hover {
-      color: var(--blue-electric);
-    }
-
-    .signal-trigger-arrow {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: rgba(37, 99, 235, 0.1);
-      color: var(--blue-electric);
-      transition: transform 180ms var(--ease-out);
-    }
-
-    .signal-trigger-row:hover .signal-trigger-arrow {
-      transform: translateX(4px);
-    }
-
-    /* 3-Card Asymmetric Grid (Matching Video 00:10) */
-    .telemetry-bento {
-      margin-top: 44px;
-      display: grid;
-      grid-template-columns: 1.05fr 1.05fr 0.95fr;
-      align-items: end;
-      gap: 20px;
-    }
-
-    .t-card {
-      background: var(--ice-card);
-      border: 1px solid rgba(203, 213, 225, 0.75);
-      border-radius: 14px;
-      padding: 22px;
-      box-shadow:
-        0 18px 40px -18px rgba(15, 23, 42, 0.08),
-        0 2px 6px rgba(15, 23, 42, 0.03);
-      transition: transform 240ms var(--ease-out), box-shadow 240ms ease;
-    }
-
-    .t-card:hover {
-      transform: translateY(-4px);
-      box-shadow:
-        0 26px 50px -18px rgba(29, 78, 255, 0.14),
-        0 4px 12px rgba(15, 23, 42, 0.05);
-    }
-
-    .t-card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .t-card-title {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--ink);
-    }
-
-    .t-card-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 5px;
-      background: #EFF6FF;
-      color: var(--blue-electric);
-      display: grid;
-      place-items: center;
-      font-size: 11px;
-    }
-
-    .t-card-actions {
-      display: inline-flex;
-      gap: 6px;
-      color: #94A3B8;
-      font-size: 11px;
-    }
-
-    .t-card-actions span {
-      width: 22px;
-      height: 22px;
-      border-radius: 5px;
-      border: 1px solid #E2E8F0;
-      display: grid;
-      place-items: center;
-    }
-
-    .t-metrics-pair {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    .t-metric-label {
-      font-size: 11px;
-      color: var(--ink-muted);
-      margin-bottom: 4px;
-    }
-
-    .t-metric-val {
-      font-size: 24px;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      color: var(--ink);
-    }
-
-    .t-metric-sub {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      color: var(--blue-electric);
-      margin-top: 3px;
-    }
-
-    /* Card 1: Dot-Matrix Scatter Heatmap (Video 00:10 Left Card) */
-    .dot-scatter-grid {
-      display: grid;
-      grid-template-columns: repeat(14, 1fr);
-      gap: 6px;
-      padding: 12px 10px;
-      background: #F8FAFC;
-      border: 1px solid #EEF2F8;
-      border-radius: 10px;
-    }
-
-    .scatter-dot {
-      width: 8px;
+      bottom: 3px;
       height: 8px;
       border-radius: 999px;
-      background: #E2E8F0;
-      justify-self: center;
-      transition: transform 160ms ease, background 160ms ease;
-      cursor: pointer;
+      background: rgba(59, 130, 246, 0.28);
+      z-index: -1;
     }
-
-    .scatter-dot.lvl-1 { background: #BFDBFE; }
-    .scatter-dot.lvl-2 { background: #60A5FA; }
-    .scatter-dot.lvl-3 { background: #2563EB; }
-    .scatter-dot.lvl-4 {
-      background: #1D4ED8;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    .hero-sub {
+      margin: 22px auto 0;
+      max-width: 560px;
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: var(--muted);
     }
-
-    .scatter-dot:hover {
-      transform: scale(1.65);
-      background: #1D4EFF;
-    }
-
-    .scatter-axis {
+    .hero-ctas {
+      margin-top: 30px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #94A3B8;
-    }
-
-    .scatter-status-tip {
-      color: var(--blue-electric);
-      font-weight: 500;
-    }
-
-    /* Card 2: Violin / Wave Funnel Chart (Video 00:10 Center Card) */
-    .wave-funnel-box {
-      position: relative;
-      padding: 10px 4px 4px;
-      background: #F8FAFC;
-      border: 1px solid #EEF2F8;
-      border-radius: 10px;
-    }
-
-    .wave-funnel-svg {
-      width: 100%;
-      height: 118px;
-      display: block;
-      overflow: visible;
-    }
-
-    .wave-labels-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #E2E8F0;
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      color: #64748B;
-      text-align: center;
-    }
-
-    /* Card 3: Tall Weekly/Live Digest Card (Video 00:10 Right Card) */
-    .t-card-digest {
-      padding: 26px 24px;
-      border-radius: 16px;
-      box-shadow:
-        0 32px 64px -16px rgba(15, 23, 42, 0.14),
-        0 4px 16px rgba(15, 23, 42, 0.05);
-    }
-
-    .digest-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
-    .digest-heading {
-      margin: 0;
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-    }
-
-    .digest-badge {
-      padding: 3px 8px;
-      border-radius: 5px;
-      background: #F1F5F9;
-      border: 1px solid #E2E8F0;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      color: #475569;
-    }
-
-    .digest-sub {
-      font-size: 12px;
-      color: var(--ink-muted);
-      margin-bottom: 18px;
-    }
-
-    .digest-list {
-      display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 12px;
     }
-
-    .digest-entry {
-      padding: 13px 14px;
-      border-radius: 10px;
-      border: 1px solid #E2E8F0;
-      background: #FFFFFF;
-      cursor: pointer;
-      transition: all 180ms ease;
-    }
-
-    .digest-entry:hover,
-    .digest-entry.is-active {
-      border-color: #93C5FD;
-      background: #F8FAFF;
-      box-shadow: 0 8px 20px -10px rgba(37, 99, 235, 0.18);
-    }
-
-    .digest-entry-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 5px;
-    }
-
-    .digest-entry-title {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--ink);
-    }
-
-    .digest-severity {
+    .cta-main {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-family: var(--font-mono);
-      font-size: 10px;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 12px;
+      background: var(--blue-strong);
+      color: #FFFFFF;
+      font-size: 14.5px;
       font-weight: 600;
+      transition: background 150ms var(--ease);
     }
-
-    .digest-severity.red { color: #EF4444; }
-    .digest-severity.amber { color: #F59E0B; }
-    .digest-severity.blue { color: #2563EB; }
-
-    .sev-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: currentColor;
-    }
-
-    .digest-entry-desc {
-      margin: 0;
-      font-size: 11.5px;
-      line-height: 1.5;
-      color: var(--ink-secondary);
-    }
-
-    /* ==========================================================================
-       5. DARK STUDIO LOOKBOOK & FINAL CTA
-       ========================================================================== */
-    .dark-closing-section {
-      background:
-        radial-gradient(ellipse 75% 55% at 50% 0%, rgba(37, 99, 235, 0.22) 0%, transparent 70%),
-        var(--bg-void);
-      color: #F8FAFC;
-      padding: 96px 28px 64px;
-    }
-
-    .closing-inner {
-      max-width: 1240px;
-      margin: 0 auto;
-    }
-
-    .studio-showcase-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 20px;
-      margin-bottom: 64px;
-    }
-
-    .studio-photo-card {
-      position: relative;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      aspect-ratio: 4 / 3;
-      background: #0B0F19;
-    }
-
-    .studio-photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 600ms var(--ease-out);
-    }
-
-    .studio-photo-card:hover img {
-      transform: scale(1.05);
-    }
-
-    .studio-photo-caption {
-      position: absolute;
-      inset: auto 0 0 0;
-      padding: 20px 18px 16px;
-      background: linear-gradient(180deg, transparent 0%, rgba(4, 5, 8, 0.92) 100%);
-      display: flex;
+    .cta-main:hover { background: #1D4ED8; }
+    .cta-sec {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      font-size: 14.5px;
+      font-weight: 600;
+      transition: background 150ms var(--ease);
+    }
+    .cta-sec:hover { background: var(--card-hover); }
+    .hero-notes {
+      margin-top: 18px;
+      font-size: 12.5px;
+      color: var(--faint);
+    }
+
+    /* ---------------- SCREEN SHOWCASE (REAL SYSTEM PREVIEWS) ---------------- */
+    .section {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 56px 20px;
+    }
+    .section-head {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 32px;
+    }
+    .section-kicker {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue-soft);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      margin: 0 0 10px;
+      font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .section-sub {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .showcase-tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .showcase-tab {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--muted);
+      font-family: var(--font);
       font-size: 13px;
       font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms var(--ease);
     }
-
-    .studio-photo-caption span {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      color: #93C5FD;
-      text-transform: uppercase;
+    .showcase-tab.active, .showcase-tab:hover {
+      background: rgba(59, 130, 246, 0.14);
+      border-color: rgba(59, 130, 246, 0.45);
+      color: var(--text);
     }
-
-    .closing-cta-banner {
-      padding: 48px 42px;
-      border-radius: 18px;
-      background:
-        radial-gradient(ellipse 80% 90% at 92% 95%, rgba(96, 165, 250, 0.42) 0%, rgba(29, 78, 255, 0.32) 42%, rgba(9, 13, 22, 0.94) 80%),
-        #080B14;
-      border: 1px solid rgba(96, 165, 250, 0.3);
+    .showcase-frame {
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      background: var(--card);
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+    .showcase-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 28px;
+      padding: 10px 16px;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--faint);
+    }
+    .showcase-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .showcase-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .showcase-img {
+      display: block;
+      width: 100%;
+      max-height: 580px;
+      object-fit: cover;
+      object-position: top center;
+      background: #07080B;
     }
 
-    .closing-cta-banner h3 {
+    /* ---------------- FEATURES GRID (CRISP LUCIDE ICONS) ---------------- */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .feat-card {
+      padding: 24px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: border-color 160ms var(--ease), background 160ms var(--ease);
+    }
+    .feat-card:hover {
+      border-color: rgba(59, 130, 246, 0.35);
+      background: var(--card-hover);
+    }
+    .feat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      color: var(--blue-soft);
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+    }
+    .feat-card h3 {
       margin: 0 0 8px;
-      font-size: clamp(1.65rem, 3vw, 2.35rem);
+      font-size: 16px;
       font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .feat-card p {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    /* ---------------- STUDIO GALLERY ---------------- */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 16px;
+    }
+    .gallery-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+    .gallery-card img {
+      display: block;
+      width: 100%;
+      height: 290px;
+      object-fit: cover;
+    }
+    .gallery-caption {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ---------------- BOTTOM CTA & FOOTER ---------------- */
+    .cta-box {
+      border-radius: 18px;
+      padding: 48px 24px;
+      text-align: center;
+      background: linear-gradient(180deg, #101420 0%, #0B0D13 100%);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+    .cta-box h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
       letter-spacing: -0.03em;
     }
-
-    .closing-cta-banner p {
-      margin: 0;
-      color: rgba(226, 232, 240, 0.76);
+    .cta-box p {
+      margin: 0 auto 24px;
+      max-width: 500px;
+      color: var(--muted);
       font-size: 15px;
+      line-height: 1.6;
     }
-
-    .footer-minimal {
-      margin-top: 56px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 20px;
+      text-align: center;
       font-size: 12.5px;
-      color: #64748B;
+      color: var(--faint);
     }
 
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
+    @media (max-width: 900px) {
+      .feat-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: 1fr; }
     }
-
-    .footer-links a:hover {
-      color: #F8FAFC;
-    }
-
-    /* ==========================================================================
-       6. RESPONSIVE BREAKPOINTS (MOBILE, TABLET, DESKTOP)
-       ========================================================================== */
-    @media (max-width: 1040px) {
-      .hero-inner {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-      .hero-stage {
-        min-height: auto;
-        padding-top: 112px;
-      }
-      .hero-cta-group {
-        margin-bottom: 44px;
-      }
-      .hero-iso-viewport {
-        height: 410px;
-      }
-      .arch-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .arch-col:nth-child(2) {
-        border-right: 1px solid var(--ice-line);
-      }
-      .arch-col:nth-child(3) {
-        border-left: 1px solid var(--ice-line);
-        border-top: 1px solid var(--ice-line);
-      }
-      .arch-col:nth-child(4) {
-        border-top: 1px solid var(--ice-line);
-      }
-      .telemetry-bento {
-        grid-template-columns: 1fr;
-      }
-      .studio-showcase-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 680px) {
-      .nav-center-links {
-        display: none;
-      }
-      .kinetic-nav-inner {
-        padding: 12px 16px;
-      }
-      .hero-stage {
-        padding: 96px 16px 130px;
-      }
-      .hero-iso-viewport {
-        height: 330px;
-      }
-      .arch-grid {
-        grid-template-columns: 1fr;
-      }
-      .arch-col {
-        min-height: 320px;
-        border-left: 1px solid var(--ice-line);
-        border-bottom: 1px solid var(--ice-line);
-      }
-      .closing-cta-banner {
-        padding: 32px 24px;
-      }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .hero { padding: 48px 16px 36px; }
     }
   </style>
 </head>
 <body>
-
-  <!-- 1. TOP KINETIC NAVBAR -->
-  <header class="kinetic-nav" id="kinetic-nav">
-    <div class="kinetic-nav-inner">
-      <a href="/apresentacao.html" class="brand-lockup">
-        <span class="brand-glyph" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <header class="nav-wrap">
+    <div class="nav-inner">
+      <a href="/apresentacao" class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/>
             <line x1="20" y1="4" x2="8.2" y2="15.8"/><line x1="14.5" y1="14.5" x2="20" y2="20"/>
           </svg>
         </span>
-        <span>Nova Barbearia</span>
+        <span>Gestor de Barbearia</span>
       </a>
 
-      <nav class="nav-center-links" aria-label="Seções da plataforma">
-        <a href="#arquitetura">Plataforma <span class="nav-chevron">▾</span></a>
-        <a href="#telemetria">Telemetria <span class="nav-chevron">▾</span></a>
-        <a href="#estudio">Lookbook <span class="nav-chevron">▾</span></a>
-        <a href="/agendar">Reserva Direta</a>
+      <nav class="nav-links" aria-label="Navegação">
+        <a href="#telas">Telas reais</a>
+        <a href="#recursos">Funcionalidades</a>
+        <a href="#estudio">Estúdio</a>
+        <a href="/agendar">Agendar</a>
       </nav>
 
-      <div class="nav-right-actions">
-        <a href="/" class="btn-nav-outline">Entrar</a>
-        <a href="/agendar" class="btn-nav-solid">Testar demo</a>
+      <div class="nav-actions">
+        <a href="/" class="btn-ghost">Entrar no painel</a>
+        <a href="/agendar" class="btn-primary-nav">Testar agendamento</a>
       </div>
     </div>
   </header>
 
   <main>
-    <!-- 2. HERO SECTION (00:00 - 00:04 OF VIDEO: BLACK -> ELECTRIC BLUE DIAGONAL + RISING 3D ISOMETRIC STACK) -->
-    <section class="hero-stage" id="hero-stage">
-      <div class="hero-sweep-glow" id="hero-sweep-glow" aria-hidden="true"></div>
-
-      <div class="hero-inner">
-        <!-- Left Column: Typography, Split Button & Monochrome Trust Bar -->
-        <div class="hero-copy-col">
-          <div class="hero-kicker-row" id="hero-kickers">
-            <span class="kicker-box">LGPD &amp; ANTI-CONFLITO</span>
-            <span class="kicker-status">STATUS: <i class="status-dot-live"></i> <strong>MONITORANDO</strong></span>
-          </div>
-
-          <h1 class="hero-headline" id="hero-headline">
-            <span class="tone-silver">Agendada antes</span>
-            <span class="tone-white">de virar fila.</span>
-          </h1>
-
-          <p class="hero-lead" id="hero-lead">
-            Gerencie cada cadeira com detecção de conflitos em tempo real, folgas sincronizadas e confirmação imediata no WhatsApp.
-          </p>
-
-          <div class="hero-cta-group" id="hero-ctas">
-            <a href="/agendar" class="btn-split-electric">
-              <span class="btn-split-text">Agendar Horário</span>
-              <span class="btn-split-icon" aria-hidden="true">→</span>
-            </a>
-            <a href="/" class="btn-secondary-glass">Abrir Painel Admin</a>
-          </div>
-
-          <div class="hero-trust-block" id="hero-trust">
-            <span class="hero-trust-caption">CONFIADO POR ESTÚDIOS DE ALTA PERFORMANCE</span>
-            <div class="hero-trust-logos">
-              <span class="trust-logo-item">▲ NOVA STUDIO</span>
-              <span class="trust-logo-item">◈ CORTE &amp; NAVALHA</span>
-              <span class="trust-logo-item">● CLUB BARBER</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column: Exact Isometric 3D Glowing Slab + Rising Wireframe Layer (Video 00:01 - 00:04) -->
-        <div class="hero-iso-viewport" id="hero-iso-viewport" aria-label="Arquitetura isométrica 3D de agendamento em tempo real">
-          <svg class="hero-iso-svg" id="hero-iso-svg" viewBox="0 0 620 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <!-- Intense Neon-Blue Glow underneath the Base Slab -->
-              <radialGradient id="isoFloorGlow" cx="50%" cy="55%" r="50%">
-                <stop offset="0%" stop-color="#93C5FD" stop-opacity="0.78"/>
-                <stop offset="38%" stop-color="#3B82F6" stop-opacity="0.42"/>
-                <stop offset="75%" stop-color="#1D4EFF" stop-opacity="0.12"/>
-                <stop offset="100%" stop-color="#1D4EFF" stop-opacity="0"/>
-              </radialGradient>
-
-              <!-- Translucent Blue Glass Top Face -->
-              <linearGradient id="slabTopFill" x1="140" y1="220" x2="480" y2="380" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.48"/>
-                <stop offset="52%" stop-color="#3B82F6" stop-opacity="0.34"/>
-                <stop offset="100%" stop-color="#93C5FD" stop-opacity="0.62"/>
-              </linearGradient>
-
-              <!-- Slab Left Side Extrusion -->
-              <linearGradient id="slabLeftFill" x1="140" y1="300" x2="310" y2="412" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#1E3A8A" stop-opacity="0.85"/>
-                <stop offset="100%" stop-color="#60A5FA" stop-opacity="0.75"/>
-              </linearGradient>
-
-              <!-- Slab Right Side Extrusion -->
-              <linearGradient id="slabRightFill" x1="310" y1="412" x2="480" y2="300" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#93C5FD" stop-opacity="0.85"/>
-                <stop offset="100%" stop-color="#2563EB" stop-opacity="0.65"/>
-              </linearGradient>
-
-              <!-- Upper Rising Plane Fill -->
-              <linearGradient id="upperPlaneFill" x1="160" y1="120" x2="460" y2="280" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#0F172A" stop-opacity="0.58"/>
-                <stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.32"/>
-              </linearGradient>
-
-              <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="8" result="blur"/>
-                <feMerge>
-                  <feMergeNode in="blur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-
-            <!-- 1. Extended Isometric Floor Grid Lines & Crosshairs -->
-            <g id="iso-floor-grid" opacity="0.55">
-              <!-- Diagonal axes NE-SW -->
-              <line x1="40" y1="320" x2="390" y2="115" stroke="rgba(147,197,253,0.2)" stroke-width="1"/>
-              <line x1="90" y1="350" x2="440" y2="145" stroke="rgba(147,197,253,0.22)" stroke-width="1"/>
-              <line x1="190" y1="410" x2="540" y2="205" stroke="rgba(147,197,253,0.22)" stroke-width="1"/>
-              <line x1="240" y1="440" x2="585" y2="235" stroke="rgba(147,197,253,0.2)" stroke-width="1"/>
-              <!-- Diagonal axes NW-SE -->
-              <line x1="230" y1="115" x2="580" y2="320" stroke="rgba(147,197,253,0.2)" stroke-width="1"/>
-              <line x1="180" y1="145" x2="530" y2="350" stroke="rgba(147,197,253,0.22)" stroke-width="1"/>
-              <line x1="80" y1="205" x2="430" y2="410" stroke="rgba(147,197,253,0.22)" stroke-width="1"/>
-              <line x1="35" y1="235" x2="380" y2="440" stroke="rgba(147,197,253,0.2)" stroke-width="1"/>
-
-              <!-- Floor Crosshairs (+) -->
-              <text x="115" y="255" fill="rgba(191,219,254,0.55)" font-family="JetBrains Mono" font-size="11">+</text>
-              <text x="510" y="255" fill="rgba(191,219,254,0.55)" font-family="JetBrains Mono" font-size="11">+</text>
-              <text x="306" y="458" fill="rgba(191,219,254,0.65)" font-family="JetBrains Mono" font-size="11">+</text>
-              <text x="215" y="418" fill="rgba(191,219,254,0.45)" font-family="JetBrains Mono" font-size="10">+</text>
-            </g>
-
-            <!-- 2. Volumetric Ambient Glow Under Base Slab -->
-            <ellipse id="iso-under-glow" cx="310" cy="325" rx="210" ry="110" fill="url(#isoFloorGlow)"/>
-
-            <!-- 3. Base Glowing Isometric 3D Glass Slab -->
-            <g id="iso-base-slab">
-              <!-- Outer Rim Shadow -->
-              <polygon points="310,206 484,306 310,406 136,306" fill="rgba(29,78,255,0.22)"/>
-              <!-- Left Extruded Side -->
-              <polygon points="136,288 310,388 310,410 136,310" fill="url(#slabLeftFill)" stroke="rgba(191,219,254,0.55)" stroke-width="1"/>
-              <!-- Right Extruded Side -->
-              <polygon points="484,288 310,388 310,410 484,310" fill="url(#slabRightFill)" stroke="rgba(191,219,254,0.55)" stroke-width="1"/>
-              <!-- Top Glass Diamond Surface -->
-              <polygon points="310,188 484,288 310,388 136,288" fill="url(#slabTopFill)" stroke="#BFDBFE" stroke-width="1.6"/>
-              <!-- Inner Isometric Frame -->
-              <polygon points="310,204 456,288 310,372 164,288" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
-
-              <!-- Isometric Pill Badge Inside Base Slab ("SUSPICIOUS ACTIVITY" -> "RESERVA CONFIRMADA") -->
-              <g transform="translate(232, 326) rotate(30) skewX(-30)">
-                <rect x="0" y="0" width="132" height="24" rx="3" fill="rgba(15,23,42,0.72)" stroke="#93C5FD" stroke-width="1.2"/>
-                <text x="66" y="15" text-anchor="middle" fill="#FFFFFF" font-family="JetBrains Mono" font-size="8.5" font-weight="600" letter-spacing="0.08em">RESERVA CONFIRMADA</text>
-              </g>
-
-              <!-- Glowing Front Corner Node + Pulse Ring -->
-              <circle id="iso-node-ring" cx="310" cy="372" r="10" fill="none" stroke="#FFFFFF" stroke-width="1.4" opacity="0.6"/>
-              <circle id="iso-node-core" cx="310" cy="372" r="4.5" fill="#FFFFFF" filter="url(#neonGlow)"/>
-            </g>
-
-            <!-- 4. Vertical Laser Connector Beams (Between Base Slab & Upper Rising Plane) -->
-            <g id="iso-vertical-beams" opacity="0">
-              <line x1="310" y1="188" x2="310" y2="102" stroke="rgba(191,219,254,0.55)" stroke-width="1" stroke-dasharray="3 3"/>
-              <line x1="484" y1="288" x2="484" y2="202" stroke="rgba(191,219,254,0.55)" stroke-width="1" stroke-dasharray="3 3"/>
-              <line x1="136" y1="288" x2="136" y2="202" stroke="rgba(191,219,254,0.55)" stroke-width="1" stroke-dasharray="3 3"/>
-              <!-- Active Signal Beam going from Base Node (310,372) up to Upper Plane -->
-              <path id="iso-signal-path" d="M 310 372 L 310 250 L 382 208" stroke="#FFFFFF" stroke-width="1.8" fill="none" filter="url(#neonGlow)"/>
-            </g>
-
-            <!-- 5. Upper Rising Wireframe Plane ("ALERT TRIAGE" -> "TRIAGEM AUTOMÁTICA") -->
-            <g id="iso-upper-plane">
-              <polygon points="310,102 484,202 310,302 136,202" fill="url(#upperPlaneFill)" stroke="rgba(226,232,240,0.85)" stroke-width="1.4"/>
-              <polygon points="310,116 460,202 310,288 160,202" fill="none" stroke="rgba(147,197,253,0.32)" stroke-width="1" stroke-dasharray="4 4"/>
-
-              <!-- Upper Plane Isometric Label ("TRIAGEM DE HORÁRIO") -->
-              <g transform="translate(312, 122) rotate(30) skewX(-30)">
-                <text x="0" y="12" fill="#E2E8F0" font-family="JetBrains Mono" font-size="9.5" font-weight="600" letter-spacing="0.1em">TRIAGEM DE HORÁRIO</text>
-              </g>
-
-              <!-- Internal Wireframe Sub-Card Inside Upper Plane -->
-              <polygon points="382,168 446,205 382,242 318,205" fill="rgba(59,130,246,0.18)" stroke="#93C5FD" stroke-width="1.2"/>
-              <circle cx="382" cy="205" r="4" fill="#60A5FA"/>
-            </g>
-          </svg>
-
-          <!-- Live Floating Telemetry Pill -->
-          <div class="iso-hud-badge" id="iso-hud-badge">
-            <span class="status-dot-live"></span>
-            <span id="iso-hud-text"><strong>CADEIRA 01</strong> · 14:30 Degradê Navalhado</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. ICE-WHITE SECTION 1: 4-COLUMN ISOMETRIC ARCHITECTURE (00:05 - 00:08 OF VIDEO) -->
-    <section class="ice-arch-section" id="arquitetura">
-      <div class="ice-container">
-        <div class="ice-header-block gs-reveal">
-          <h2 class="ice-title">
-            Feito para os horários
-            <span class="tone-blue">que realmente importam</span>
-          </h2>
-          <p class="ice-subtitle">
-            O sistema elimina o ruído de mensagens soltas para sua equipe focar no atendimento de bancada.
-          </p>
-        </div>
+    <!-- HERO CENTRALIZADO -->
+    <section class="hero">
+      <div class="hero-pill">
+        <span class="hero-pill-tag">NOVO</span>
+        <span>Para barbearias, barbeiros autônomos e estúdios</span>
       </div>
 
-      <div class="arch-grid-wrapper">
-        <div class="arch-grid" id="arch-grid">
-          <!-- COLUMN 00.01: Stacked Isometric Layers -->
-          <article class="arch-col" data-col="1">
-            <span class="arch-col-index">[ 00.01 ]</span>
-            <div class="arch-diagram-box" aria-hidden="true">
-              <svg class="arch-diagram-svg" viewBox="0 0 180 160" fill="none">
-                <polygon class="iso-layer l1" points="90,22 154,54 90,86 26,54" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
-                <polygon class="iso-layer l2" points="90,42 154,74 90,106 26,74" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
-                <polygon class="iso-layer l3" points="90,62 154,94 90,126 26,94" fill="rgba(37,99,235,0.14)" stroke="#2563EB" stroke-width="1.6"/>
-                <polygon class="iso-layer l4" points="90,82 154,114 90,146 26,114" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="3 3"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="arch-col-title">Cada camada contabilizada</h3>
-              <p class="arch-col-desc">
-                Horários de abertura, intervalos de almoço, folgas semanais e feriados sincronizados em tempo real no link público.
-              </p>
-            </div>
-          </article>
+      <h1>
+        Sua agenda online
+        <span class="slot-chip"><span class="slot-dot" aria-hidden="true"></span><span id="live-slot-clock">14:30</span></span>
+        com a <span class="editorial-italic">cara</span> da <span class="underline-accent">sua barbearia.</span>
+      </h1>
 
-          <!-- COLUMN 00.02: Stepped Isometric Investigation Blocks -->
-          <article class="arch-col" data-col="2">
-            <span class="arch-col-index">[ 00.02 ]</span>
-            <div class="arch-diagram-box" aria-hidden="true">
-              <svg class="arch-diagram-svg" viewBox="0 0 180 160" fill="none">
-                <!-- Top-left isometric block -->
-                <polygon class="iso-step s1" points="62,28 98,46 62,64 26,46" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
-                <polyline points="26,46 26,58 62,76 98,58 98,46" fill="none" stroke="#94A3B8" stroke-width="1.2"/>
-                <!-- Middle isometric block -->
-                <polygon class="iso-step s2" points="92,62 128,80 92,98 56,80" fill="#FFFFFF" stroke="#64748B" stroke-width="1.2"/>
-                <polyline points="56,80 56,92 92,110 128,92 128,80" fill="none" stroke="#64748B" stroke-width="1.2"/>
-                <!-- Bottom-right highlighted blue block -->
-                <polygon class="iso-step s3" points="122,96 158,114 122,132 86,114" fill="rgba(37,99,235,0.15)" stroke="#2563EB" stroke-width="1.6"/>
-                <!-- Connecting circuit line -->
-                <path class="iso-trace" d="M 62 46 L 92 80 L 122 114" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="4 3"/>
-                <circle cx="122" cy="114" r="4.5" fill="#2563EB"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="arch-col-title">Bloqueia, não apenas avisa</h3>
-              <p class="arch-col-desc">
-                Trava atômica por barbeiro e duração do serviço: dois clientes nunca ocupam o mesmo horário na mesma cadeira.
-              </p>
-            </div>
-          </article>
+      <p class="hero-sub">
+        Página exclusiva no link da bio para o cliente agendar em segundos, sem baixar aplicativo. Controle horários por barbeiro, WhatsApp e caixa no mesmo lugar.
+      </p>
 
-          <!-- COLUMN 00.03: Cluster of Cubes Funneling to One Blue Cube -->
-          <article class="arch-col" data-col="3">
-            <span class="arch-col-index">[ 00.03 ]</span>
-            <div class="arch-diagram-box" aria-hidden="true">
-              <svg class="arch-diagram-svg" viewBox="0 0 180 160" fill="none">
-                <!-- Cluster of small isometric diamonds at top -->
-                <g class="iso-cluster" stroke="#64748B" stroke-width="1.1" fill="#FFFFFF">
-                  <polygon points="62,28 74,34 62,40 50,34"/>
-                  <polygon points="90,22 102,28 90,34 78,28"/>
-                  <polygon points="118,28 130,34 118,40 106,34"/>
-                  <polygon points="76,42 88,48 76,54 64,48"/>
-                  <polygon points="104,42 116,48 104,54 92,48"/>
-                  <polygon points="90,56 102,62 90,68 78,62"/>
-                </g>
-                <!-- Funnel lines converging down -->
-                <line x1="62" y1="42" x2="84" y2="102" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
-                <line x1="90" y1="68" x2="90" y2="102" stroke="#2563EB" stroke-width="1.4" stroke-dasharray="3 2"/>
-                <line x1="118" y1="42" x2="96" y2="102" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="2 2"/>
-                <!-- Single resolved blue isometric cube at bottom -->
-                <g class="iso-resolved-cube">
-                  <polygon points="90,100 112,111 90,122 68,111" fill="rgba(37,99,235,0.22)" stroke="#2563EB" stroke-width="1.6"/>
-                  <polygon points="68,111 90,122 90,140 68,129" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="1.4"/>
-                  <polygon points="112,111 90,122 90,140 112,129" fill="rgba(37,99,235,0.3)" stroke="#2563EB" stroke-width="1.4"/>
-                </g>
-              </svg>
-            </div>
-            <div>
-              <h3 class="arch-col-title">De dezenas de mensagens a 1 toque</h3>
-              <p class="arch-col-desc">
-                O cliente escolhe serviço, barbeiro e horário sozinho em 20 segundos, já com lembrete pronto para o WhatsApp.
-              </p>
-            </div>
-          </article>
-
-          <!-- COLUMN 00.04: Precision Target Plane -->
-          <article class="arch-col" data-col="4">
-            <span class="arch-col-index">[ 00.04 ]</span>
-            <div class="arch-diagram-box" aria-hidden="true">
-              <svg class="arch-diagram-svg" viewBox="0 0 180 160" fill="none">
-                <polygon class="iso-target-plane" points="90,42 154,74 90,106 26,74" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
-                <line x1="58" y1="58" x2="122" y2="90" stroke="#CBD5E1" stroke-width="1"/>
-                <line x1="122" y1="58" x2="58" y2="90" stroke="#CBD5E1" stroke-width="1"/>
-                <ellipse class="iso-target-ring" cx="90" cy="74" rx="26" ry="13" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="1.6"/>
-                <circle cx="90" cy="74" r="4" fill="#2563EB"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="arch-col-title">Caixa mais preciso a cada corte</h3>
-              <p class="arch-col-desc">
-                Cada atendimento finalizado calcula na hora o repasse do barbeiro, ticket médio e histórico de retorno do cliente.
-              </p>
-            </div>
-          </article>
-        </div>
-      </div>
-
-      <div class="arch-bottom-bar">
-        <a href="/agendar" class="arch-learn-link">
-          <span>Explorar fluxo de agendamento</span>
-          <span aria-hidden="true">→</span>
+      <div class="hero-ctas">
+        <a href="/agendar" class="cta-main">
+          Testar agendamento agora
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
+        <a href="/" class="cta-sec">Abrir painel administrativo</a>
+      </div>
+
+      <p class="hero-notes">Sem aplicativo para o cliente baixar · Trava automática contra conflito de horário</p>
+    </section>
+
+    <!-- PREVIEW DE TELAS REAIS DO SISTEMA -->
+    <section class="section" id="telas">
+      <div class="section-head">
+        <span class="section-kicker">Produto real</span>
+        <h2 class="section-title">Veja o sistema funcionando por dentro</h2>
+        <p class="section-sub">Alterne entre o painel do gestor, a grade da agenda e a tela financeira de comissões.</p>
+      </div>
+
+      <div class="showcase-tabs" role="tablist" aria-label="Telas do sistema">
+        <button type="button" class="showcase-tab active" data-shot="/img/screens/dashboard.png" data-label="gestor-de-barbearia / dashboard">Dashboard</button>
+        <button type="button" class="showcase-tab" data-shot="/img/screens/agenda.png" data-label="gestor-de-barbearia / agenda">Agenda por Barbeiro</button>
+        <button type="button" class="showcase-tab" data-shot="/img/screens/relatorios.png" data-label="gestor-de-barbearia / caixa-e-comissoes">Caixa &amp; Comissões</button>
+        <button type="button" class="showcase-tab" data-shot="/img/screens/clientes.png" data-label="gestor-de-barbearia / clientes">Clientes</button>
+      </div>
+
+      <div class="showcase-frame">
+        <div class="showcase-bar">
+          <div class="showcase-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span id="showcase-url">gestor-de-barbearia / dashboard</span>
+          <span>Ao vivo</span>
+        </div>
+        <img id="showcase-img" class="showcase-img" src="/img/screens/dashboard.png" alt="Tela real do Gestor de Barbearia">
       </div>
     </section>
 
-    <!-- 4. ICE-WHITE SECTION 2: SIGNAL RECEIVED & 3 FLOATING TELEMETRY CARDS (00:09 - 00:11 OF VIDEO) -->
-    <section class="ice-telemetry-section" id="telemetria">
-      <div class="ice-container">
-        <div class="ice-header-block gs-reveal" style="margin-bottom: 12px;">
-          <h2 class="ice-title">
-            Sua equipe já sabe
-            <span class="tone-blue">quem está na cadeira</span>
-          </h2>
-          <p class="ice-subtitle">
-            O Gestor transforma cada reserva em operação organizada automaticamente, no segundo em que o cliente confirma.
-          </p>
-          <button type="button" class="signal-trigger-row" id="btn-signal-pulse">
-            <span>Sinal recebido em tempo real</span>
-            <span class="signal-trigger-arrow" aria-hidden="true">→</span>
-          </button>
+    <!-- FUNCIONALIDADES COM ÍCONES PROFISSIONAIS -->
+    <section class="section" id="recursos">
+      <div class="section-head">
+        <span class="section-kicker">Recursos completos</span>
+        <h2 class="section-title">Tudo o que uma barbearia precisa no dia a dia</h2>
+        <p class="section-sub">Pensado para reduzir faltas na cadeira e organizar o repasse da equipe sem planilhas.</p>
+      </div>
+
+      <div class="feat-grid">
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <h3>Agendamento pelo Link da Bio</h3>
+          <p>O cliente escolhe serviço, barbeiro (ou qualquer disponível) e horário livre direto pelo celular em 4 passos rápidos.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3>Trava Anti-Conflito no Banco</h3>
+          <p>Transação atômica no SQLite/Turso impede dois clientes de reservarem o mesmo profissional no mesmo horário.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Lembretes via WhatsApp Cloud</h3>
+          <p>Integração oficial com a Meta API para confirmação, aviso de cancelamento e lembrete automático 24h antes.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3>Caixa &amp; Comissão Automática</h3>
+          <p>Separa receita prevista de realizada e calcula automaticamente o repasse de cada barbeiro com exportação CSV.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M20 14v7h-7"/></svg>
+          </div>
+          <h3>QR Code de Balcão Pronto</h3>
+          <p>Gere o QR Code oficial do seu link de agendamento direto no painel para imprimir no espelho ou na recepção.</p>
+        </article>
+
+        <article class="feat-card">
+          <div class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Segurança &amp; LGPD Completos</h3>
+          <p>Sessão HMAC HttpOnly, proteção CSRF, rate limit, portal de titular (DSR) e exportação/backup com 1 clique.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- FOTOS REAIS DO ESTÚDIO -->
+    <section class="section" id="estudio">
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <img src="/img/barber-chair-studio.jpg" alt="Cadeira e espelho do estúdio de barbearia">
+          <div class="gallery-caption">
+            <span>Atendimento com hora marcada e sem espera no balcão</span>
+            <strong style="color:var(--blue-soft)">/agendar</strong>
+          </div>
         </div>
-
-        <div class="telemetry-bento" id="telemetry-bento">
-          <!-- CARD 1 (LEFT): Investigation Time / Occupancy Dot-Matrix Heatmap -->
-          <article class="t-card" id="t-card-1">
-            <div class="t-card-head">
-              <span class="t-card-title">
-                <i class="t-card-icon">▤</i>
-                Ocupação por horário e serviço
-              </span>
-              <div class="t-card-actions" aria-hidden="true">
-                <span>↗</span>
-                <span>⤢</span>
-              </div>
-            </div>
-
-            <div class="t-metrics-pair">
-              <div>
-                <div class="t-metric-label">Cortes &amp; Degradês</div>
-                <div class="t-metric-val" data-count="1420">1.420</div>
-                <div class="t-metric-sub">● 35 min média</div>
-              </div>
-              <div>
-                <div class="t-metric-label">Barboterapia &amp; Combo</div>
-                <div class="t-metric-val" data-count="428">428</div>
-                <div class="t-metric-sub">● 50 min média</div>
-              </div>
-            </div>
-
-            <div class="dot-scatter-grid" id="dot-scatter-grid" aria-label="Mapa de calor de ocupação por horário"></div>
-
-            <div class="scatter-axis">
-              <span>09h</span>
-              <span>12h</span>
-              <span>15h</span>
-              <span>18h</span>
-              <span class="scatter-status-tip" id="scatter-tooltip">Passe o mouse nos horários</span>
-            </div>
-          </article>
-
-          <!-- CARD 2 (CENTER): Triage Report / Dual-Wave Violin Funnel -->
-          <article class="t-card" id="t-card-2">
-            <div class="t-card-head">
-              <span class="t-card-title">
-                <i class="t-card-icon">❖</i>
-                Relatório de Triagem &amp; Presença
-              </span>
-              <div class="t-card-actions" aria-hidden="true">
-                <span>↗</span>
-                <span>⤢</span>
-              </div>
-            </div>
-
-            <div class="t-metrics-pair">
-              <div>
-                <div class="t-metric-label">Reservas Recebidas</div>
-                <div class="t-metric-val" data-count="1848">1.848</div>
-                <div class="t-metric-sub">100% Link da Bio</div>
-              </div>
-              <div>
-                <div class="t-metric-label">Atendimentos Concluídos</div>
-                <div class="t-metric-val" data-count="1792">1.792</div>
-                <div class="t-metric-sub">97,0% Comparecimento</div>
-              </div>
-            </div>
-
-            <div class="wave-funnel-box">
-              <svg class="wave-funnel-svg" viewBox="0 0 340 118" fill="none">
-                <defs>
-                  <linearGradient id="waveOuter" x1="0" y1="0" x2="340" y2="0" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#93C5FD" stop-opacity="0.45"/>
-                    <stop offset="50%" stop-color="#3B82F6" stop-opacity="0.65"/>
-                    <stop offset="100%" stop-color="#60A5FA" stop-opacity="0.45"/>
-                  </linearGradient>
-                  <linearGradient id="waveInner" x1="0" y1="0" x2="340" y2="0" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#2563EB" stop-opacity="0.85"/>
-                    <stop offset="50%" stop-color="#1D4ED8" stop-opacity="0.95"/>
-                    <stop offset="100%" stop-color="#2563EB" stop-opacity="0.85"/>
-                  </linearGradient>
-                </defs>
-                <!-- Vertical grid guides -->
-                <line x1="85" y1="8" x2="85" y2="110" stroke="#E2E8F0" stroke-dasharray="2 2"/>
-                <line x1="170" y1="8" x2="170" y2="110" stroke="#E2E8F0" stroke-dasharray="2 2"/>
-                <line x1="255" y1="8" x2="255" y2="110" stroke="#E2E8F0" stroke-dasharray="2 2"/>
-
-                <!-- Outer soft blue violin wave -->
-                <path id="wave-path-outer" d="M 8 59 C 45 59, 60 18, 95 22 C 130 26, 145 48, 170 46 C 195 44, 215 16, 250 20 C 285 24, 305 59, 332 59 C 305 59, 285 94, 250 98 C 215 102, 195 74, 170 72 C 145 70, 130 92, 95 96 C 60 100, 45 59, 8 59 Z" fill="url(#waveOuter)"/>
-
-                <!-- Inner deep electric-blue core wave -->
-                <path id="wave-path-inner" d="M 16 59 C 52 59, 66 34, 95 36 C 128 38, 146 52, 170 51 C 194 50, 215 32, 250 35 C 282 38, 298 59, 326 59 C 298 59, 282 80, 250 83 C 215 86, 194 68, 170 67 C 146 66, 128 80, 95 82 C 66 84, 52 59, 16 59 Z" fill="url(#waveInner)"/>
-
-                <!-- Center spine line & percentage badges -->
-                <line x1="8" y1="59" x2="332" y2="59" stroke="#93C5FD" stroke-width="1"/>
-                <rect x="76" y="49" width="38" height="20" rx="10" fill="#1E293B"/>
-                <text x="95" y="62" text-anchor="middle" fill="#FFFFFF" font-family="JetBrains Mono" font-size="8.5" font-weight="600">100%</text>
-
-                <rect x="151" y="49" width="38" height="20" rx="10" fill="#1E293B"/>
-                <text x="170" y="62" text-anchor="middle" fill="#FFFFFF" font-family="JetBrains Mono" font-size="8.5" font-weight="600">98%</text>
-
-                <rect x="231" y="49" width="38" height="20" rx="10" fill="#1D4EFF"/>
-                <text x="250" y="62" text-anchor="middle" fill="#FFFFFF" font-family="JetBrains Mono" font-size="8.5" font-weight="600">97%</text>
-              </svg>
-
-              <div class="wave-labels-row">
-                <span>Link da Bio</span>
-                <span>Trava Horário</span>
-                <span>WhatsApp</span>
-                <span>Concluído</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- CARD 3 (RIGHT TALL FLOATING CARD): Weekly Operational Digest -->
-          <article class="t-card t-card-digest" id="t-card-3">
-            <div class="digest-top">
-              <h3 class="digest-heading">Resumo da Bancada</h3>
-              <span class="digest-badge">HOJE · AO VIVO</span>
-            </div>
-            <div class="digest-sub">Eventos sincronizados automaticamente</div>
-
-            <div class="digest-list">
-              <div class="digest-entry is-active">
-                <div class="digest-entry-head">
-                  <span class="digest-entry-title">Reserva confirmada — Cadeira 01</span>
-                  <span class="digest-severity blue"><i class="sev-dot"></i> 14:30</span>
-                </div>
-                <p class="digest-entry-desc">
-                  Corte Degradê + Barboterapia com Rafael. Horário das 14:30 às 15:20 bloqueado contra conflitos.
-                </p>
-              </div>
-
-              <div class="digest-entry">
-                <div class="digest-entry-head">
-                  <span class="digest-entry-title">Comissão creditada — Cadeira 02</span>
-                  <span class="digest-severity amber"><i class="sev-dot"></i> +R$ 42,50</span>
-                </div>
-                <p class="digest-entry-desc">
-                  Atendimento de Lucas finalizado. Repasse de 50% lançado no relatório financeiro da semana.
-                </p>
-              </div>
-
-              <div class="digest-entry">
-                <div class="digest-entry-head">
-                  <span class="digest-entry-title">Folga e feriado sincronizados</span>
-                  <span class="digest-severity red"><i class="sev-dot"></i> FECHADO</span>
-                </div>
-                <p class="digest-entry-desc">
-                  Configuração de folga semanal aplicada pelo Admin. Selo de status atualizado imediatamente no link público.
-                </p>
-              </div>
-            </div>
-          </article>
+        <div class="gallery-card">
+          <img src="/img/barber-craft-tools.jpg" alt="Ferramentas profissionais de barbearia">
+          <div class="gallery-caption">
+            <span>Gestão por profissional e serviço</span>
+            <strong style="color:var(--blue-soft)">/painel</strong>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 5. DARK STUDIO SHOWCASE & CLOSING CTA -->
-    <section class="dark-closing-section" id="estudio">
-      <div class="closing-inner">
-        <div class=" studio-showcase-grid">
-          <div class="studio-photo-card gs-photo">
-            <img src="/img/barber-studio-hero.jpg?v=20261115i" alt="Interior do estúdio da barbearia" loading="lazy">
-            <div class="studio-photo-caption">
-              <strong>Ambiente &amp; Bancadas</strong>
-              <span>ESTÚDIO VERIFICADO</span>
-            </div>
-          </div>
-          <div class="studio-photo-card gs-photo">
-            <img src="/img/cut-degrade.jpg?v=20261115i" alt="Corte Degradê Navalhado" loading="lazy">
-            <div class="studio-photo-caption">
-              <strong>Degradê &amp; Acabamento</strong>
-              <span>45 MIN · R$ 55</span>
-            </div>
-          </div>
-          <div class="studio-photo-card gs-photo">
-            <img src="/img/cut-barboterapia.jpg?v=20261115i" alt="Barboterapia com toalha quente" loading="lazy">
-            <div class="studio-photo-caption">
-              <strong>Barboterapia Quente</strong>
-              <span>35 MIN · R$ 45</span>
-            </div>
-          </div>
+    <!-- CTA FINAL -->
+    <section class="section">
+      <div class="cta-box">
+        <h2>Pronto para testar na prática?</h2>
+        <p>Acesse a demonstração completa agora mesmo: faça um agendamento como cliente ou entre no painel da equipe.</p>
+        <div class="hero-ctas" style="margin-top:0">
+          <a href="/agendar" class="cta-main">Fazer agendamento teste</a>
+          <a href="/" class="cta-sec">Entrar no painel</a>
         </div>
-
-        <div class="closing-cta-banner">
-          <div>
-            <h3>Pronto para testar na prática?</h3>
-            <p>Simule uma reserva como cliente ou gerencie horários, folgas e comissões no painel administrativo.</p>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:12px;">
-            <a href="/agendar" class="btn-split-electric">
-              <span class="btn-split-text">Abrir Página de Agendar</span>
-              <span class="btn-split-icon" aria-hidden="true">→</span>
-            </a>
-            <a href="/" class="btn-secondary-glass">Entrar no Painel Admin</a>
-          </div>
-        </div>
-
-        <footer class="footer-minimal">
-          <div>© 2026 Nova Runtime · Gestor de Barbearia</div>
-          <div class="footer-links">
-            <a href="/agendar">Agendar</a>
-            <a href="/">Painel Admin</a>
-            <a href="/termos.html">Termos</a>
-            <a href="/privacidade.html">Privacidade (LGPD)</a>
-            <a href="/compliance.html">Conformidade</a>
-          </div>
-        </footer>
       </div>
     </section>
   </main>
 
-  <!-- GSAP Core + ScrollTrigger + Flip -->
-  <script src="/vendor/gsap/gsap.min.js?v=20261115i"></script>
-  <script src="/vendor/gsap/ScrollTrigger.min.js?v=20261115i"></script>
-  <script src="/vendor/gsap/Flip.min.js?v=20261115i"></script>
-  <script>
-    (function () {
-      // 1. Populate the 14x5 Dot-Matrix Scatter Heatmap (Card 1)
-      const scatterGrid = document.getElementById('dot-scatter-grid');
-      const scatterTip = document.getElementById('scatter-tooltip');
-      const days = ['Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      const hours = ['09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h', '20h', '21h', '22h'];
-      const pattern = [
-        0,1,2,3,2,1,0,2,3,4,3,2,1,0,
-        1,2,3,4,3,2,1,2,4,4,3,2,1,1,
-        0,2,3,3,2,2,3,4,4,3,2,2,1,0,
-        2,3,4,4,3,2,3,4,4,4,3,2,1,0,
-        3,4,4,4,3,3,4,4,4,3,2,1,0,0
-      ];
-      if (scatterGrid) {
-        pattern.forEach((lvl, idx) => {
-          const dot = document.createElement('span');
-          dot.className = 'scatter-dot' + (lvl > 0 ? ' lvl-' + lvl : '');
-          const day = days[Math.floor(idx / 14)];
-          const hour = hours[idx % 14];
-          const pct = [18, 42, 68, 86, 98][lvl];
-          dot.addEventListener('mouseenter', () => {
-            if (scatterTip) scatterTip.textContent = `${day} ${hour} · ${pct}% ocupação`;
-            if (window.gsap) gsap.to(dot, { scale: 1.7, duration: 0.18, ease: 'back.out(2)' });
-          });
-          dot.addEventListener('mouseleave', () => {
-            if (window.gsap) gsap.to(dot, { scale: 1, duration: 0.22, ease: 'power2.out' });
-          });
-          scatterGrid.appendChild(dot);
-        });
-      }
+  <footer>
+    Gestor de Barbearia · Agendamento Online, Agenda por Profissional e Caixa · <a href="/compliance.html" style="color:var(--blue-soft)">Privacidade &amp; LGPD</a>
+  </footer>
 
-      // 2. Digest entry selection
-      const digestEntries = document.querySelectorAll('.digest-entry');
-      digestEntries.forEach((entry) => {
-        entry.addEventListener('click', () => {
-          digestEntries.forEach((e) => e.classList.remove('is-active'));
-          entry.classList.add('is-active');
-          if (window.gsap) {
-            gsap.fromTo(entry, { scale: 0.985 }, { scale: 1, duration: 0.25, ease: 'back.out(2)' });
-          }
-        });
-      });
-
-      // 3. Adaptive Navbar (Switches to crisp light mode over the Ice-White sections)
-      const nav = document.getElementById('kinetic-nav');
-      const archSection = document.getElementById('arquitetura');
-      const closingSection = document.getElementById('estudio');
-      window.addEventListener('scroll', () => {
-        if (!nav || !archSection || !closingSection) return;
-        const archTop = archSection.getBoundingClientRect().top;
-        const closeTop = closingSection.getBoundingClientRect().top;
-        if (archTop <= 60 && closeTop > 60) {
-          nav.classList.add('is-light');
-        } else {
-          nav.classList.remove('is-light');
-        }
-      }, { passive: true });
-
-      // 4. Live HUD Ticker on Isometric Hero Stage
-      const hudText = document.getElementById('iso-hud-text');
-      const events = [
-        '<strong>CADEIRA 01</strong> · 14:30 Degradê Navalhado',
-        '<strong>TRAVA ATÔMICA</strong> · Conflito bloqueado às 15:00',
-        '<strong>WHATSAPP</strong> · Confirmação enviada ao cliente',
-        '<strong>REPASSE</strong> · Comissão de R$ 42,50 registrada'
-      ];
-      let evIdx = 0;
-      setInterval(() => {
-        evIdx = (evIdx + 1) % events.length;
-        if (!hudText) return;
-        if (window.gsap) {
-          gsap.to(hudText, {
-            opacity: 0,
-            y: -5,
-            duration: 0.2,
-            onComplete: () => {
-              hudText.innerHTML = events[evIdx];
-              gsap.fromTo(hudText, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' });
-            }
-          });
-        } else {
-          hudText.innerHTML = events[evIdx];
-        }
-      }, 3200);
-
-      // 5. GSAP KINETIC TIMELINES (Matching Video 00:00 -> 00:11)
-      if (!window.gsap) return;
-      if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
-
-      // 5A. HERO INTRO TIMELINE (00:00 -> 00:04)
-      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-      // Initial states for isometric stage layers
-      gsap.set('#iso-upper-plane', { y: 86, opacity: 0 });
-      gsap.set('#iso-vertical-beams', { opacity: 0 });
-      gsap.set('#iso-base-slab', { y: 28, opacity: 0, scale: 0.94, transformOrigin: '50% 50%' });
-      gsap.set('#iso-under-glow', { scale: 0.6, opacity: 0, transformOrigin: '50% 50%' });
-
-      heroTl
-        .fromTo('#hero-sweep-glow', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.1 })
-        .from('#hero-kickers', { y: 18, opacity: 0, duration: 0.55 }, 0.15)
-        .from('#hero-headline .tone-silver', { y: 28, opacity: 0, duration: 0.65 }, 0.25)
-        .from('#hero-headline .tone-white', { y: 28, opacity: 0, duration: 0.65 }, 0.38)
-        .from('#hero-lead', { y: 20, opacity: 0, duration: 0.6 }, 0.48)
-        .from('#hero-ctas', { y: 18, opacity: 0, duration: 0.55 }, 0.56)
-        .from('#hero-trust', { y: 16, opacity: 0, duration: 0.55 }, 0.68)
-        // Base slab materializes & glows (00:01 -> 00:02)
-        .to('#iso-under-glow', { scale: 1, opacity: 1, duration: 0.9 }, 0.3)
-        .to('#iso-base-slab', { y: 0, opacity: 1, scale: 1, duration: 0.85, ease: 'back.out(1.4)' }, 0.35)
-        // Upper wireframe plane rises vertically above the slab with connector beams (00:02 -> 00:04)
-        .to('#iso-vertical-beams', { opacity: 1, duration: 0.5 }, 0.85)
-        .to('#iso-upper-plane', { y: 0, opacity: 1, duration: 1.05, ease: 'power3.out' }, 0.82)
-        .from('#iso-hud-badge', { y: 16, opacity: 0, duration: 0.5 }, 1.1);
-
-      // Continuous subtle levitation of upper plane + pulsing node ring
-      gsap.to('#iso-upper-plane', {
-        y: -8,
-        duration: 2.6,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-        delay: 1.9
-      });
-
-      gsap.to('#iso-node-ring', {
-        attr: { r: 22 },
-        opacity: 0,
-        duration: 1.8,
-        repeat: -1,
-        ease: 'power2.out'
-      });
-
-      // Interactive 3D Mouse Tilt on Hero Isometric Stage
-      const heroStage = document.getElementById('hero-stage');
-      const sweepGlow = document.getElementById('hero-sweep-glow');
-      const isoSvg = document.getElementById('hero-iso-svg');
-      if (heroStage && isoSvg) {
-        const rxTo = gsap.quickTo(isoSvg, 'rotationX', { duration: 0.45, ease: 'power2.out' });
-        const ryTo = gsap.quickTo(isoSvg, 'rotationY', { duration: 0.45, ease: 'power2.out' });
-        heroStage.addEventListener('mousemove', (e) => {
-          const r = heroStage.getBoundingClientRect();
-          const px = (e.clientX - r.left) / r.width;
-          const py = (e.clientY - r.top) / r.height;
-          if (sweepGlow) {
-            sweepGlow.style.setProperty('--cursor-x', (px * 100).toFixed(1) + '%');
-            sweepGlow.style.setProperty('--cursor-y', (py * 100).toFixed(1) + '%');
-          }
-          rxTo((0.5 - py) * 14);
-          ryTo((px - 0.5) * 16);
-        });
-        heroStage.addEventListener('mouseleave', () => {
-          rxTo(0);
-          ryTo(0);
-        });
-      }
-
-      // 5B. 4-COLUMN ARCHITECTURAL GRID SEQUENTIAL SCROLL REVEAL (Video 00:05 -> 00:08)
-      const cols = gsap.utils.toArray('.arch-col');
-      if (cols.length && window.ScrollTrigger) {
-        gsap.from(cols, {
-          y: 44,
-          opacity: 0,
-          duration: 0.75,
-          stagger: 0.16,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '#arch-grid',
-            start: 'top 82%'
-          }
-        });
-
-        // Animate internal isometric layers inside each column on hover
-        cols.forEach((col) => {
-          const layers = col.querySelectorAll('.iso-layer, .iso-step, .iso-resolved-cube, .iso-target-ring');
-          col.addEventListener('mouseenter', () => {
-            gsap.to(layers, {
-              y: (i) => (i % 2 === 0 ? -6 : 4),
-              duration: 0.32,
-              stagger: 0.04,
-              ease: 'back.out(2)'
-            });
-          });
-          col.addEventListener('mouseleave', () => {
-            gsap.to(layers, { y: 0, duration: 0.28, ease: 'power2.out' });
-          });
-        });
-      }
-
-      // 5C. TELEMETRY BENTO CARDS + NUMBER COUNTERS + DOT RIPPLE (Video 00:09 -> 00:11)
-      if (window.ScrollTrigger) {
-        gsap.from(['#t-card-1', '#t-card-2', '#t-card-3'], {
-          y: 52,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '#telemetry-bento',
-            start: 'top 84%'
-          }
-        });
-
-        gsap.from('.scatter-dot', {
-          scale: 0,
-          opacity: 0,
-          duration: 0.4,
-          stagger: { amount: 0.65, from: 'random' },
-          ease: 'back.out(2)',
-          scrollTrigger: {
-            trigger: '#dot-scatter-grid',
-            start: 'top 88%'
-          }
-        });
-
-        gsap.from('.gs-photo', {
-          y: 36,
-          opacity: 0,
-          duration: 0.7,
-          stagger: 0.14,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.studio-showcase-grid',
-            start: 'top 85%'
-          }
-        });
-      }
-
-      // Interactive "Sinal recebido ->" button triggers a live GSAP wave across all 3 telemetry cards
-      const btnSignal = document.getElementById('btn-signal-pulse');
-      if (btnSignal) {
-        btnSignal.addEventListener('click', () => {
-          gsap.fromTo(
-            '.scatter-dot',
-            { scale: 0.4, opacity: 0.3 },
-            { scale: 1, opacity: 1, duration: 0.45, stagger: { amount: 0.45, from: 'start' }, ease: 'back.out(2.2)' }
-          );
-          gsap.fromTo(
-            ['#wave-path-outer', '#wave-path-inner'],
-            { scaleY: 0.25, transformOrigin: '50% 50%' },
-            { scaleY: 1, duration: 0.65, stagger: 0.08, ease: 'elastic.out(1, 0.5)' }
-          );
-          gsap.fromTo(
-            '.digest-entry',
-            { x: 14, opacity: 0.4 },
-            { x: 0, opacity: 1, duration: 0.4, stagger: 0.09, ease: 'power2.out' }
-          );
-        });
-      }
-    })();
-  </script>
+  <script src="/js/apresentacao.js" defer></script>
 </body>
 </html>
