@@ -245,6 +245,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 .app-shell {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .sidebar {
@@ -258,6 +259,9 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   z-index: 40;
   color: var(--text);
 }
@@ -1725,7 +1729,9 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--surface);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
@@ -4549,5 +4555,46 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .row-actions {
+    flex-wrap: wrap;
+  }
+  #fin-range-form {
+    width: 100%;
+  }
+  #fin-range-form input[type="date"] {
+    flex: 1 1 130px;
+    min-width: 0;
+  }
+  .modal-backdrop {
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal {
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .content {
+    padding: 12px 10px 36px;
+  }
+  .ct-kpi-card {
+    padding: 14px;
+  }
+  .ct-kpi-value {
+    font-size: 24px;
+  }
+  .sidebar-toggle,
+  .icon-btn {
+    min-width: 40px;
+    min-height: 40px;
   }
 }
