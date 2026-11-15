@@ -199,6 +199,27 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_shop ON users(shop_id);
+
+-- Planos e Assinaturas SaaS
+CREATE TABLE IF NOT EXISTS plans (
+  id               TEXT PRIMARY KEY,
+  name             TEXT NOT NULL,
+  price_cents      INTEGER NOT NULL DEFAULT 0,
+  max_barbers      INTEGER NOT NULL DEFAULT 2,
+  max_services     INTEGER NOT NULL DEFAULT 10,
+  whatsapp_cloud   INTEGER NOT NULL DEFAULT 0,
+  reports_advanced INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+  shop_id            INTEGER PRIMARY KEY REFERENCES barbershops(id) ON DELETE CASCADE,
+  plan_id            TEXT NOT NULL REFERENCES plans(id),
+  status             TEXT NOT NULL DEFAULT 'active',
+  provider           TEXT,
+  external_id        TEXT,
+  current_period_end TEXT,
+  updated_at         TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
 `;
 
 export const DEFAULT_SETTINGS = {
@@ -547,6 +568,20 @@ async function seedDefaults() {
       }))
     );
   }
+
+  // Semeia planos SaaS padrao
+  await driver.batch([
+    {
+      sql: `INSERT INTO plans (id, name, price_cents, max_barbers, max_services, whatsapp_cloud, reports_advanced)
+            VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`,
+      params: ['free', 'Gratuito', 0, 2, 10, 0, 0],
+    },
+    {
+      sql: `INSERT INTO plans (id, name, price_cents, max_barbers, max_services, whatsapp_cloud, reports_advanced)
+            VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`,
+      params: ['pro', 'Profissional', 7900, 20, 100, 1, 1],
+    },
+  ]);
 
   // Semeia barbearias multi-tenant caso a tabela esteja vazia
   const totalShops = await driver.get('SELECT COUNT(*) AS total FROM barbershops', []);

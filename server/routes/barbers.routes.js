@@ -1,5 +1,6 @@
 import { all, batch, get, run } from '../db.js';
 import { getBarberHours, invalidateBarberHours } from '../availability.js';
+import { assertBarberQuota } from '../plans.js';
 import { HttpError } from '../http.js';
 import {
   boolFlag,
@@ -80,6 +81,7 @@ export const barberRoutes = [
     method: 'POST',
     path: '/api/barbers',
     handler: async ({ body, shopId = 1 }) => {
+      await assertBarberQuota(shopId);
       const name = requiredString(body.name, 'nome do profissional', { max: 120 });
 
       const info = await run(

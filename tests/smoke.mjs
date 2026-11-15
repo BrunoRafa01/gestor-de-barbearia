@@ -722,6 +722,19 @@ async function run() {
       pubTenant2.body?.barbers?.length === 1 &&
       pubTenant2.body?.barbers?.[0]?.name === 'Barbeiro Exclusivo T2'
   );
+
+  // Fase 5: Planos SaaS e limites (Tenant 2 inicia no plano free: max 2 barbeiros)
+  const planCheck = await call('/api/billing/plan');
+  check('billing/plan retorna plano free para novo tenant', planCheck.status === 200 && planCheck.body?.plan?.id === 'free');
+  const t2b2 = await call('/api/barbers', { method: 'POST', body: { name: 'Barbeiro 2 T2' } });
+  check('tenant 2 free cria 2o profissional (201)', t2b2.status === 201);
+  const t2b3 = await call('/api/barbers', { method: 'POST', body: { name: 'Barbeiro 3 T2' } });
+  check('tenant 2 free bloqueia 3o profissional (403)', t2b3.status === 403);
+  const upgrade = await call('/api/billing/upgrade', { method: 'POST', body: { plan_id: 'pro' } });
+  check('upgrade para plano pro responde 200', upgrade.status === 200 && upgrade.body?.plan?.id === 'pro');
+  const t2b3After = await call('/api/barbers', { method: 'POST', body: { name: 'Barbeiro 3 T2' } });
+  check('apos upgrade pro permite 3o profissional (201)', t2b3After.status === 201);
+
   cookie = tenant1Cookie;
 
   /* ------------------------------ 14. Backup ------------------------------ */

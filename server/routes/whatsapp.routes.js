@@ -8,6 +8,7 @@ import {
   getWhatsAppConfig,
   handleWebhookEvent,
   processAppointmentReminders,
+  processPostAppointmentFollowups,
   sendMetaCloudMessage,
   verifyWebhook,
 } from '../whatsapp-cloud.js';
@@ -138,6 +139,22 @@ export const whatsappRoutes = [
     path: '/api/whatsapp/trigger-reminders',
     handler: async () => {
       const result = await processAppointmentReminders();
+      return {
+        status: 200,
+        body: {
+          success: true,
+          processed: result.processed,
+          sent: result.sent,
+          skipped: Boolean(result.skipped),
+        },
+      };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/whatsapp/trigger-followups',
+    handler: async () => {
+      const result = await processPostAppointmentFollowups();
       return {
         status: 200,
         body: {

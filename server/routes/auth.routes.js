@@ -9,6 +9,7 @@ import {
   verifyPassword,
 } from '../auth.js';
 import { get, getSetting, run } from '../db.js';
+import { getShopPlan, listPlans, setShopPlan } from '../plans.js';
 import { isDemoMode } from '../demo.js';
 import { HttpError } from '../http.js';
 import { clientIp, isSecureRequest, loginLimiter } from '../security.js';
@@ -114,6 +115,7 @@ export const authRoutes = [
         'INSERT INTO users (shop_id, email, name, password_hash, role, active) VALUES (?, ?, ?, ?, ?, 1)',
         [shopId, email, ownerName, hashPassword(password), 'owner']
       );
+      await setShopPlan(shopId, 'free', { provider: 'onboarding' });
 
       startSession(res, {
         secure: isSecureRequest(req),
@@ -165,6 +167,34 @@ export const authRoutes = [
       const view = query.view || 'dashboard';
       res.writeHead(302, { Location: `/#${view}` });
       res.end();
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/billing/plan',
+    handler: async ({ shopId = 1 }) => {
+      const [current, plans, barbersRow] = await Promise.all([
+        getShopPlan(shopId),
+        listPlans(),
+        get('SELECT COUNT(*) AS total FROM barbers WHERE shop_id = ? AND active = 1', [shopId]),
+      ]);
+      return {
+        status: 200,
+        body: {
+          plan: current,
+          usage: { active_barbers: Number(barbersRow?.total || 0) },
+          available_plans: plans,
+        },
+      };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/billing/upgrade',
+    handler: async ({ body, shopId = 1 }) => {
+      const planId = requiredString(body.plan_id, 'plano', { max: 40 });
+      const updated = await setShopPlan(shopId, planId, { provider: 'manual' });
+      return { status: 200, body: { upgraded: true, plan: updated } };
     },
   },
 ];

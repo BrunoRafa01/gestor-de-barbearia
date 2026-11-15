@@ -510,6 +510,54 @@ export async function processAppointmentReminders() {
   return { processed: appointments.length, scanned: appointments.length, sent: sentCount };
 }
 
+/**
+ * Rotina de pos-atendimento: envia agradecimento + convite para avaliacao
+ * aos clientes que concluiram atendimento hoje (idempotente por agendamento).
+ */
+export async function processPostAppointmentFollowups() {
+  const config = getWhatsAppConfig();
+  if (!config.enabled || !config.phoneNumberId || !config.accessToken) {
+    return { skipped: true, processed: 0, sent: 0 };
+  }
+
+  const today = todayISO();
+  const completedToday = await all(
+    `SELECT a.id, a.date, a.start_time,
+            c.name AS client_name, c.phone AS client_phone,
+            b.name AS barber_name, s.name AS service_name
+       FROM appointments a
+       JOIN clients c ON c.id = a.client_id
+       JOIN barbers b ON b.id = a.barber_id
+  LEFT JOIN services s ON s.id = a.service_id
+      WHERE a.status = 'completed'
+        AND a.date = ?`,
+    [today]
+  );
+
+  const shopName = getSetting('shop_name', 'Gestor de Barbearia');
+  let sent = 0;
+
+  for (const appt of completedToday) {
+    if (!appt.client_phone) continue;
+    const bodyText = `Olá ${appt.client_name}! Obrigado por escolher a ${shopName} hoje com ${appt.barber_name}. Conte pra gente como foi sua experiência!`;
+    try {
+      const res = await sendMetaCloudMessage({
+        to: appt.client_phone,
+        messageType: 'followup',
+        bodyText,
+        appointmentId: appt.id,
+        recipientType: 'client',
+        idempotencyKey: `followup-${appt.id}`,
+      });
+      if (res?.success && !res.duplicate) sent += 1;
+    } catch (err) {
+      console.error(`[WhatsApp Followup] Falha no agendamento #${appt.id}:`, err.message);
+    }
+  }
+
+  return { processed: completedToday.length, sent };
+}
+
 /* --------------------------------------------------------------------------
  * Worker em Segundo Plano
  * ------------------------------------------------------------------------ */

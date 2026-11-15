@@ -2,7 +2,7 @@
 
 import { all } from './db.js';
 import { HttpError } from './http.js';
-import { isValidDate, todayISO, weekdayOf } from './time.js';
+import { addDays, isValidDate, todayISO, weekdayOf } from './time.js';
 import { optionalId } from './validate.js';
 
 const WEEKDAY_LABELS = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
@@ -41,7 +41,11 @@ export async function buildReport(query = {}) {
   const barberFilter = barberId ? ' AND a.barber_id = ?' : '';
   const barberParams = barberId ? [barberId] : [];
 
-  const [statusRows, barberRows, serviceRows, dailyRows, newClients] = await Promise.all([
+  const rangeDays = diffDays(from, to) + 1;
+  const prevTo = addDays(from, -1);
+  const prevFrom = addDays(prevTo, -(rangeDays - 1));
+
+  const [statusRows, barberRows, serviceRows, dailyRows, newClients, prevRows, repeatRows] = await Promise.all([
     all(
       `SELECT status, COUNT(*) AS total, COALESCE(SUM(price), 0) AS revenue
          FROM appointments a
@@ -89,6 +93,25 @@ export async function buildReport(query = {}) {
       `SELECT COUNT(*) AS total FROM clients WHERE date(created_at) BETWEEN ? AND ?`,
       [from, to]
     ),
+    all(
+      `SELECT COUNT(*) AS appointments,
+              COALESCE(SUM(CASE WHEN a.status = 'completed' THEN a.price ELSE 0 END), 0) AS revenue_realized
+         FROM appointments a
+        WHERE a.date BETWEEN ? AND ?${barberFilter}`,
+      [prevFrom, prevTo, ...barberParams]
+    ),
+    all(
+      `SELECT COUNT(DISTINCT a.client_id) AS unique_clients,
+              COUNT(DISTINCT CASE
+                WHEN EXISTS (
+                  SELECT 1 FROM appointments p
+                   WHERE p.client_id = a.client_id AND p.status = 'completed' AND p.date < ?
+                ) THEN a.client_id
+              END) AS returning_clients
+         FROM appointments a
+        WHERE a.date BETWEEN ? AND ? AND a.status = 'completed'${barberFilter}`,
+      [from, from, to, ...barberParams]
+    ),
   ]);
 
   const statusMap = new Map(
@@ -133,8 +156,19 @@ export async function buildReport(query = {}) {
 
   const activeDays = daily.length;
 
+  const prevRealized = Number(prevRows?.[0]?.revenue_realized || 0);
+  const prevAppointments = Number(prevRows?.[0]?.appointments || 0);
+  const uniqueClients = Number(repeatRows?.[0]?.unique_clients || 0);
+  const returningClients = Number(repeatRows?.[0]?.returning_clients || 0);
+  const revenueGrowthPct =
+    prevRealized > 0
+      ? Number((((revenueRealized - prevRealized) / prevRealized) * 100).toFixed(1))
+      : revenueRealized > 0
+        ? 100
+        : 0;
+
   return {
-    range: { from, to, days: diffDays(from, to) + 1, active_days: activeDays },
+    range: { from, to, days: rangeDays, active_days: activeDays },
     generated_at: new Date().toISOString(),
     totals: {
       appointments: totalAppointments,
@@ -151,6 +185,15 @@ export async function buildReport(query = {}) {
       completion_rate: ratio(completed, totalAppointments),
       revenue_per_active_day: activeDays ? Number((revenueRealized / activeDays).toFixed(2)) : 0,
       new_clients: Number(newClients?.[0]?.total || 0),
+      returning_clients: returningClients,
+      repeat_rate: ratio(returningClients, uniqueClients),
+    },
+    comparison: {
+      previous_from: prevFrom,
+      previous_to: prevTo,
+      previous_appointments: prevAppointments,
+      previous_revenue_realized: prevRealized,
+      revenue_growth_pct: revenueGrowthPct,
     },
     by_status: statusRows.map((row) => ({
       status: row.status,
