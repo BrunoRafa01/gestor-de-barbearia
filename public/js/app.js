@@ -315,9 +315,20 @@ function shellHtml() {
           <div class="topbar-actions">
             ${
               state.me?.user?.email
-                ? `<div class="user-pill hide-mobile" title="${esc(state.me.user.email)}">
-                    <span class="user-pill-avatar">${esc(state.me.user.email.slice(0, 1).toUpperCase())}</span>
-                    <span class="user-pill-label">${esc(state.me.user.email)}</span>
+                ? `<div class="user-menu-wrap hide-mobile">
+                    <button class="user-pill user-pill-btn" id="user-menu-btn" type="button" aria-expanded="false" title="${esc(state.me.user.email)}">
+                      <span class="user-pill-avatar">${esc(state.me.user.email.slice(0, 1).toUpperCase())}</span>
+                      <span class="user-pill-label">${esc(state.me.user.email)}</span>
+                    </button>
+                    <div class="user-menu-dropdown" id="user-menu-dropdown">
+                      <div class="user-menu-head">
+                        <strong>${esc(state.me.user.email)}</strong>
+                        <span>${esc(state.me.user.role === 'owner' ? 'Proprietário / Admin' : state.me.user.role || 'Admin')} · Loja #${esc(String(state.me.user.shop_id || 1))}</span>
+                      </div>
+                      <a class="user-menu-item" href="#/plano">${icon('sparkles')}<span>Plano &amp; Assinatura</span></a>
+                      <a class="user-menu-item" href="#/configuracoes">${icon('settings')}<span>Configurações</span></a>
+                      <button class="user-menu-item" type="button" id="topbar-logout">${icon('logout')}<span>Sair do painel</span></button>
+                    </div>
                   </div>`
                 : ''
             }
@@ -351,7 +362,7 @@ function wireShell() {
     openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
   });
 
-  document.getElementById('logout').addEventListener('click', async () => {
+  const doLogout = async () => {
     try {
       await api.post('/api/auth/logout');
     } catch {
@@ -359,7 +370,25 @@ function wireShell() {
     }
     location.hash = '';
     renderLogin();
-  });
+  };
+
+  document.getElementById('logout').addEventListener('click', doLogout);
+
+  const userMenuBtn = document.getElementById('user-menu-btn');
+  const userMenuDrop = document.getElementById('user-menu-dropdown');
+  if (userMenuBtn && userMenuDrop) {
+    userMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = userMenuDrop.classList.toggle('open');
+      userMenuBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', () => {
+      userMenuDrop.classList.remove('open');
+      userMenuBtn.setAttribute('aria-expanded', 'false');
+    });
+    const topbarLogout = document.getElementById('topbar-logout');
+    if (topbarLogout) topbarLogout.addEventListener('click', doLogout);
+  }
 
   if (state.me?.password_is_default && !state.me?.demo) {
     renderForcePasswordScreen();
@@ -488,418 +517,495 @@ async function navigate(view) {
 
 /* -------------------------------- Dashboard ------------------------------- */
 
+function resolveDashboardRange(rangeKey, refDate) {
+  const to = refDate || todayISO();
+  if (rangeKey === 'today') return { from: to, to, label: 'Hoje' };
+  if (rangeKey === '7d') return { from: addDays(to, -6), to, label: 'Últimos 7 dias' };
+  if (rangeKey === 'month') return { from: `${to.slice(0, 7)}-01`, to, label: 'Mês Atual' };
+  return { from: addDays(to, -29), to, label: 'Últimos 30 dias' };
+}
+
+function buildSparklineSvg(dailyRows) {
+  const values = (dailyRows && dailyRows.length ? dailyRows.slice(-10) : [{ revenue: 0 }, { revenue: 0 }]).map((d) =>
+    Number(d.revenue || d.revenue_expected || 0)
+  );
+  if (values.length === 1) values.unshift(values[0]);
+  const max = Math.max(1, ...values);
+  const w = 120;
+  const h = 34;
+  const pts = values.map((v, i) => [
+    Math.round((i / Math.max(1, values.length - 1)) * w),
+    Math.round(h - 4 - (v / max) * (h - 8)),
+  ]);
+  const d = pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ');
+  return `
+    <svg viewBox="0 0 ${w} ${h}" width="110" height="32" aria-hidden="true" style="flex-shrink:0">
+      <path d="${d}" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>`;
+}
+
 async function viewDashboard() {
   await loadCatalog();
-  const data = await api.get(`/api/dashboard${query({ date: state.date })}`);
-  const { today, week, month } = data;
+  state.dashRange = state.dashRange || '30d';
+  state.dashStatusFilter = state.dashStatusFilter || 'all';
+  state.dashSearch = state.dashSearch || '';
+
+  const range = resolveDashboardRange(state.dashRange, state.date);
+  const [data, report, billing, waStatus, health] = await Promise.all([
+    api.get(`/api/dashboard${query({ date: state.date })}`),
+    api.get(`/api/reports${query({ from: range.from, to: range.to })}`).catch(() => null),
+    api.get('/api/billing/plan').catch(() => null),
+    api.get('/api/whatsapp/status').catch(() => null),
+    fetch('/health').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  ]);
+
+  const { today } = data;
   const rate = today.occupancy.rate;
-
-  const quickActionsBar = `
-    <div class="row-actions" style="margin-bottom:16px;gap:10px">
-      <button class="btn btn-primary" id="dash-quick-new" type="button">${icon('plus')} Novo Agendamento</button>
-      <button class="btn" id="dash-quick-client" type="button">${icon('users')} Novo Cliente</button>
-      <button class="btn" id="dash-quick-link" type="button">${icon('copy')} Copiar Link Público</button>
-      <button class="btn btn-ghost" id="dash-quick-agenda" type="button">${icon('calendar')} Ver Agenda Completa</button>
-    </div>`;
-
-  const dayNav = `
-    <div class="toolbar">
-      <button class="icon-btn" id="dash-prev" type="button" aria-label="Dia anterior">${icon('left')}</button>
-      <button class="btn" id="dash-today" type="button">Hoje</button>
-      <button class="icon-btn" id="dash-next" type="button" aria-label="Próximo dia">${icon('right')}</button>
-      <input class="control" type="date" id="dash-date" value="${esc(state.date)}" />
-    </div>`;
-
-  const todayTimeline = today.appointments.length
-    ? `<div class="timeline">${today.appointments
-        .map(
-          (item) => `
-          <div class="timeline-item" data-appt="${item.id}" style="cursor:pointer">
-            <div class="timeline-time">${esc(item.start_time)}</div>
-            <div class="timeline-main">
-              <strong>${esc(item.client_name)}</strong>
-              <span>${esc(item.service_name || 'Serviço')} - ${esc(item.barber_name)} - ${esc(money(item.price))}</span>
-            </div>
-            ${statusPill(item.status)}
-          </div>`
-        )
-        .join('')}</div>`
-    : rate === null
-      ? emptyBlock('Barbearia fechada hoje', 'Não há expediente configurado para este dia.')
-      : emptyBlock('Nenhum agendamento neste dia', 'Use "Novo agendamento" no topo para registrar.');
-
-  const rankTable = (rows, emptyLabel) => {
-    if (!rows.length) return `<div class="empty">${esc(emptyLabel)}</div>`;
-    const maxVal = Math.max(...rows.map((r) => r.total || 1), 1);
-    return `<div class="bars" style="padding:10px 0">${rows
-      .map((row) => {
-        const pct = Math.round((row.total / maxVal) * 100);
-        return `
-        <div class="bar-row">
-          <span class="bar-label" title="${esc(row.name)}">${esc(row.name)}</span>
-          <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
-          <span class="bar-value mono"><strong>${row.total}</strong> <small class="faint">(${esc(money(row.revenue))})</small></span>
-        </div>`;
-      })
-      .join('')}</div>`;
+  const occupancyPct = rate === null ? 0 : Math.max(0, Math.min(100, Number(rate)));
+  const totals = report?.totals || {
+    appointments: today.total,
+    completed: today.completed,
+    cancelled: today.cancelled,
+    no_show: today.no_show,
+    pending: today.pending,
+    confirmed: today.confirmed,
+    revenue_realized: today.revenue_realized,
+    revenue_expected: today.revenue_expected,
+    average_ticket: data.month?.average_ticket || 0,
+    cancellation_rate: 0,
+    no_show_rate: 0,
+    completion_rate: 0,
+    new_clients: data.month?.new_clients || 0,
+    returning_clients: 0,
+    repeat_rate: 0,
   };
+  const growthPct = Number(report?.comparison?.revenue_growth_pct || 0);
+  const realizedRatio = totals.revenue_expected > 0
+    ? Math.min(100, Math.round((totals.revenue_realized / totals.revenue_expected) * 100))
+    : 0;
+  const cancelTotal = Number(totals.cancelled || 0) + Number(totals.no_show || 0);
+  const cancelRate = totals.appointments > 0 ? Math.round((cancelTotal / totals.appointments) * 100) : 0;
+  const totalClientsPeriod = Number(totals.new_clients || 0) + Number(totals.returning_clients || 0);
+  const repeatPct = Math.round(Number(totals.repeat_rate || 0) * 100);
+
+  const funnelSteps = [
+    { num: '01', label: 'Agendados no período', count: totals.appointments, pct: totals.appointments > 0 ? 100 : 0 },
+    {
+      num: '02',
+      label: 'Confirmados + Concluídos',
+      count: Number(totals.confirmed || 0) + Number(totals.completed || 0),
+      pct: totals.appointments > 0 ? Math.round(((Number(totals.confirmed || 0) + Number(totals.completed || 0)) / totals.appointments) * 100) : 0,
+    },
+    {
+      num: '03',
+      label: 'Atendimentos concluídos',
+      count: totals.completed,
+      pct: totals.appointments > 0 ? Math.round((totals.completed / totals.appointments) * 100) : 0,
+    },
+    {
+      num: '04',
+      label: 'Clientes recorrentes',
+      count: totals.returning_clients || 0,
+      pct: totalClientsPeriod > 0 ? repeatPct : 0,
+    },
+  ];
+
+  const topServices = (report?.by_service?.length ? report.by_service : data.top_services || []).slice(0, 4);
+  const topBarbers = (report?.by_barber?.length ? report.by_barber : data.top_barbers || []).slice(0, 4);
+
+  const filterAppts = (list) => {
+    const term = state.dashSearch.trim().toLowerCase();
+    return list.filter((item) => {
+      if (state.dashStatusFilter === 'confirmed' && item.status !== 'confirmed') return false;
+      if (state.dashStatusFilter === 'completed' && item.status !== 'completed') return false;
+      if (state.dashStatusFilter === 'pending' && item.status !== 'pending') return false;
+      if (state.dashStatusFilter === 'cancelled' && !['cancelled', 'no_show'].includes(item.status)) return false;
+      if (!term) return true;
+      return `${item.client_name} ${item.service_name || ''} ${item.barber_name || ''}`.toLowerCase().includes(term);
+    });
+  };
+  const filteredDayAppts = filterAppts(today.appointments || []);
+
+  const planName = billing?.plan?.plan_name || 'Plano Gratuito';
+  const activeBarbers = billing?.usage?.active_barbers ?? today.occupancy.barbers;
+  const maxBarbers = billing?.plan?.max_barbers;
+  const barberCapLabel = maxBarbers ? `${activeBarbers} / ${maxBarbers} profissionais` : `${activeBarbers} profissionais`;
+  const waConnected = Boolean(waStatus?.configured && waStatus?.enabled);
+  const dbEngine = health?.database === 'turso' ? 'Turso Cloud (libSQL)' : 'SQLite Local';
 
   const notice = onboardingNotice();
 
-  const occupancyPct = rate === null ? 0 : Math.max(0, Math.min(100, Number(rate)));
-  const realizedPct = today.revenue_expected
-    ? Math.min(100, Math.round((today.revenue_realized / today.revenue_expected) * 100))
-    : 0;
-
-  const confirmPct = today.total ? Math.round((today.confirmed / today.total) * 100) : 0;
-  const completePct = today.total ? Math.round((today.completed / today.total) * 100) : 0;
-  const ticketPct = month.average_ticket ? Math.min(100, Math.max(12, Math.round((month.average_ticket / 120) * 100))) : 0;
-  const newClientsPct = month.new_clients
-    ? Math.min(100, Math.max(12, Math.round((month.new_clients / Math.max(month.total, 1)) * 100)))
-    : 0;
-
-  const ringSvg = (pct, color) => {
-    const circ = 88;
-    const offset = (circ - (circ * Math.max(0, Math.min(100, pct))) / 100).toFixed(1);
-    return `
-      <svg class="finity-ring" viewBox="0 0 36 36" width="36" height="36" aria-hidden="true">
-        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3.2" />
-        <circle cx="18" cy="18" r="14" fill="none" stroke="${color}" stroke-width="3.2" stroke-linecap="round"
-          stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 18 18)" />
-      </svg>`;
-  };
-
-  const cancelledTotal = today.cancelled + today.no_show;
-  const statusSegments = [
-    { label: 'Confirmados', value: today.confirmed, color: '#2563EB' },
-    { label: 'Concluídos', value: today.completed, color: '#60A5FA' },
-    { label: 'Aguardando', value: today.pending, color: '#93C5FD' },
-    { label: 'Faltas/Canc.', value: cancelledTotal, color: '#334155' },
-  ];
-  const donutCirc = 289.03;
-  const donutTotal = statusSegments.reduce((acc, seg) => acc + seg.value, 0);
-  let donutOffset = 0;
-  const donutArcs = donutTotal
-    ? statusSegments
-        .filter((seg) => seg.value > 0)
-        .map((seg) => {
-          const segLen = (seg.value / donutTotal) * donutCirc;
-          const arc = `<circle cx="60" cy="60" r="46" fill="none" stroke="${seg.color}" stroke-width="12"
-            stroke-dasharray="${segLen.toFixed(2)} ${(donutCirc - segLen).toFixed(2)}"
-            stroke-dashoffset="${(-donutOffset).toFixed(2)}" transform="rotate(-90 60 60)" />`;
-          donutOffset += segLen;
-          return arc;
-        })
-        .join('')
-    : `<circle cx="60" cy="60" r="46" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12" />`;
-
-  const upcomingPreview = data.upcoming.length
-    ? `<div class="finity-tx-list">${data.upcoming
-        .map(
-          (item) => `
-          <div class="finity-tx-row" data-appt="${item.id}" role="button" tabindex="0">
-            <div class="avatar">${esc(initials(item.client_name))}</div>
-            <div class="finity-tx-meta">
-              <strong>${esc(item.client_name)}</strong>
-              <span>${esc(formatDateBR(item.date))} · ${esc(item.start_time)} · ${esc(item.barber_name)}</span>
-            </div>
-            ${statusPill(item.status)}
-          </div>`
-        )
-        .join('')}</div>`
-    : `<div class="finity-empty">Sem próximos agendamentos.</div>`;
-
-  const buildSmoothPath = (pts) => {
-    if (!pts.length) return '';
-    return pts
-      .map((p, idx) => {
-        if (idx === 0) return `M${p[0]},${p[1]}`;
-        const prev = pts[idx - 1];
-        const cx = ((prev[0] + p[0]) / 2).toFixed(1);
-        return `C${cx},${prev[1]} ${cx},${p[1]} ${p[0]},${p[1]}`;
-      })
-      .join(' ');
-  };
-  const avgDayExpected = Math.max(0, (Number(week.revenue_expected) || 0) / 7);
-  const avgDayRealized = Math.max(0, (Number(week.revenue_realized) || 0) / 7);
-  const todayExp = Math.max(0, Number(today.revenue_expected) || 0);
-  const todayReal = Math.max(0, Number(today.revenue_realized) || 0);
-  const weekShape = [0.72, 0.85, 0.78, 0.94, 1.08, 1.18];
-  const expectedSeries = [...weekShape.map((f) => avgDayExpected * f), todayExp];
-  const realizedSeries = [...weekShape.map((f) => avgDayRealized * f), todayReal];
-  const maxSeriesVal = Math.max(1, ...expectedSeries, ...realizedSeries);
-  const toChartPts = (arr) =>
-    arr.map((val, i) => [
-      Math.round((i / Math.max(1, arr.length - 1)) * 420),
-      Math.round(112 - (val / maxSeriesVal) * 86),
-    ]);
-  const expectedPts = toChartPts(expectedSeries);
-  const realizedPts = toChartPts(realizedSeries);
-  const expectedLinePath = buildSmoothPath(expectedPts);
-  const realizedLinePath = buildSmoothPath(realizedPts);
-  const realizedAreaPath = `${realizedLinePath} L420,124 L0,124 Z`;
-
-  const finityBento = `
-    <section class="finity-grid-top" aria-label="Resumo executivo">
-      <!-- Card 1: Resumo de Hoje -->
-      <article class="finity-card">
-        <div class="finity-card-head">
-          <span class="finity-label">Receita realizada hoje</span>
-          <span class="finity-badge">${realizedPct}% previsto</span>
+  content().innerHTML = `
+    ${notice}
+    <div class="ct-header">
+      <div>
+        <div class="ct-live"><span class="ct-live-dot"></span><span>OPERAÇÃO EM TEMPO REAL</span></div>
+        <h2 class="ct-title">Torre de Controle da Barbearia</h2>
+        <p class="ct-sub">Visão executiva unificada · ${esc(state.me?.shop_name || 'Gestor de Barbearia')} · ${esc(range.label)}</p>
+      </div>
+      <div class="ct-controls">
+        <div class="ct-segmented" role="tablist" aria-label="Período do painel">
+          ${[
+            ['today', 'Hoje'],
+            ['7d', '7d'],
+            ['30d', '30d'],
+            ['month', 'Mês Atual'],
+          ]
+            .map(
+              ([key, lbl]) =>
+                `<button type="button" class="ct-seg-btn ${state.dashRange === key ? 'active' : ''}" data-range="${key}">${lbl}</button>`
+            )
+            .join('')}
         </div>
+        <button type="button" class="btn btn-sm" id="ct-export-csv">${icon('download')}<span>Exportar .CSV</span></button>
+        <button type="button" class="btn btn-primary btn-sm" id="ct-new-appt">${icon('plus')}<span>Novo Agendamento</span></button>
+      </div>
+    </div>
 
-        <div class="finity-hero-val mono">${esc(money(today.revenue_realized))}</div>
-
-        <div class="finity-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="finity-new-appt">+ Novo</button>
-          <button type="button" class="btn btn-sm" id="finity-open-agenda">Ver agenda</button>
-        </div>
-
-        <div class="finity-substats">
-          <div class="finity-substat">
-            <span>Previsto hoje</span>
-            <strong class="mono">${esc(money(today.revenue_expected))}</strong>
-          </div>
-          <div class="finity-substat">
-            <span>Semana</span>
-            <strong class="mono">${esc(money(week.revenue_expected))}</strong>
-          </div>
-        </div>
-
-        <div class="finity-progress-wrap">
-          <div class="finity-progress-head">
-            <span>Ocupação</span>
-            <strong class="mono">${rate === null ? 'Fechado' : `${occupancyPct}%`}</strong>
-          </div>
-          <div class="finity-progress-track">
-            <div class="finity-progress-fill" style="width:${occupancyPct}%"></div>
-          </div>
-        </div>
-      </article>
-
-      <!-- Card 2: Faturamento & Movimento -->
-      <article class="finity-card">
-        <div class="finity-card-head">
+    <section class="ct-kpi-grid" aria-label="Indicadores executivos">
+      <article class="ct-card">
+        <div class="ct-card-head">
           <div>
-            <div class="finity-card-title">Faturamento &amp; Movimento</div>
-            <div class="finity-hero-val-sm mono">${esc(money(month.revenue_expected))}</div>
+            <div class="ct-card-label">Receita Prevista</div>
+            <div class="ct-card-sub">${esc(range.label)}</div>
           </div>
-          <div class="finity-head-right">
-            <span class="finity-period-pill">Mês / Hoje</span>
-            <div class="finity-legend-inline">
-              <span><i class="finity-dot" style="background:#3B82F6"></i>Realizado</span>
-              <span><i class="finity-dot" style="background:#60A5FA"></i>Previsto</span>
-            </div>
-          </div>
+          <span class="ct-pill">${growthPct >= 0 ? `+${growthPct}%` : `${growthPct}%`}</span>
         </div>
-
-        <div class="finity-chart-wrap">
-          <svg viewBox="0 0 420 132" width="100%" height="132" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="finityAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.28" />
-                <stop offset="100%" stop-color="#3B82F6" stop-opacity="0" />
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="26" x2="420" y2="26" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
-            <line x1="0" y1="62" x2="420" y2="62" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
-            <line x1="0" y1="98" x2="420" y2="98" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 4" />
-            <path d="${realizedAreaPath}" fill="url(#finityAreaGrad)" />
-            <path d="${expectedLinePath}" fill="none" stroke="#60A5FA" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round" />
-            <path d="${realizedLinePath}" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" />
-          </svg>
-          <div class="finity-chart-days">
-            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
-          </div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+          <div class="ct-kpi-val mono">${esc(money(totals.revenue_expected))}</div>
+          ${buildSparklineSvg(report?.daily)}
+        </div>
+        <div class="ct-kpi-foot">
+          <span>Hoje: <strong class="mono">${esc(money(today.revenue_expected))}</strong></span>
+          <span>Realizado: <strong class="mono">${realizedRatio}%</strong></span>
         </div>
       </article>
 
-      <!-- Card 3: Capacidade & Turno -->
-      <article class="finity-card">
-        <div class="finity-card-head">
-          <span class="finity-card-title">Capacidade &amp; Turno</span>
-          <span class="finity-period-pill">${today.total} hoje</span>
+      <article class="ct-card ct-card-accent">
+        <div class="ct-card-head">
+          <div>
+            <div class="ct-card-label">Receita Realizada</div>
+            <div class="ct-card-sub">Atendimentos concluídos</div>
+          </div>
+          <span class="ct-pill">Conv. ${realizedRatio}%</span>
         </div>
-
-        <div class="finity-studio-pass">
-          <div class="finity-pass-top">
-            <span class="finity-pass-tag">TURNO ATIVO</span>
-            <span class="finity-pass-date mono">${esc(formatDateBR(state.date))}</span>
-          </div>
-          <div class="finity-pass-main">
-            <strong>${today.occupancy.barbers} profissional(is)</strong>
-            <span>${today.total} agendamento(s) hoje</span>
-          </div>
+        <div class="ct-kpi-val mono">${esc(money(totals.revenue_realized))}</div>
+        <div class="ct-kpi-foot">
+          <span>Ticket médio: <strong class="mono">${esc(money(totals.average_ticket))}</strong></span>
+          <span>${totals.completed} atend.</span>
         </div>
+      </article>
 
-        <div class="finity-progress-wrap" style="margin-top:16px">
-          <div class="finity-progress-head">
-            <span>Capacidade preenchida</span>
-            <strong class="mono">${rate === null ? 'Fechado' : `${occupancyPct}%`}</strong>
+      <article class="ct-card">
+        <div class="ct-card-head">
+          <div>
+            <div class="ct-card-label">Base de Atendimentos</div>
+            <div class="ct-card-sub">${totals.completed} concluídos / ${totals.pending + totals.confirmed} ativos</div>
           </div>
-          <div class="finity-progress-track">
-            <div class="finity-progress-fill" style="width:${occupancyPct}%"></div>
+          <span class="ct-pill is-blue">Ocup. ${rate === null ? 'Fechado' : `${occupancyPct}%`}</span>
+        </div>
+        <div class="ct-kpi-val mono">${totals.appointments}</div>
+        <div class="ct-bar-track"><div class="ct-bar-fill" style="width:${rate === null ? 0 : occupancyPct}%"></div></div>
+        <div class="ct-kpi-foot">
+          <span>Novos clientes: <strong class="mono">${totals.new_clients}</strong></span>
+          <span style="color:#10B981">${barberCapLabel}</span>
+        </div>
+      </article>
+
+      <article class="ct-card">
+        <div class="ct-card-head">
+          <div>
+            <div class="ct-card-label">Cancelamentos &amp; Faltas</div>
+            <div class="ct-card-sub">Taxa no período</div>
           </div>
+          <span class="ct-pill ${cancelRate <= 8 ? '' : 'is-warn'}">${cancelRate <= 8 ? 'Benchmark seguro' : 'Atenção'}</span>
+        </div>
+        <div class="ct-kpi-val mono">${cancelRate}%</div>
+        <div class="ct-kpi-foot">
+          <span>${totals.cancelled} cancelado(s)</span>
+          <span>${totals.no_show} falta(s)</span>
         </div>
       </article>
     </section>
 
-    <section class="finity-grid-bottom" aria-label="Indicadores e próximos atendimentos">
-      <!-- Card 4: Metas & Indicadores -->
-      <article class="finity-card">
-        <div class="finity-card-head">
-          <span class="finity-card-title">Metas &amp; Indicadores</span>
-          <span class="finity-period-pill">Hoje / Mês</span>
+    <section class="ct-mid-grid" aria-label="Funil, ranking e infraestrutura">
+      <article class="ct-card">
+        <div class="ct-card-head">
+          <div>
+            <div class="ct-card-label">Funil de Atendimento</div>
+            <div class="ct-card-sub">Conversão do agendamento ao retorno</div>
+          </div>
+          <span class="ct-pill is-blue">${esc(range.label)}</span>
         </div>
-        <div class="finity-goals-list">
-          <div class="finity-goal-row">
-            <div class="finity-goal-info">
-              <span>Confirmados hoje</span>
-              <strong class="mono">${today.confirmed} / ${today.total}</strong>
-            </div>
-            <span class="finity-goal-pct mono">${confirmPct}%</span>
-          </div>
-          <div class="finity-goal-row">
-            <div class="finity-goal-info">
-              <span>Concluídos hoje</span>
-              <strong class="mono">${today.completed} / ${today.total}</strong>
-            </div>
-            <span class="finity-goal-pct mono">${completePct}%</span>
-          </div>
-          <div class="finity-goal-row">
-            <div class="finity-goal-info">
-              <span>Ticket médio (mês)</span>
-              <strong class="mono">${esc(money(month.average_ticket))}</strong>
-            </div>
-            <span class="finity-goal-pct mono">${month.completed} atend.</span>
-          </div>
-          <div class="finity-goal-row">
-            <div class="finity-goal-info">
-              <span>Novos clientes (mês)</span>
-              <strong class="mono">${month.new_clients}</strong>
-            </div>
-            <span class="finity-goal-pct mono">${newClientsPct}%</span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Card 5: Status dos Agendamentos -->
-      <article class="finity-card">
-        <div class="finity-card-head">
-          <span class="finity-card-title">Status dos Agendamentos</span>
-        </div>
-        <div class="finity-donut-wrap">
-          <svg viewBox="0 0 120 120" width="124" height="124" aria-hidden="true">
-            ${donutArcs}
-          </svg>
-          <div class="finity-donut-center">
-            <span>Total</span>
-            <strong class="mono">${today.total}</strong>
-          </div>
-        </div>
-        <div class="finity-donut-legend">
-          ${statusSegments
+        <div class="ct-funnel">
+          ${funnelSteps
             .map(
-              (seg) => `
-            <div class="finity-legend-item">
-              <i class="finity-dot" style="background:${seg.color}"></i>
-              <span>${seg.label}</span>
-              <strong class="mono">${seg.value}</strong>
-            </div>`
+              (step) => `
+              <div class="ct-funnel-row">
+                <div class="ct-funnel-top">
+                  <span><strong class="mono" style="color:#60A5FA">${step.num}</strong> ${esc(step.label)}</span>
+                  <strong class="mono">${step.count} (${step.pct}%)</strong>
+                </div>
+                <div class="ct-bar-track"><div class="ct-bar-fill" style="width:${Math.min(100, step.pct)}%"></div></div>
+              </div>`
             )
             .join('')}
         </div>
       </article>
 
-      <!-- Card 6: Próximos na Agenda -->
-      <article class="finity-card">
-        <div class="finity-card-head">
-          <span class="finity-card-title">Próximos na Agenda</span>
-          <span class="finity-period-pill">${data.upcoming.length}</span>
+      <article class="ct-card">
+        <div class="ct-card-head">
+          <div>
+            <div class="ct-card-label">Ranking de Serviços &amp; Equipe</div>
+            <div class="ct-card-sub">Mais procurados e faturamento</div>
+          </div>
+          <a href="#/relatorios" style="font-size:12px;color:#60A5FA;text-decoration:none">Ver relatório</a>
         </div>
-        ${upcomingPreview}
+        <div class="ct-rank-list">
+          ${
+            topServices.length
+              ? topServices
+                  .map(
+                    (srv, idx) => `
+                <div class="ct-rank-item">
+                  <span><span class="ct-rank-pos">#${idx + 1}</span>${esc(srv.name)}</span>
+                  <strong class="mono">${srv.total} · ${esc(money(srv.revenue))}</strong>
+                </div>`
+                  )
+                  .join('')
+              : `<div class="empty">Nenhum serviço concluído neste período.</div>`
+          }
+          ${
+            topBarbers.length
+              ? `<div style="font-size:11px;color:var(--text-faint);margin-top:4px">Equipe em destaque: ${topBarbers
+                  .slice(0, 2)
+                  .map((b) => `<strong style="color:var(--text)">${esc(b.name)}</strong> (${esc(money(b.revenue))})`)
+                  .join(' · ')}</div>`
+              : ''
+          }
+        </div>
       </article>
-    </section>`;
 
-  const kpiStrip = `
-    <section class="kpi-strip" aria-label="Indicadores principais">
-      <div class="kpi-cell">
-        <span class="kpi-cell-label">Realizado hoje</span>
-        <strong class="kpi-cell-val mono">${esc(money(today.revenue_realized))}</strong>
-        <span class="kpi-cell-sub mono">Previsto: ${esc(money(today.revenue_expected))}</span>
-      </div>
-      <div class="kpi-cell">
-        <span class="kpi-cell-label">Agendamentos hoje</span>
-        <strong class="kpi-cell-val mono">${today.total}</strong>
-        <span class="kpi-cell-sub">${today.confirmed} confirmados · ${today.completed} concluídos</span>
-      </div>
-      <div class="kpi-cell">
-        <span class="kpi-cell-label">Previsto (semana) / Realizado (mês)</span>
-        <strong class="kpi-cell-val mono">${esc(money(week.revenue_expected))}</strong>
-        <span class="kpi-cell-sub mono">Mês realizado: ${esc(money(month.revenue_realized))}</span>
-      </div>
-      <div class="kpi-cell">
-        <span class="kpi-cell-label">Ticket médio (mês)</span>
-        <strong class="kpi-cell-val mono">${esc(money(month.average_ticket))}</strong>
-        <span class="kpi-cell-sub">${month.completed} atend. · Ocupação ${rate === null ? 'Fechado' : `${occupancyPct}%`}</span>
-      </div>
-    </section>`;
-
-  content().innerHTML = `
-    ${notice}
-    ${kpiStrip}
-
-    ${dayNav}
-
-    <div class="grid" style="grid-template-columns:1.55fr 1fr;gap:16px;align-items:start">
-      <div class="card">
-        <div class="card-header">
-          <h2>Agenda do dia</h2>
-          <span class="spacer"></span>
-          <button class="btn btn-sm" id="dash-open-agenda" type="button">Abrir grade completa</button>
+      <article class="ct-card">
+        <div class="ct-card-head">
+          <div>
+            <div class="ct-card-label">Capacidade &amp; Integrações</div>
+            <div class="ct-card-sub">Saúde operacional da plataforma</div>
+          </div>
+          <span class="ct-pill">${health?.status === 'ok' ? 'Sistema Online' : 'Ativo'}</span>
         </div>
-        ${todayTimeline}
+        <div class="ct-infra-list">
+          <div class="ct-infra-item">
+            <div>
+              <strong>Banco de Dados</strong>
+              <span>${esc(dbEngine)}</span>
+            </div>
+            <span class="ct-pill">Conectado</span>
+          </div>
+          <div class="ct-infra-item">
+            <div>
+              <strong>WhatsApp Cloud API</strong>
+              <span>${waConnected ? 'Disparos e lembretes ativos' : 'Configurar credenciais Meta'}</span>
+            </div>
+            <span class="ct-pill ${waConnected ? '' : 'is-warn'}">${waConnected ? 'Ativo' : 'Pendente'}</span>
+          </div>
+          <div class="ct-infra-item">
+            <div>
+              <strong>${esc(planName)}</strong>
+              <span>${esc(barberCapLabel)}</span>
+            </div>
+            <a href="#/plano" class="ct-pill is-blue" style="text-decoration:none">Gerenciar</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <article class="card ct-table-card">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px">
+        <div>
+          <h2>Semáforo da Agenda (${esc(formatDateBR(state.date))})</h2>
+          <p class="card-sub">Acompanhamento em tempo real dos horários do dia</p>
+        </div>
+        <span class="spacer"></span>
+        <div class="toolbar">
+          <button class="icon-btn" id="dash-prev" type="button" aria-label="Dia anterior">${icon('left')}</button>
+          <button class="btn btn-sm" id="dash-today" type="button">Hoje</button>
+          <button class="icon-btn" id="dash-next" type="button" aria-label="Próximo dia">${icon('right')}</button>
+          <input class="control" type="date" id="dash-date" value="${esc(state.date)}" />
+          <button class="btn btn-sm" id="dash-open-agenda" type="button">Abrir grade</button>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h2>Próximos na agenda</h2>
-          <span class="spacer"></span>
-          <span class="card-sub mono">${data.upcoming.length}</span>
+      <div class="ct-table-toolbar" style="margin-bottom:12px">
+        <div class="ct-filter-pills">
+          ${[
+            ['all', `Todos (${today.total})`],
+            ['confirmed', `Confirmados (${today.confirmed})`],
+            ['completed', `Concluídos (${today.completed})`],
+            ['pending', `Aguardando (${today.pending})`],
+            ['cancelled', `Canc./Faltas (${today.cancelled + today.no_show})`],
+          ]
+            .map(
+              ([key, label]) =>
+                `<button type="button" class="ct-filter-pill ${state.dashStatusFilter === key ? 'active' : ''}" data-status-filter="${key}">${label}</button>`
+            )
+            .join('')}
         </div>
-        ${upcomingPreview}
+        <input class="control" type="search" id="ct-search-appt" value="${esc(state.dashSearch)}" placeholder="Buscar cliente, serviço ou profissional..." style="min-width:240px" />
       </div>
-    </div>
 
-    <div class="grid grid-2" style="margin-top:16px">
-      <div class="card">
-        <div class="card-header">
-          <h2>Serviços mais procurados (Top 5)</h2>
-          <span class="spacer"></span>
-          <span class="card-sub">${esc(formatMonthYear(state.date))}</span>
-        </div>
-        ${rankTable(data.top_services, 'Nenhum atendimento no mês.')}
+      <div id="ct-agenda-body">
+      ${
+        filteredDayAppts.length
+          ? `<div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Horário</th>
+                    <th>Cliente</th>
+                    <th>Serviço</th>
+                    <th>Profissional</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${filteredDayAppts
+                    .map(
+                      (item) => `
+                    <tr data-appt="${item.id}" style="cursor:pointer">
+                      <td class="mono"><strong>${esc(item.start_time)}</strong></td>
+                      <td><strong>${esc(item.client_name)}</strong></td>
+                      <td>${esc(item.service_name || 'Serviço')}</td>
+                      <td>${esc(item.barber_name)}</td>
+                      <td class="mono">${esc(money(item.price))}</td>
+                      <td>${statusPill(item.status)}</td>
+                    </tr>`
+                    )
+                    .join('')}
+                </tbody>
+              </table>
+            </div>`
+          : rate === null
+            ? emptyBlock('Barbearia fechada neste dia', 'Não há expediente configurado para esta data.')
+            : emptyBlock('Nenhum agendamento encontrado', 'Ajuste os filtros acima ou clique em "+ Novo Agendamento".')
+      }
       </div>
-      <div class="card">
-        <div class="card-header">
-          <h2>Desempenho por profissional</h2>
-          <span class="spacer"></span>
-          <span class="card-sub">${esc(formatMonthYear(state.date))}</span>
-        </div>
-        ${rankTable(data.top_barbers, 'Nenhum atendimento no mês.')}
-      </div>
-    </div>`;
+    </article>`;
 
-  const finityNewAppt = document.getElementById('finity-new-appt');
-  if (finityNewAppt) {
-    finityNewAppt.addEventListener('click', () => {
+  const bindRowClicks = (rootEl) => {
+    rootEl.querySelectorAll('[data-appt]').forEach((element) =>
+      element.addEventListener('click', async () => {
+        try {
+          const appointment = await api.get(`/api/appointments/${element.dataset.appt}`);
+          openAppointmentDetails(appointment, { onChanged: refresh });
+        } catch (error) {
+          toast(error.message, 'error');
+        }
+      })
+    );
+  };
+
+  const renderAgendaTableOnly = () => {
+    const host = document.getElementById('ct-agenda-body');
+    if (!host) return;
+    const rows = filterAppts(today.appointments || []);
+    host.innerHTML = rows.length
+      ? `<div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Horário</th>
+                <th>Cliente</th>
+                <th>Serviço</th>
+                <th>Profissional</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows
+                .map(
+                  (item) => `
+                <tr data-appt="${item.id}" style="cursor:pointer">
+                  <td class="mono"><strong>${esc(item.start_time)}</strong></td>
+                  <td><strong>${esc(item.client_name)}</strong></td>
+                  <td>${esc(item.service_name || 'Serviço')}</td>
+                  <td>${esc(item.barber_name)}</td>
+                  <td class="mono">${esc(money(item.price))}</td>
+                  <td>${statusPill(item.status)}</td>
+                </tr>`
+                )
+                .join('')}
+            </tbody>
+          </table>
+        </div>`
+      : rate === null
+        ? emptyBlock('Barbearia fechada neste dia', 'Não há expediente configurado para esta data.')
+        : emptyBlock('Nenhum agendamento encontrado', 'Ajuste os filtros acima ou clique em "+ Novo Agendamento".');
+    bindRowClicks(host);
+  };
+
+  content()
+    .querySelectorAll('[data-range]')
+    .forEach((btn) =>
+      btn.addEventListener('click', () => {
+        state.dashRange = btn.dataset.range;
+        refresh();
+      })
+    );
+
+  content()
+    .querySelectorAll('[data-status-filter]')
+    .forEach((btn) =>
+      btn.addEventListener('click', () => {
+        state.dashStatusFilter = btn.dataset.statusFilter;
+        content()
+          .querySelectorAll('[data-status-filter]')
+          .forEach((el) => el.classList.toggle('active', el.dataset.statusFilter === state.dashStatusFilter));
+        renderAgendaTableOnly();
+      })
+    );
+
+  const searchEl = document.getElementById('ct-search-appt');
+  if (searchEl) {
+    searchEl.addEventListener('input', (e) => {
+      state.dashSearch = e.target.value;
+      renderAgendaTableOnly();
+    });
+  }
+
+  const ctNewAppt = document.getElementById('ct-new-appt');
+  if (ctNewAppt) {
+    ctNewAppt.addEventListener('click', () => {
       openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
     });
   }
-  const finityOpenAgenda = document.getElementById('finity-open-agenda');
-  if (finityOpenAgenda) {
-    finityOpenAgenda.addEventListener('click', () => {
-      location.hash = '#/agenda';
+
+  const exportBtn = document.getElementById('ct-export-csv');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const rows = [
+        ['Data', 'Horario', 'Cliente', 'Servico', 'Profissional', 'Valor', 'Status'],
+        ...(today.appointments || []).map((a) => [
+          a.date,
+          a.start_time,
+          a.client_name,
+          a.service_name || '',
+          a.barber_name || '',
+          String(a.price || 0),
+          a.status,
+        ]),
+      ];
+      const csv = '\uFEFF' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `agenda-${state.date}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast('CSV exportado com sucesso!', 'ok');
     });
   }
 
@@ -916,43 +1022,6 @@ async function viewDashboard() {
   document.getElementById('dash-open-agenda').addEventListener('click', () => {
     location.hash = '#/agenda';
   });
-
-  const quickNew = document.getElementById('dash-quick-new');
-  if (quickNew) {
-    quickNew.addEventListener('click', () => {
-      openAppointmentForm({ defaults: { date: state.date }, onSaved: refresh });
-    });
-  }
-
-  const quickClient = document.getElementById('dash-quick-client');
-  if (quickClient) {
-    quickClient.addEventListener('click', () => {
-      openClientForm(null);
-    });
-  }
-
-  const quickLink = document.getElementById('dash-quick-link');
-  if (quickLink) {
-    quickLink.addEventListener('click', () => {
-      const publicUrl = `${location.origin}/agendar`;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(publicUrl).then(() => {
-          toast('Link de agendamento copiado para a área de transferência!', 'ok');
-        }).catch(() => {
-          window.open('/agendar', '_blank');
-        });
-      } else {
-        window.open('/agendar', '_blank');
-      }
-    });
-  }
-
-  const quickAgenda = document.getElementById('dash-quick-agenda');
-  if (quickAgenda) {
-    quickAgenda.addEventListener('click', () => {
-      location.hash = '#/agenda';
-    });
-  }
 
   content()
     .querySelectorAll('[data-appt]')
