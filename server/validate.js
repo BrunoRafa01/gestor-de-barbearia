@@ -3,9 +3,15 @@
 import { HttpError } from './http.js';
 import { isValidDate, isValidTime, isValidStatus } from './time.js';
 
+export function sanitizeText(value) {
+  return String(value ?? '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim();
+}
+
 export function requiredString(value, field, options = {}) {
   const { min = 1, max = 255 } = options;
-  const text = String(value ?? '').trim();
+  const text = sanitizeText(value);
   if (text.length < min) throw new HttpError(400, `Informe ${field}.`);
   if (text.length > max) throw new HttpError(400, `O campo ${field} deve ter no maximo ${max} caracteres.`);
   return text;
@@ -13,7 +19,7 @@ export function requiredString(value, field, options = {}) {
 
 export function optionalString(value, field, max = 500) {
   if (value === undefined || value === null) return null;
-  const text = String(value).trim();
+  const text = sanitizeText(value);
   if (!text) return null;
   if (text.length > max) throw new HttpError(400, `O campo ${field} deve ter no maximo ${max} caracteres.`);
   return text;

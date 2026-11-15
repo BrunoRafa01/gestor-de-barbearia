@@ -49,11 +49,13 @@ export function passwordIssue(password) {
  */
 export async function ensureAdminPassword(initialPassword, { isDefault = false } = {}) {
   if (!getSetting('admin_password_hash')) {
-    await setSetting('admin_password_hash', hashPassword(initialPassword || 'admin123'));
+    const generated = initialPassword ? null : `Gb1${randomBytes(8).toString('base64url')}`;
+    const secret = initialPassword || generated;
+    await setSetting('admin_password_hash', hashPassword(secret));
     await setSetting('admin_password_default', isDefault ? '1' : '0');
-    return true;
+    return { created: true, generatedPassword: generated };
   }
-  return false;
+  return { created: false, generatedPassword: null };
 }
 
 /** Indica se o painel ainda usa a senha inicial (nunca trocada). */

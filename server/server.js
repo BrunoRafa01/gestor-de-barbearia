@@ -8,7 +8,7 @@ import { networkInterfaces } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { assertAuthenticated, ensureAdminPassword } from './auth.js';
+import { assertAuthenticated, ensureAdminPassword, isUsingDefaultPassword } from './auth.js';
 import { closeDatabase, driverKind, driverLabel, initDatabase } from './db.js';
 import { isDemoMode, seedDemoData } from './demo.js';
 import { HttpError, readJsonBody, sendError, sendJson, serveStatic } from './http.js';
@@ -176,6 +176,9 @@ const server = createServer(async (request, response) => {
 
       if (match.route.auth !== false) {
         assertAuthenticated(request);
+        if (!isDemoMode() && isUsingDefaultPassword() && pathname !== '/api/settings/password') {
+          throw new HttpError(403, 'Troca obrigatoria da senha inicial antes de acessar o painel.');
+        }
       }
 
       const body = ['POST', 'PUT', 'PATCH'].includes(request.method)
@@ -280,14 +283,14 @@ async function bootstrap() {
   await initDatabase({ path: DATABASE_PATH });
 
   const initialPassword = process.env.ADMIN_PASSWORD;
-  const created = await ensureAdminPassword(initialPassword || 'admin123', {
+  const { created, generatedPassword } = await ensureAdminPassword(initialPassword, {
     isDefault: !initialPassword,
   });
   if (created) {
     console.log(
       initialPassword
         ? '[setup] Senha inicial do painel criada a partir da variavel ADMIN_PASSWORD.'
-        : '[setup] Senha inicial "admin123" criada. Troque-a em Configuracoes.'
+        : `[setup] Senha inicial provisoria gerada: ${generatedPassword} (troca obrigatoria no primeiro acesso).`
     );
   }
 

@@ -317,6 +317,58 @@ function wireShell() {
     location.hash = '';
     renderLogin();
   });
+
+  if (state.me?.password_is_default && !state.me?.demo) {
+    renderForcePasswordScreen();
+  }
+}
+
+function renderForcePasswordScreen() {
+  const root = document.getElementById('app');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="page-centered">
+      <div class="auth-card" style="max-width:420px;width:100%">
+        <h1 style="font-size:20px;margin-bottom:6px">Troca obrigatória de senha</h1>
+        <p class="muted" style="font-size:13px;margin-bottom:18px">
+          Por segurança, você precisa substituir a senha inicial antes de acessar o painel.
+        </p>
+        <form id="force-pw-form" class="stack" style="gap:12px">
+          <div class="field">
+            <label for="fp-current">Senha atual</label>
+            <input id="fp-current" type="password" autocomplete="current-password" required />
+          </div>
+          <div class="field">
+            <label for="fp-new">Nova senha (mín. 8 caracteres, maiúscula, minúscula e número)</label>
+            <input id="fp-new" type="password" autocomplete="new-password" required />
+          </div>
+          <div class="field">
+            <label for="fp-confirm">Confirmar nova senha</label>
+            <input id="fp-confirm" type="password" autocomplete="new-password" required />
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Salvar nova senha e entrar</button>
+        </form>
+      </div>
+    </div>`;
+
+  document.getElementById('force-pw-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const current_password = document.getElementById('fp-current').value;
+    const new_password = document.getElementById('fp-new').value;
+    const confirm = document.getElementById('fp-confirm').value;
+    if (new_password !== confirm) {
+      toast('As senhas novas não coincidem.', 'error');
+      return;
+    }
+    try {
+      await api.post('/api/settings/password', { current_password, new_password });
+      state.me.password_is_default = false;
+      toast('Senha atualizada com sucesso!', 'success');
+      boot();
+    } catch (error) {
+      toast(error.message || 'Erro ao atualizar senha.', 'error');
+    }
+  });
 }
 
 /* ------------------------------- Navegacao -------------------------------- */
