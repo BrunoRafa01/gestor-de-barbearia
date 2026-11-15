@@ -15,7 +15,7 @@
     "demo": "node --experimental-sqlite scripts/demo.mjs",
     "test": "node tests/smoke.mjs",
     "typecheck": "tsc --noEmit",
-    "build:motion": "tsc --ignoreConfig src/motion/gsap-motion.ts --target ES2022 --module ES2022 --moduleResolution bundler --skipLibCheck --outDir public/js",
+    "build:motion": "tsc --ignoreConfig src/motion/gsap-motion.ts src/motion/apresentacao.ts src/motion/doc-motion.ts --target ES2022 --module ES2022 --moduleResolution bundler --skipLibCheck --outDir public/js",
     "test:turso": "node tests/turso-check.mjs",
     "test:whatsapp": "node tests/whatsapp-cloud.test.mjs",
     "test:responsive": "node tests/responsive-check.mjs",

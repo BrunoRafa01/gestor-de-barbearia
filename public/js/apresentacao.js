@@ -1,28 +1,83 @@
-(function () {
-  const slots = ['09:30', '10:30', '14:30', '16:00', '18:15'];
-  let idx = 2;
-  const clock = document.getElementById('live-slot-clock');
-  if (clock) {
+/**
+ * Controlador TypeScript da página de apresentação (/apresentacao.html)
+ * alimentado pelo motor GSAP Studio Motion (gsap-motion.ts).
+ */
+import { animatePresentationPage, getGsap } from './gsap-motion.js';
+function initSlotTicker() {
+    const slots = ['09:30', '10:30', '14:30', '16:00', '18:15'];
+    let idx = 2;
+    const clock = document.getElementById('live-slot-clock');
+    if (!clock)
+        return;
     setInterval(() => {
-      idx = (idx + 1) % slots.length;
-      clock.textContent = slots[idx];
+        idx = (idx + 1) % slots.length;
+        const nextSlot = slots[idx] ?? '14:30';
+        const gsap = getGsap();
+        if (!gsap) {
+            clock.textContent = nextSlot;
+            return;
+        }
+        gsap.to(clock, {
+            opacity: 0,
+            y: -4,
+            duration: 0.14,
+            ease: 'power2.in',
+            onComplete: () => {
+                clock.textContent = nextSlot;
+                gsap.fromTo(clock, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out', clearProps: 'transform' });
+            },
+        });
     }, 2600);
-  }
-
-  const tabs = document.querySelectorAll('.showcase-tab');
-  const img = document.getElementById('showcase-img');
-  const urlLabel = document.getElementById('showcase-url');
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      tabs.forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      if (img && tab.dataset.shot) {
-        img.src = tab.dataset.shot;
-        img.alt = `Tela real: ${tab.textContent.trim()}`;
-      }
-      if (urlLabel && tab.dataset.label) {
-        urlLabel.textContent = tab.dataset.label;
-      }
+}
+function initShowcaseTabs() {
+    const tabs = document.querySelectorAll('.showcase-tab');
+    const img = document.getElementById('showcase-img');
+    const urlLabel = document.getElementById('showcase-url');
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+            if (tab.classList.contains('active'))
+                return;
+            tabs.forEach((t) => t.classList.remove('active'));
+            tab.classList.add('active');
+            const nextShot = tab.dataset.shot;
+            const nextLabel = tab.dataset.label;
+            const altText = `Tela real: ${(tab.textContent || '').trim()}`;
+            const gsap = getGsap();
+            if (urlLabel && nextLabel) {
+                if (gsap) {
+                    gsap.fromTo(urlLabel, { opacity: 0.3, y: -2 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out', clearProps: 'transform' });
+                }
+                urlLabel.textContent = nextLabel;
+            }
+            if (img && nextShot) {
+                if (!gsap) {
+                    img.src = nextShot;
+                    img.alt = altText;
+                    return;
+                }
+                gsap.to(img, {
+                    opacity: 0,
+                    y: 4,
+                    duration: 0.14,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        img.src = nextShot;
+                        img.alt = altText;
+                        gsap.fromTo(img, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.26, ease: 'power3.out', clearProps: 'transform' });
+                    },
+                });
+            }
+        });
     });
-  });
-})();
+}
+function bootPresentation() {
+    animatePresentationPage();
+    initSlotTicker();
+    initShowcaseTabs();
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootPresentation, { once: true });
+}
+else {
+    bootPresentation();
+}

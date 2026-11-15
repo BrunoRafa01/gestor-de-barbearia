@@ -81,23 +81,48 @@
     `;
 
     document.body.appendChild(wrapper);
+    if (window.gsap) {
+      window.gsap.fromTo(
+        wrapper,
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out', clearProps: 'transform' }
+      );
+    }
 
     const customDiv = document.getElementById('consent-custom-options');
     const customBtn = document.getElementById('consent-btn-custom');
 
+    const closeBanner = () => {
+      if (window.gsap) {
+        window.gsap.to(wrapper, {
+          opacity: 0,
+          y: 10,
+          duration: 0.18,
+          ease: 'power2.in',
+          onComplete: () => wrapper.remove(),
+        });
+      } else {
+        wrapper.remove();
+      }
+    };
+
     customBtn.onclick = () => {
-      customDiv.style.display = customDiv.style.display === 'none' ? 'block' : 'none';
-      customBtn.textContent = customDiv.style.display === 'none' ? '⚙️ Personalizar' : 'Fechar Opções';
+      const opening = customDiv.style.display === 'none';
+      customDiv.style.display = opening ? 'block' : 'none';
+      customBtn.textContent = opening ? 'Fechar' : 'Preferências';
+      if (opening && window.gsap) {
+        window.gsap.fromTo(customDiv, { opacity: 0, y: -4 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' });
+      }
     };
 
     document.getElementById('consent-btn-accept').onclick = () => {
       saveConsent({ necessary: true, analytics: true, marketing: true, timestamp: new Date().toISOString() });
-      wrapper.remove();
+      closeBanner();
     };
 
     document.getElementById('consent-btn-reject').onclick = () => {
       saveConsent({ necessary: true, analytics: false, marketing: false, timestamp: new Date().toISOString() });
-      wrapper.remove();
+      closeBanner();
     };
   }
 
