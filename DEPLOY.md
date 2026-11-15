@@ -116,7 +116,7 @@ Se preferir criar sem o Blueprint, use **New + > Web Service** e preencha:
 | Health Check Path | `/health` |
 | Plan | Free |
 
-E cadastre manualmente as variaveis `NODE_ENV=production`, `HOST=0.0.0.0`,
+E cadastre manualmente as variaveis `NODE_ENV=production`, `HOST=0.0.0.0`, `TZ=America/Sao_Paulo`,
 `ADMIN_PASSWORD`, `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN`.
 
 ---

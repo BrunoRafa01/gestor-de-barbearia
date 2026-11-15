@@ -28,6 +28,8 @@ services:
         value: production
       - key: HOST
         value: 0.0.0.0
+      - key: TZ
+        value: America/Sao_Paulo
       # Senha inicial do painel: o Render gera um valor forte automaticamente.
       # Veja em: Dashboard do servico > Environment > ADMIN_PASSWORD.
       - key: ADMIN_PASSWORD

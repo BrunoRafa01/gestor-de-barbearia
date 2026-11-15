@@ -1,8 +1,33 @@
 // Utilitarios de data/hora. Todas as datas sao tratadas como texto "YYYY-MM-DD"
-// e todos os horarios como texto "HH:MM", sempre no fuso local do servidor.
+// e todos os horarios como texto "HH:MM", sempre no fuso configurado (padrao America/Sao_Paulo).
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export function appTimeZone() {
+  return process.env.TZ || 'America/Sao_Paulo';
+}
+
+function dateTimeParts(date, timeZone = appTimeZone()) {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
+  const parts = Object.fromEntries(formatter.formatToParts(date).map((p) => [p.type, p.value]));
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: Number(parts.hour === '24' ? 0 : parts.hour),
+    minute: Number(parts.minute),
+    isoDate: `${parts.year}-${parts.month}-${parts.day}`,
+  };
+}
 
 export const WEEKDAYS = [
   'Domingo',
@@ -18,8 +43,8 @@ export const WEEKDAYS_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
 export function isValidDate(value) {
   if (!DATE_RE.test(String(value || ''))) return false;
-  const parsed = new Date(`${value}T12:00:00`);
-  return !Number.isNaN(parsed.getTime()) && toISODate(parsed) === value;
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 export function isValidTime(value) {
@@ -40,12 +65,9 @@ export function minutesToHHMM(minutes) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-/** Converte um objeto Date para "YYYY-MM-DD" usando o fuso local. */
+/** Converte um objeto Date para "YYYY-MM-DD" no fuso configurado (America/Sao_Paulo). */
 export function toISODate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  return dateTimeParts(date).isoDate;
 }
 
 export function todayISO(now = new Date()) {
@@ -53,22 +75,23 @@ export function todayISO(now = new Date()) {
 }
 
 export function nowMinutes(now = new Date()) {
-  return now.getHours() * 60 + now.getMinutes();
+  const { hour, minute } = dateTimeParts(now);
+  return hour * 60 + minute;
 }
 
 export function parseDate(dateStr) {
-  return new Date(`${dateStr}T12:00:00`);
+  return new Date(`${dateStr}T12:00:00Z`);
 }
 
 /** 0 = domingo ... 6 = sabado */
 export function weekdayOf(dateStr) {
-  return parseDate(dateStr).getDay();
+  return parseDate(dateStr).getUTCDay();
 }
 
 export function addDays(dateStr, days) {
   const base = parseDate(dateStr);
-  base.setDate(base.getDate() + Number(days));
-  return toISODate(base);
+  base.setUTCDate(base.getUTCDate() + Number(days));
+  return base.toISOString().slice(0, 10);
 }
 
 /** Retorna a segunda-feira da semana da data informada. */

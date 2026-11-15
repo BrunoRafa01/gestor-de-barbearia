@@ -14,6 +14,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hhmmToMinutes, nowMinutes, todayISO } from '../server/time.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.TEST_PORT || 3411);
@@ -169,6 +170,15 @@ async function run() {
 
   const notFound = await call('/api/nao-existe', { auth: false });
   check('endpoint inexistente responde 404', notFound.status === 404);
+
+  const prevTz = process.env.TZ;
+  process.env.TZ = 'America/Sao_Paulo';
+  const brtLateNight = new Date('2026-11-16T02:30:00.000Z'); // 23:30 BRT de 15/11/2026
+  check('23:30 BRT (02:30 UTC) mantem dia 2026-11-15', todayISO(brtLateNight) === '2026-11-15', todayISO(brtLateNight));
+  check('23:30 BRT calcula 1410 minutos', nowMinutes(brtLateNight) === 1410, String(nowMinutes(brtLateNight)));
+  check('antecedencia minima bloqueia 23:50 no mesmo dia', hhmmToMinutes('23:50') < nowMinutes(brtLateNight) + 60);
+  if (prevTz === undefined) delete process.env.TZ;
+  else process.env.TZ = prevTz;
 
   /* --------------------------- 4. Autenticacao ---------------------------- */
   const anonymous = await call('/api/clients', { auth: false });

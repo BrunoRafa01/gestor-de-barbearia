@@ -10,7 +10,7 @@ function sumBy(rows, predicate) {
 function monthRange(date) {
   const [year, month] = date.split('-').map(Number);
   const start = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-01`;
-  const end = toISODate(new Date(year, month, 0));
+  const end = toISODate(new Date(Date.UTC(year, month, 0, 12, 0, 0)));
   return { start, end };
 }
 
