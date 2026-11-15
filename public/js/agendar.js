@@ -179,7 +179,7 @@ function skeletonHtml() {
         </div>
         <div class="figma-lookbook-grid">
           <button type="button" class="figma-lookbook-card" data-demo-keyword="degrad">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.jpg?v=20261115f" alt="Degradê Navalhado" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.jpg?v=20261115h" alt="Degradê Navalhado" loading="eager" />
             <span class="figma-lookbook-tag">Mais pedido</span>
             <div class="figma-lookbook-caption">
               <strong>Degradê Navalhado</strong>
@@ -187,7 +187,7 @@ function skeletonHtml() {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="barba">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115f" alt="Barboterapia Tradicional" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115h" alt="Barboterapia Tradicional" loading="eager" />
             <span class="figma-lookbook-tag">Barba</span>
             <div class="figma-lookbook-caption">
               <strong>Barboterapia</strong>
@@ -195,7 +195,7 @@ function skeletonHtml() {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="social">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-social.jpg?v=20261115f" alt="Corte Clássico na Tesoura" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-social.jpg?v=20261115h" alt="Corte Clássico na Tesoura" loading="eager" />
             <span class="figma-lookbook-tag">Clássico</span>
             <div class="figma-lookbook-caption">
               <strong>Corte Clássico</strong>
@@ -203,7 +203,7 @@ function skeletonHtml() {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="combo">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.jpg?v=20261115f" alt="Acabamento e Barba" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.jpg?v=20261115h" alt="Acabamento e Barba" loading="eager" />
             <span class="figma-lookbook-tag">Completo</span>
             <div class="figma-lookbook-caption">
               <strong>Acabamento &amp; Barba</strong>
@@ -394,21 +394,21 @@ async function loadSlots() {
 
 function servicePhoto(name = '') {
   const n = String(name).toLowerCase();
-  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115f';
+  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115h';
   if (n.includes('social') || n.includes('clássico') || n.includes('classico') || n.includes('tesoura')) {
-    return '/img/cuts/cut-social.jpg?v=20261115f';
+    return '/img/cuts/cut-social.jpg?v=20261115h';
   }
   if (n.includes('platinado') || n.includes('textur') || n.includes('combo') || n.includes('+') || n.includes('visagismo')) {
-    return '/img/cuts/cut-platinado.jpg?v=20261115f';
+    return '/img/cuts/cut-platinado.jpg?v=20261115h';
   }
-  return '/img/cuts/cut-degrade.jpg?v=20261115f';
+  return '/img/cuts/cut-degrade.jpg?v=20261115h';
 }
 
 function barberPhoto(barber = {}, index = 0) {
   const photos = [
-    '/img/barber-1.jpg?v=20261115f',
-    '/img/barber-2.jpg?v=20261115f',
-    '/img/barber-3.jpg?v=20261115f',
+    '/img/barber-1.jpg?v=20261115h',
+    '/img/barber-2.jpg?v=20261115h',
+    '/img/barber-3.jpg?v=20261115h',
   ];
   const idx = Math.abs(Number(barber.id || index + 1) - 1) % photos.length;
   return photos[idx];
@@ -1194,10 +1194,10 @@ function renderBookingTab() {
 
 function renderCutsTab() {
   const distinctPhotos = [
-    '/img/cuts/cut-degrade.jpg?v=20261115f',
-    '/img/cuts/cut-barboterapia.jpg?v=20261115f',
-    '/img/cuts/cut-social.jpg?v=20261115f',
-    '/img/cuts/cut-platinado.jpg?v=20261115f',
+    '/img/cuts/cut-degrade.jpg?v=20261115h',
+    '/img/cuts/cut-barboterapia.jpg?v=20261115h',
+    '/img/cuts/cut-social.jpg?v=20261115h',
+    '/img/cuts/cut-platinado.jpg?v=20261115h',
   ];
   const defaultCuts = [
     { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: distinctPhotos[0] },
@@ -1209,7 +1209,7 @@ function renderCutsTab() {
   const usedPhotos = new Set();
   const cuts = rawCuts.map((cut, idx) => {
     const candidate = cut.img
-      ? `${String(cut.img).split('?')[0]}?v=20261115f`
+      ? `${String(cut.img).split('?')[0]}?v=20261115h`
       : servicePhoto(`${cut.title || ''} ${cut.tag || ''}`);
     const finalImg = !usedPhotos.has(candidate)
       ? candidate
