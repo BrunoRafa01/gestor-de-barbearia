@@ -723,20 +723,54 @@ async function viewDashboard() {
       </article>
     </section>`;
 
+  const kpiStrip = `
+    <section class="kpi-strip" aria-label="Indicadores principais">
+      <div class="kpi-cell">
+        <span class="kpi-cell-label">Realizado hoje</span>
+        <strong class="kpi-cell-val mono">${esc(money(today.revenue_realized))}</strong>
+        <span class="kpi-cell-sub mono">Previsto: ${esc(money(today.revenue_expected))}</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-cell-label">Agendamentos hoje</span>
+        <strong class="kpi-cell-val mono">${today.total}</strong>
+        <span class="kpi-cell-sub">${today.confirmed} confirmados · ${today.completed} concluídos</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-cell-label">Semana / Mês</span>
+        <strong class="kpi-cell-val mono">${esc(money(week.revenue_expected))}</strong>
+        <span class="kpi-cell-sub mono">Mês: ${esc(money(month.revenue_expected))}</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="kpi-cell-label">Ticket médio (mês)</span>
+        <strong class="kpi-cell-val mono">${esc(money(month.average_ticket))}</strong>
+        <span class="kpi-cell-sub">${month.completed} atend. · Ocupação ${rate === null ? '--' : `${occupancyPct}%`}</span>
+      </div>
+    </section>`;
+
   content().innerHTML = `
     ${notice}
-    ${quickActionsBar}
-    ${finityBento}
+    ${kpiStrip}
 
     ${dayNav}
 
-    <div class="card">
-      <div class="card-header">
-        <h2>Agenda do dia</h2>
-        <span class="spacer"></span>
-        <button class="btn btn-sm" id="dash-open-agenda" type="button">Abrir agenda</button>
+    <div class="grid" style="grid-template-columns:1.55fr 1fr;gap:16px;align-items:start">
+      <div class="card">
+        <div class="card-header">
+          <h2>Agenda do dia</h2>
+          <span class="spacer"></span>
+          <button class="btn btn-sm" id="dash-open-agenda" type="button">Abrir grade completa</button>
+        </div>
+        ${todayTimeline}
       </div>
-      ${todayTimeline}
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Próximos na agenda</h2>
+          <span class="spacer"></span>
+          <span class="card-sub mono">${data.upcoming.length}</span>
+        </div>
+        ${upcomingPreview}
+      </div>
     </div>
 
     <div class="grid grid-2" style="margin-top:16px">

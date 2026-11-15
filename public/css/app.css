@@ -556,6 +556,56 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
   margin-top: 2px;
 }
 
+/* --------------------- Real Commercial KPI Strip --------------------- */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.kpi-cell {
+  padding: 14px 18px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-cell:last-child {
+  border-right: none;
+}
+
+.kpi-cell-label {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.kpi-cell-val {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+.kpi-cell-sub {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+@media (max-width: 900px) {
+  .kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .kpi-cell {
+    border-bottom: 1px solid var(--border);
+  }
+}
+
 /* --------------------- Finity Bento Dashboard (Obsidian + Blue) --------------------- */
 .finity-grid-top {
   display: grid;
@@ -2019,12 +2069,10 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .shop-cover-banner {
-  height: 164px;
+  height: 124px;
   background:
-    linear-gradient(180deg, rgba(7, 8, 11, 0.22) 0%, rgba(14, 16, 21, 0.94) 100%),
-    linear-gradient(90deg, rgba(7, 8, 11, 0.72) 0%, rgba(7, 8, 11, 0.12) 60%, rgba(7, 8, 11, 0.45) 100%),
+    linear-gradient(180deg, rgba(7, 8, 11, 0.15) 0%, rgba(14, 16, 21, 0.92) 100%),
     url('/img/barber-studio-hero.jpg?v=20261114b') center 48% / cover no-repeat;
-  border-top: 2px solid #3B82F6;
   border-bottom: 1px solid var(--border);
   position: relative;
   display: flex;
@@ -2057,11 +2105,11 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .shop-avatar-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
   background: #09090B;
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2077,13 +2125,13 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 }
 
 .shop-profile-name {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-family: var(--font);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: var(--text);
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   display: flex;
   align-items: center;
   gap: 8px;
