@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { writeFileSync, copyFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const SCREENSHOTS_DIR = resolve(ROOT, 'docs', 'screenshots');
+const PUBLIC_SCREENS_DIR = resolve(ROOT, 'public', 'img', 'screens');
 mkdirSync(SCREENSHOTS_DIR, { recursive: true });
+mkdirSync(PUBLIC_SCREENS_DIR, { recursive: true });
 
 // 1. Inicia o servidor em modo demonstracao com auto-auth para capturas na porta 3498
 const PORT = '3498';
@@ -159,10 +161,25 @@ try {
 
     await new Promise((r) => setTimeout(r, target.waitMs));
 
+    await send('script.evaluate', {
+      expression: `(() => {
+        try { localStorage.setItem('barbearia_cookie_consent', JSON.stringify({ necessary: true, timestamp: new Date().toISOString() })); } catch {}
+        const b = document.getElementById('consent-banner-wrapper');
+        if (b) b.remove();
+      })()`,
+      target: { context },
+      awaitPromise: false,
+    }).catch(() => {});
+
+    await new Promise((r) => setTimeout(r, 250));
+
     const shot = await send('browsingContext.captureScreenshot', { context });
     if (shot.result?.data) {
       const dest = resolve(SCREENSHOTS_DIR, target.name);
       writeFileSync(dest, Buffer.from(shot.result.data, 'base64'));
+      if (['dashboard.png', 'agenda.png', 'relatorios.png', 'clientes.png'].includes(target.name)) {
+        copyFileSync(dest, resolve(PUBLIC_SCREENS_DIR, target.name));
+      }
       console.log(`[OK] ${target.name} salva com sucesso.`);
     } else {
       console.error(`[ERRO] Falha ao capturar ${target.name}:`, shot);
