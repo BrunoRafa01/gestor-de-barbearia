@@ -9,6 +9,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertAuthenticated, ensureAdminPassword, getSessionPayload, isUsingDefaultPassword } from './auth.js';
+import { recordAuditEvent } from './audit.js';
 import { closeDatabase, driverKind, driverLabel, get, initDatabase } from './db.js';
 import { isDemoMode, seedDemoData } from './demo.js';
 import { HttpError, readJsonBody, sendError, sendJson, serveStatic } from './http.js';
@@ -86,6 +87,8 @@ const PAGE_ALIASES = {
   '/index': 'index.html',
   '/index.html': 'index.html',
   '/painel': 'index.html',
+  '/master': 'master.html',
+  '/master.html': 'master.html',
   '/agendar': 'agendar.html',
   '/agendar.html': 'agendar.html',
   '/termos': 'termos.html',
@@ -213,9 +216,33 @@ const server = createServer(async (request, response) => {
         shopId,
       });
 
+      const statusCode =
+        result && typeof result === 'object' && 'status' in result ? Number(result.status) : 200;
+
+      if (
+        (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method || '') ||
+          pathname === '/api/backup') &&
+        !pathname.startsWith('/api/master') &&
+        !pathname.startsWith('/api/lgpd/consent')
+      ) {
+        await recordAuditEvent({
+          req: request,
+          session,
+          shopId,
+          method: request.method || 'GET',
+          pathname,
+          body,
+          statusCode,
+        });
+      }
+
       if (response.writableEnded) return;
 
-      sendJson(response, result && typeof result === 'object' && 'status' in result ? result.status : 200, result && typeof result === 'object' && 'body' in result ? result.body : result);
+      sendJson(
+        response,
+        statusCode,
+        result && typeof result === 'object' && 'body' in result ? result.body : result
+      );
       return;
     }
 
@@ -255,6 +282,17 @@ const server = createServer(async (request, response) => {
         isProd ? undefined : String(error?.message || error)
       );
       return;
+    }
+    if (isApiPath(pathname) && [401, 403, 429].includes(httpError.status) && !pathname.startsWith('/api/master')) {
+      recordAuditEvent({
+        req: request,
+        session: getSessionPayload(request),
+        shopId: 1,
+        method: request.method || 'GET',
+        pathname,
+        body: {},
+        statusCode: httpError.status,
+      });
     }
     sendError(response, httpError.status, httpError.message, httpError.details);
   }

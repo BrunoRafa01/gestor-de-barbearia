@@ -242,6 +242,25 @@ CREATE TABLE IF NOT EXISTS shop_settings (
   updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   PRIMARY KEY (shop_id, key)
 );
+
+CREATE TABLE IF NOT EXISTS audit_events (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  shop_id         INTEGER NOT NULL DEFAULT 1,
+  actor           TEXT    NOT NULL DEFAULT 'admin',
+  actor_role      TEXT    NOT NULL DEFAULT 'owner',
+  method          TEXT    NOT NULL,
+  path            TEXT    NOT NULL,
+  action_label    TEXT    NOT NULL,
+  risk_level      TEXT    NOT NULL DEFAULT 'normal',
+  bo_reason       TEXT,
+  payload_summary TEXT,
+  status_code     INTEGER NOT NULL DEFAULT 200,
+  ip_hash         TEXT,
+  created_at      TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_events_created ON audit_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_events_risk    ON audit_events(risk_level);
 `;
 
 export const DEFAULT_SETTINGS = {

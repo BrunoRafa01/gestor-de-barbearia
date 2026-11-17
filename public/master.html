@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#05060A" />
+  <title>Painel Admin Master | Torre de Controle &amp; Radar Anti-BO</title>
+  <meta name="description" content="Painel Master exclusivo do proprietário do sistema: auditoria anti-BO, inspetor de banco de dados em tempo real e integridade de código-fonte." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/icon-192.png" />
+  <style>
+    :root {
+      --bg: #05060A;
+      --surface: #0B0D14;
+      --surface-2: #10141F;
+      --surface-hover: #151A28;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
+      --text: #F8FAFC;
+      --muted: #94A3B8;
+      --faint: #64748B;
+      --blue: #3B82F6;
+      --blue-strong: #2563EB;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --crimson: #EF4444;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      background:
+        radial-gradient(ellipse 80% 45% at 50% -10%, rgba(37, 99, 235, 0.18), transparent 70%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* TOP COMMAND BAR */
+    .master-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(5, 6, 10, 0.86);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .master-topbar-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .master-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .master-shield {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      border: 1px solid rgba(147, 197, 253, 0.4);
+      display: grid;
+      place-items: center;
+      color: #FFFFFF;
+      box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.65);
+    }
+
+    .master-brand-text strong {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .master-badge-root {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #FCA5A5;
+      letter-spacing: 0.06em;
+    }
+
+    .master-brand-text span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .master-top-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #34D399;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+
+    .m-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 160ms ease, border-color 160ms ease;
+    }
+
+    .m-btn:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .m-btn-primary {
+      background: var(--blue-strong);
+      border-color: rgba(147, 197, 253, 0.35);
+      color: #FFFFFF;
+    }
+
+    .m-btn-primary:hover {
+      background: #1D4ED8;
+    }
+
+    .m-btn-danger {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #FCA5A5;
+    }
+
+    .m-btn-danger:hover {
+      background: rgba(239, 68, 68, 0.24);
+    }
+
+    /* MAIN CONTAINER */
+    .master-shell {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* KPI ROW */
+    .master-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .m-kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .m-kpi.alert-bo {
+      border-color: rgba(239, 68, 68, 0.42);
+      background: linear-gradient(160deg, rgba(239, 68, 68, 0.1) 0%, var(--surface) 65%);
+    }
+
+    .m-kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .m-kpi-val {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .m-kpi-sub {
+      font-size: 11.5px;
+      color: var(--faint);
+    }
+
+    /* NAVIGATION TABS */
+    .master-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .master-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 160ms ease;
+    }
+
+    .master-tab:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    .master-tab.active {
+      background: rgba(37, 99, 235, 0.16);
+      border-color: rgba(59, 130, 246, 0.55);
+      color: #FFFFFF;
+    }
+
+    .tab-counter {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-counter.danger {
+      background: rgba(239, 68, 68, 0.22);
+      color: #FCA5A5;
+    }
+
+    /* CARDS & GRIDS */
+    .m-grid-2 {
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 18px;
+    }
+
+    .m-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .m-card-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .m-card-head h2 {
+      margin: 0;
+      font-size: 14.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .m-card-body {
+      padding: 18px 20px;
+    }
+
+    /* RISK PILLS */
+    .risk-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .risk-pill.critical_bo {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.42);
+      color: #FCA5A5;
+    }
+
+    .risk-pill.warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #FCD34D;
+    }
+
+    .risk-pill.normal {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      color: #6EE7B7;
+    }
+
+    /* AUDIT FEED */
+    .audit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .audit-item {
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .audit-item.critical_bo {
+      border-left: 3px solid var(--crimson);
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, var(--surface-2) 45%);
+    }
+
+    .audit-item.warning {
+      border-left: 3px solid var(--amber);
+    }
+
+    .audit-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .audit-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .audit-reason {
+      font-size: 12.5px;
+      color: #FCA5A5;
+      background: rgba(239, 68, 68, 0.09);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      padding: 7px 10px;
+      border-radius: 7px;
+      line-height: 1.45;
+    }
+
+    .audit-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* TABLES */
+    .m-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table.m-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .m-table th,
+    .m-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .m-table th {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    /* DB TABLE CHIPS */
+    .db-table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .db-table-chip {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 150ms ease;
+    }
+
+    .db-table-chip:hover,
+    .db-table-chip.active {
+      border-color: var(--blue);
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    .db-table-chip strong {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .db-table-chip span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #60A5FA;
+    }
+
+    .view-pane {
+      display: none;
+    }
+
+    .view-pane.active {
+      display: block;
+    }
+
+    /* FILTER PILLS */
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .filter-pill {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filter-pill.active {
+      background: var(--blue-strong);
+      border-color: var(--blue);
+      color: #FFFFFF;
+    }
+
+    @media (max-width: 1024px) {
+      .master-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .m-grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .master-shell {
+        padding: 14px;
+      }
+      .master-kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="master-topbar">
+    <div class="master-topbar-inner">
+      <div class="master-brand">
+        <div class="master-shield" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="master-brand-text">
+          <strong>
+            Torre de Controle Master
+            <span class="master-badge-root">ROOT · DONO DO SISTEMA</span>
+          </strong>
+          <span>Auditoria Anti-BO, Inspetor de Banco de Dados &amp; Integridade de Código-Fonte</span>
+        </div>
+      </div>
+
+      <div class="master-top-actions">
+        <span class="live-indicator"><i class="live-dot"></i> MONITORAMENTO ATIVO</span>
+        <button type="button" class="m-btn m-btn-danger" id="btn-simulate-bo">
+          ⚡ Simular BO de Barbeiro
+        </button>
+        <button type="button" class="m-btn" id="btn-refresh-master">
+          ↻ Atualizar Tudo
+        </button>
+        <a href="/" class="m-btn m-btn-primary">
+          Ir para Painel do Barbeiro ↗
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="master-shell">
+    <!-- 4 KPIs GLOBAIS -->
+    <section class="master-kpi-grid" id="master-kpi-grid">
+      <div class="m-kpi alert-bo">
+        <div class="m-kpi-top">
+          <span>Alertas de BO / Anomalias</span>
+          <span class="risk-pill critical_bo">RADAR ATIVO</span>
+        </div>
+        <div class="m-kpi-val" id="kpi-bo-count">0</div>
+        <div class="m-kpi-sub" id="kpi-bo-sub">Cancelamentos suspeitos, exclusões ou falhas</div>
+      </div>
+
+      <div class="m-kpi">
+        <div class="m-kpi-top">
+          <span>Integridade do Código-Fonte</span>
+          <span class="risk-pill normal" id="kpi-git-badge">VERIFICANDO</span>
+        </div>
+        <div class="m-kpi-val" id="kpi-git-commit">HEAD</div>
+        <div class="m-kpi-sub" id="kpi-git-sub">Monitoramento SHA-256 dos arquivos do servidor</div>
+      </div>
+
+      <div class="m-kpi">
+        <div class="m-kpi-top">
+          <span>Banco de Dados &amp; Latência</span>
+          <span class="risk-pill normal" id="kpi-db-badge">ONLINE</span>
+        </div>
+        <div class="m-kpi-val" id="kpi-db-driver">SQLite</div>
+        <div class="m-kpi-sub" id="kpi-db-sub">Inspeção de tabelas em tempo real</div>
+      </div>
+
+      <div class="m-kpi">
+        <div class="m-kpi-top">
+          <span>Faturamento Auditado (GMV)</span>
+          <span class="risk-pill normal" id="kpi-shops-badge">1 ATIVA</span>
+        </div>
+        <div class="m-kpi-val" id="kpi-gmv-val">R$ 0,00</div>
+        <div class="m-kpi-sub" id="kpi-gmv-sub">Total confirmado nas cadeiras</div>
+      </div>
+    </section>
+
+    <!-- ABAS DA TORRE DE CONTROLE -->
+    <nav class="master-tabs" aria-label="Abas do Painel Master">
+      <button type="button" class="master-tab active" data-pane="pane-audit">
+        1. Radar Anti-BO &amp; Auditoria de Barbeiros
+        <span class="tab-counter danger" id="tab-bo-badge">0</span>
+      </button>
+      <button type="button" class="master-tab" data-pane="pane-database">
+        2. Inspetor do Banco de Dados Ao Vivo
+        <span class="tab-counter" id="tab-db-badge">10 tabelas</span>
+      </button>
+      <button type="button" class="master-tab" data-pane="pane-integrity">
+        3. Código-Fonte, Git &amp; Segurança
+      </button>
+      <button type="button" class="master-tab" data-pane="pane-shops">
+        4. Controle de Barbearias &amp; Planos
+      </button>
+    </nav>
+
+    <!-- ABA 1: RADAR ANTI-BO & AUDITORIA -->
+    <section class="view-pane active" id="pane-audit">
+      <div class="m-grid-2">
+        <div class="m-card">
+          <div class="m-card-head">
+            <div>
+              <h2>Trilha de Auditoria em Tempo Real (Tudo que o Barbeiro Faz)</h2>
+            </div>
+            <div class="filter-group">
+              <button type="button" class="filter-pill active" data-risk="all">Todos</button>
+              <button type="button" class="filter-pill" data-risk="critical_bo">Só BOs Críticos</button>
+              <button type="button" class="filter-pill" data-risk="warning">BOs + Alertas</button>
+            </div>
+          </div>
+          <div class="m-card-body">
+            <div class="audit-list" id="audit-feed-list">
+              <div class="mono" style="color:var(--muted)">Carregando eventos de auditoria...</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="m-card">
+            <div class="m-card-head">
+              <h2>Índice de Suspeita por Barbeiro</h2>
+            </div>
+            <div class="m-card-body">
+              <p style="margin:0 0 12px;font-size:12px;color:var(--muted)">
+                Monitora se algum barbeiro está cancelando muitos horários ou marcando falta para atender por fora do caixa.
+              </p>
+              <div class="m-table-wrap">
+                <table class="m-table">
+                  <thead>
+                    <tr>
+                      <th>Barbeiro</th>
+                      <th>Concluídos</th>
+                      <th>Canc./Faltas</th>
+                      <th>Taxa BO</th>
+                    </tr>
+                  </thead>
+                  <tbody id="barber-anomaly-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 2: INSPETOR DO BANCO DE DADOS -->
+    <section class="view-pane" id="pane-database">
+      <div class="m-card">
+        <div class="m-card-head">
+          <div>
+            <h2>Tabelas do Banco de Dados (Clique para inspecionar os registros brutos)</h2>
+          </div>
+          <a href="/api/backup" class="m-btn m-btn-primary" download>
+            ⬇ Baixar Snapshot Completo (.json)
+          </a>
+        </div>
+        <div class="m-card-body">
+          <div class="db-table-grid" id="db-tables-grid"></div>
+
+          <div style="margin-top:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <strong class="mono" id="db-inspect-title" style="font-size:13px;color:#60A5FA">Tabela: audit_events</strong>
+              <span class="mono" id="db-file-meta" style="font-size:11px;color:var(--muted)"></span>
+            </div>
+            <div class="m-table-wrap" id="db-rows-container"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 3: INTEGRIDADE DO CÓDIGO-FONTE & RUNTIME -->
+    <section class="view-pane" id="pane-integrity">
+      <div class="m-grid-2">
+        <div class="m-card">
+          <div class="m-card-head">
+            <h2>Checksums SHA-256 dos Arquivos Críticos do Código-Fonte</h2>
+            <span class="risk-pill normal" id="integrity-status-pill">VERIFICADO</span>
+          </div>
+          <div class="m-card-body">
+            <p style="margin:0 0 14px;font-size:12.5px;color:var(--muted)">
+              Se qualquer arquivo do servidor ou do painel for alterado indevidamente, o hash SHA-256 muda na hora e o Git acusa modificação abaixo.
+            </p>
+            <div class="m-table-wrap">
+              <table class="m-table">
+                <thead>
+                  <tr>
+                    <th>Arquivo Fonte</th>
+                    <th>Hash SHA-256</th>
+                    <th>Tamanho</th>
+                    <th>Última Modificação</th>
+                  </tr>
+                </thead>
+                <tbody id="integrity-files-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="m-card">
+            <div class="m-card-head">
+              <h2>Status do Repositório Git &amp; Runtime</h2>
+            </div>
+            <div class="m-card-body" id="integrity-git-box"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 4: CONTROLE DE BARBEARIAS & PLANOS -->
+    <section class="view-pane" id="pane-shops">
+      <div class="m-card">
+        <div class="m-card-head">
+          <h2>Estabelecimentos, Planos &amp; Bloqueio Instantâneo</h2>
+        </div>
+        <div class="m-card-body">
+          <div class="m-table-wrap">
+            <table class="m-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Barbearia</th>
+                  <th>Plano Atual</th>
+                  <th>Barbeiros</th>
+                  <th>Agendamentos</th>
+                  <th>Cancelados (BO)</th>
+                  <th>Status</th>
+                  <th>Ação Master</th>
+                </tr>
+              </thead>
+              <tbody id="master-shops-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/vendor/gsap/gsap.min.js?v=20261116a"></script>
+  <script type="module" src="/js/master.js?v=20261116a"></script>
+</body>
+</html>

@@ -179,5 +179,29 @@ export async function seedDemoData({ force = false } = {}) {
   }
 
   await batch(appointments);
+
+  await batch([
+    {
+      sql: `INSERT INTO audit_events (shop_id, actor, actor_role, method, path, action_label, risk_level, bo_reason, payload_summary, status_code, ip_hash)
+            VALUES (1, 'cliente-publico', 'public', 'POST', '/api/public/book', 'Reserva online pelo cliente (Marcos Oliveira)', 'normal', NULL, '{"service":"Degradê Navalhado","time":"14:30"}', 201, '172.16.100.x')`,
+      params: [],
+    },
+    {
+      sql: `INSERT INTO audit_events (shop_id, actor, actor_role, method, path, action_label, risk_level, bo_reason, payload_summary, status_code, ip_hash)
+            VALUES (1, 'barbeiro.carlos', 'staff', 'PUT', '/api/appointments/12', 'Agendamento Cancelado após horário', 'critical_bo', 'ALERTA DE BO: Status alterado para "Cancelado" após o horário previsto do corte — auditar possível recebimento por fora do caixa.', '{"status":"cancelled","price":75}', 200, '172.16.100.x')`,
+      params: [],
+    },
+    {
+      sql: `INSERT INTO audit_events (shop_id, actor, actor_role, method, path, action_label, risk_level, bo_reason, payload_summary, status_code, ip_hash)
+            VALUES (1, 'barbeiro.lucas', 'staff', 'PUT', '/api/services/1', 'Preço de serviço alterado (Degradê → R$ 30.00)', 'warning', 'Alteração manual na tabela de preços do catálogo.', '{"name":"Degradê","price":30}', 200, '172.16.100.x')`,
+      params: [],
+    },
+    {
+      sql: `INSERT INTO audit_events (shop_id, actor, actor_role, method, path, action_label, risk_level, bo_reason, payload_summary, status_code, ip_hash)
+            VALUES (1, 'barbeiro.carlos', 'staff', 'DELETE', '/api/appointments/19', 'Agendamento APAGADO do banco', 'critical_bo', 'Exclusão direta de agendamento — verifique se o corte foi realizado na cadeira sem lançar comissão.', '{"appointment_id":19}', 200, '172.16.100.x')`,
+      params: [],
+    },
+  ]);
+
   return { seeded: true, appointments: appointments.length };
 }

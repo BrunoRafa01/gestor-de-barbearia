@@ -105,6 +105,41 @@ export const authRoutes = [
   },
   {
     method: 'POST',
+    path: '/api/auth/master-session',
+    auth: false,
+    handler: async ({ req, res, body }) => {
+      const ip = clientIp(req);
+      const key = `master-login:${ip}`;
+      const limit = loginLimiter.check(key);
+      if (!limit.allowed) {
+        res.setHeader('Retry-After', String(limit.retryAfterSeconds));
+        throw new HttpError(429, limit.message);
+      }
+
+      if (isDemoMode() && !body?.password) {
+        startSession(res, { secure: isSecureRequest(req), sub: 'master@novaruntime.local', shopId: 1, role: 'master' });
+        return {
+          status: 200,
+          body: { ...statusPayload(req, true), is_master: true, role: 'master', user: 'master@novaruntime.local' },
+        };
+      }
+
+      const password = requiredString(body.password, 'senha master', { max: 128 });
+      const stored = getSetting('admin_password_hash');
+      if (!verifyPassword(password, stored)) {
+        throw new HttpError(401, 'Senha Master incorreta.');
+      }
+
+      loginLimiter.reset(key);
+      startSession(res, { secure: isSecureRequest(req), sub: 'master@novaruntime.local', shopId: 1, role: 'master' });
+      return {
+        status: 200,
+        body: { ...statusPayload(req, true), is_master: true, role: 'master', user: 'master@novaruntime.local' },
+      };
+    },
+  },
+  {
+    method: 'POST',
     path: '/api/auth/register-shop',
     auth: false,
     handler: async ({ req, res, body }) => {

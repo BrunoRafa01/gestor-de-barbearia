@@ -343,6 +343,7 @@ function shellHtml() {
         </div>
         <nav class="nav">${navHtml}</nav>
         <div class="sidebar-footer">
+          <a class="nav-item" href="/master" target="_blank" rel="noopener">${icon('shield')}<span>Painel Master (Dono)</span></a>
           <a class="nav-item" href="/agendar" target="_blank" rel="noopener">${icon('external')}<span>Página de agendamento</span></a>
           <button class="nav-item" type="button" id="logout">${icon('logout')}<span>Sair do painel</span></button>
           <div class="company">Gestor de Barbearia</div>
