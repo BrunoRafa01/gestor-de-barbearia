@@ -20,7 +20,7 @@ services:
     region: oregon
     branch: main
     autoDeploy: true
-    buildCommand: npm install
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
@@ -29,7 +29,7 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: TZ
-        value: America/Sao_Paulo
+        value: America/Fortaleza
       - key: TRUST_PROXY
         value: "true"
       # Senha inicial do painel: o Render gera um valor forte automaticamente.

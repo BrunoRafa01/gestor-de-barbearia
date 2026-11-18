@@ -70,7 +70,7 @@ git push -u origin main
 ```
 
 Confira antes de enviar: o arquivo `.gitignore` ja impede que
-`node_modules/`, `data/`, `.env` e arquivos `*.db` subam para o GitHub.
+`node_modules/`, `dist/`, `data/`, `.env` e arquivos `*.db` subam para o GitHub.
 **Nunca** coloque senhas ou tokens dentro do codigo.
 
 > **Atualizacoes futuras:** depois de publicado, cada alteracao vira um commit e um
@@ -111,7 +111,7 @@ Se preferir criar sem o Blueprint, use **New + > Web Service** e preencha:
 | Campo | Valor |
 | --- | --- |
 | Runtime | Node |
-| Build Command | `npm install` |
+| Build Command | `npm install --include=dev && npm run build` |
 | Start Command | `npm start` |
 | Health Check Path | `/health` |
 | Plan | Free |

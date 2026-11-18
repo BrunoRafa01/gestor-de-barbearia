@@ -1,38 +1,43 @@
 {
   "name": "gestor-de-barbearia",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Gestor de Barbearia - sistema profissional de gestão de agendamentos, clientes e faturamento",
-  "author": "Bruno",
+  "description": "Gestor de Barbearia — SaaS comercial de gestão de agendamentos, clientes e faturamento desenvolvido por NOVA RUNTIME (100% TypeScript)",
+  "author": "NOVA RUNTIME",
   "license": "UNLICENSED",
   "type": "module",
   "engines": {
     "node": ">=22.5.0"
   },
   "scripts": {
-    "start": "node --experimental-sqlite server/server.js",
-    "dev": "node --watch --experimental-sqlite server/server.js",
-    "demo": "node --experimental-sqlite scripts/demo.mjs",
-    "test": "node tests/smoke.mjs",
-    "typecheck": "tsc --noEmit",
-    "build:motion": "tsc --ignoreConfig src/motion/gsap-motion.ts src/motion/apresentacao.ts src/motion/doc-motion.ts --target ES2022 --module ES2022 --moduleResolution bundler --skipLibCheck --outDir public/js",
-    "test:turso": "node tests/turso-check.mjs",
-    "test:whatsapp": "node tests/whatsapp-cloud.test.mjs",
-    "test:responsive": "node tests/responsive-check.mjs",
-    "test:stress": "node scripts/stress-test.mjs",
-    "test:all": "npm run typecheck && node tests/smoke.mjs && node tests/whatsapp-cloud.test.mjs && node tests/turso-check.mjs && node tests/responsive-check.mjs && node scripts/stress-test.mjs",
-    "audit:compliance": "node scripts/compliance-audit.mjs",
+    "build": "node --import tsx scripts/build.ts",
+    "start": "node --experimental-sqlite dist/server/server.js",
+    "dev": "npm run build && node --watch --experimental-sqlite --import tsx server/server.ts",
+    "demo": "npm run build && node --experimental-sqlite dist/scripts/demo.js",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json",
+    "lint": "npm run typecheck",
+    "test": "node --experimental-sqlite dist/tests/smoke.js",
+    "test:turso": "node --experimental-sqlite dist/tests/turso-check.js",
+    "test:whatsapp": "node --experimental-sqlite dist/tests/whatsapp-cloud.test.js",
+    "test:responsive": "node dist/tests/responsive-check.js",
+    "test:stress": "node --experimental-sqlite dist/scripts/stress-test.js",
+    "test:all": "npm run typecheck && npm run build && npm test && npm run test:whatsapp && npm run test:turso && npm run test:responsive && npm run test:stress",
+    "audit:compliance": "node dist/scripts/compliance-audit.js",
     "audit:deps": "npm audit",
-    "backup": "node scripts/backup-db.mjs",
-    "retention:purge": "node scripts/retention-purge.mjs",
-    "screenshots": "node scripts/capture-all-screenshots.mjs"
+    "backup": "node --experimental-sqlite dist/scripts/backup-db.js",
+    "retention:purge": "node --experimental-sqlite dist/scripts/retention-purge.js",
+    "screenshots": "node --import tsx scripts/capture-all-screenshots.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
-    "gsap": "^3.15.1"
+    "gsap": "^3.15.1",
+    "lenis": "^1.3.27",
+    "lottie-web": "^5.13.0",
+    "motion": "^14.14.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }

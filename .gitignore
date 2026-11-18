@@ -1,5 +1,7 @@
-# Dependencias
+# Dependencias e artefatos de build (TypeScript -> JS compilado)
 node_modules/
+dist/
+*.tsbuildinfo
 
 # Banco de dados local (contem dados reais - NUNCA versionar)
 data/

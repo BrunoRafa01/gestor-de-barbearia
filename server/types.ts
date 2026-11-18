@@ -1,10 +1,71 @@
-// Definicoes de tipos TypeScript para o Gestor de Barbearia
+// Definicoes estritas de tipos TypeScript para o backend do Gestor de Barbearia (NOVA RUNTIME).
+
+import type { IncomingMessage, ServerResponse } from 'node:http';
+
+export type SqlParam = string | number | bigint | Uint8Array | null;
+export type DbRow = Record<string, unknown>;
+
+export interface DbRunResult {
+  changes: number;
+  lastInsertRowid: number;
+}
+
+export interface BatchStatement {
+  sql: string;
+  params?: unknown[];
+}
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
 export type AppointmentSource = 'admin' | 'public';
+export type UserRole = 'owner' | 'staff' | 'master';
+export type PaymentMethod = 'pix' | 'credit_card' | 'debit_card' | 'cash' | 'other';
+
+export interface SessionPayload {
+  sub: string;
+  shop_id: number;
+  role: UserRole | string;
+  ver: number;
+  iat: number;
+  exp: number;
+}
+
+export interface AppRequest extends IncomingMessage {
+  rawBody?: string;
+}
+
+export interface RouteContext {
+  req: AppRequest;
+  res: ServerResponse;
+  url: URL;
+  params: Record<string, string>;
+  query: Record<string, string>;
+  body: Record<string, unknown>;
+  session: SessionPayload | null;
+  shopId: number;
+  isMaster: boolean;
+}
+
+export interface RouteResult {
+  status?: number;
+  headers?: Record<string, string>;
+  raw?: boolean;
+  body?: unknown;
+}
+
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+export interface RouteDefinition {
+  method: HttpMethod;
+  path: string;
+  auth?: boolean;
+  masterOnly?: boolean;
+  bodyLimit?: number;
+  handler: (ctx: RouteContext) => Promise<RouteResult | null> | RouteResult | null;
+}
 
 export interface Barber {
   id: number;
+  shop_id?: number;
   name: string;
   phone: string | null;
   email: string | null;
@@ -15,7 +76,7 @@ export interface Barber {
 }
 
 export interface BarberHours {
-  id: number;
+  id?: number;
   barber_id: number;
   weekday: number;
   is_working: number;
@@ -27,6 +88,7 @@ export interface BarberHours {
 
 export interface Service {
   id: number;
+  shop_id?: number;
   name: string;
   price: number;
   duration_min: number;
@@ -37,6 +99,7 @@ export interface Service {
 
 export interface Client {
   id: number;
+  shop_id?: number;
   name: string;
   phone: string;
   email: string | null;
@@ -46,7 +109,7 @@ export interface Client {
 
 export interface BusinessHours {
   weekday: number;
-  is_open: number;
+  is_open: number | boolean;
   open_time: string;
   close_time: string;
   break_start: string | null;
@@ -61,6 +124,7 @@ export interface Closure {
 
 export interface Appointment {
   id: number;
+  shop_id?: number;
   client_id: number;
   barber_id: number;
   service_id: number | null;
@@ -69,6 +133,7 @@ export interface Appointment {
   end_time: string;
   status: AppointmentStatus;
   price: number;
+  payment_method?: string | null;
   notes: string | null;
   source: AppointmentSource;
   cancel_token?: string | null;
@@ -83,11 +148,8 @@ export interface Appointment {
   service_duration?: number | null;
 }
 
-export interface DashboardMetrics {
-  today_count: number;
-  today_completed: number;
-  today_revenue: number;
-  today_pending: number;
-  month_revenue: number;
-  occupancy_rate: number;
+export interface SchemaMigrationRecord {
+  version: number;
+  name: string;
+  applied_at: string;
 }

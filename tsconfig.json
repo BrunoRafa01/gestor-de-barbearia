@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2023"],
     "types": ["node"],
     "strict": true,
-    "allowJs": true,
-    "checkJs": false,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "noEmit": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
-  "include": ["server/types.ts", "src/motion/gsap-motion.ts"]
+  "include": ["server/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"]
 }

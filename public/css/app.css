@@ -1,43 +1,44 @@
 /* ---------------------------------------------------------------------------
-   Gestor de Barbearia — Studio Design System
-   Direção: Obsidian Black + Crisp Blue Accent (#3B82F6)
-   - Fundo principal: #09090B
-   - Sidebar: #0B0C0F
-   - Superfícies: #111216 / #17181E / #1F2128
-   - Bordas hairline: rgba(255, 255, 255, 0.05) / rgba(255, 255, 255, 0.10)
-   - Acento único: #3B82F6 (Crisp Blue)
-   - Texto: #F4F4F5 / #A1A1AA / #71717A
-   - Semânticas: #34D399 (ok) | #FBBF24 (warn) | #FB7185 (danger)
+   Gestor de Barbearia — NOVA RUNTIME Commercial SaaS Design System
+   Referências: Linear, Stripe Dashboard, Vercel, Raycast
+   - Background principal: #080B12
+   - Background secundário: #101622
+   - Cards e superfícies: #141C2D
+   - Bordas: #1E293B
+   - Azul principal: #3B82F6 | Azul secundário: #60A5FA
+   - Textos principais: #F8FAFC | Textos secundários: #94A3B8
+   - Sucesso: #10B981
    --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: dark;
 
-  /* 9 Neutros Calibrados (nunca #000000 puro) */
-  --bg: #07080B;
-  --bg-secondary: #0B0D12;
-  --bg-soft: #0B0D12;
-  --surface: #0E1015;
-  --surface-2: #14171F;
-  --surface-3: #1C202B;
+  /* Paleta Calibrada NOVA RUNTIME */
+  --bg: #080B12;
+  --bg-secondary: #101622;
+  --bg-soft: #101622;
+  --surface: #141C2D;
+  --surface-2: #182236;
+  --surface-3: #1E293B;
 
-  /* Bordas Hairline */
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.13);
-  --border-subtle: rgba(255, 255, 255, 0.06);
+  /* Bordas Precisas */
+  --border: #1E293B;
+  --border-strong: #334155;
+  --border-subtle: rgba(30, 41, 59, 0.72);
 
-  /* Tipografia com Alto Contraste */
-  --text: #F4F4F5;
-  --text-dim: #A1A1AA;
-  --text-faint: #94A3B8;
+  /* Tipografia de Alto Contraste */
+  --text: #F8FAFC;
+  --text-dim: #94A3B8;
+  --text-faint: #64748B;
 
-  /* Acento Único Intencional: Crisp Blue */
+  /* Azul Principal & Secundário */
   --accent: #3B82F6;
+  --accent-2: #60A5FA;
   --accent-hover: #60A5FA;
   --accent-pressed: #2563EB;
-  --accent-soft: rgba(59, 130, 246, 0.12);
-  --accent-line: rgba(59, 130, 246, 0.28);
-  --accent-glow: rgba(59, 130, 246, 0.15);
+  --accent-soft: rgba(59, 130, 246, 0.14);
+  --accent-line: rgba(59, 130, 246, 0.32);
+  --accent-glow: rgba(59, 130, 246, 0.16);
 
   /* Aliases semânticos para compatibilidade com módulos */
   --primary: var(--accent);
@@ -62,32 +63,32 @@
   --blue-glow: var(--accent-glow);
 
   /* Cores Semânticas */
-  --ok: #34D399;
-  --ok-soft: rgba(52, 211, 153, 0.10);
+  --ok: #10B981;
+  --ok-soft: rgba(16, 185, 129, 0.12);
   --warn: #FBBF24;
-  --warn-soft: rgba(251, 191, 36, 0.10);
+  --warn-soft: rgba(251, 191, 36, 0.12);
   --danger: #FB7185;
-  --danger-soft: rgba(251, 113, 133, 0.10);
-  --info: #A1A1AA;
-  --info-soft: rgba(161, 161, 170, 0.12);
+  --danger-soft: rgba(251, 113, 133, 0.12);
+  --info: #94A3B8;
+  --info-soft: rgba(148, 163, 184, 0.14);
 
-  /* Nested Border Radius & Escala Espacial 4px/8px */
+  /* Escala Espacial & Raios */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 14px;
-  --radius: 14px;
-  --shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
-  --sidebar-w: 240px;
+  --radius-lg: 12px;
+  --radius: 12px;
+  --shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.65);
+  --sidebar-w: 244px;
   --slot-h: 44px;
 
-  /* Tipografia Travada */
+  /* Tipografia */
   --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Instrument Serif', Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   /* Foco & Curva de Movimento */
-  --ring: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  --ring: 0 0 0 2px rgba(59, 130, 246, 0.42);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -107,10 +108,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59, 130, 246, 0.10), transparent 70%),
-    linear-gradient(180deg, #07080B 0%, #090D16 100%);
-  background-attachment: fixed;
+  background-color: var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 14px;
@@ -4982,5 +4980,585 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .icon-btn {
     min-width: 40px;
     min-height: 40px;
+  }
+}
+
+/* ------------------ Seletor de Folgas da Barbearia ------------------ */
+.folga-card {
+  margin-top: 14px;
+}
+
+.folga-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.folga-day-btn {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease;
+}
+
+.folga-day-btn:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.folga-day-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.folga-day-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.folga-day-btn.is-off {
+  border-color: rgba(251, 113, 133, 0.32);
+  background: var(--danger-soft);
+}
+
+.folga-day-btn.is-off:hover:not(:disabled) {
+  border-color: rgba(251, 113, 133, 0.6);
+  background: rgba(251, 113, 133, 0.16);
+}
+
+.folga-day-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.folga-day-hours {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.folga-closures-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.folga-closure-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.folga-closure-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
+  font-size: 12px;
+}
+
+.folga-closure-tag button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.folga-closure-tag button:hover {
+  color: #fca5a5;
+}
+
+@media (max-width: 980px) {
+  .folga-day-grid {
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  }
+}
+
+/* ------------------ Modern Web Design: Acessibilidade, Foco e Polimento ------------------ */
+.ct-header.is-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: nowrap;
+  padding: 12px 16px;
+  margin: -8px -16px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.75);
+}
+
+.ct-header-left {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.ct-header-left .ct-sub {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ct-header .ct-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ct-sync-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ok, #34d399);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.ct-sync-dot.is-syncing {
+  background: var(--accent, #3b82f6);
+  animation: ctPulse 0.9s ease-in-out infinite;
+}
+
+@keyframes ctPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.4); opacity: 0.4; }
+}
+
+#ct-dash-body {
+  transition: opacity 0.18s ease;
+}
+
+#ct-dash-body.is-loading {
+  opacity: 0.72;
+}
+
+@media (max-width: 900px) {
+  .ct-header.is-sticky {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    margin: -6px -12px 12px;
+    gap: 10px;
+  }
+  .ct-header-left {
+    flex: 1 1 100%;
+  }
+  .ct-header .ct-controls {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+.ct-title {
+  font-size: clamp(1.2rem, 1.05rem + 0.65vw, 1.5rem);
+  letter-spacing: -0.02em;
+}
+
+.ct-card {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ct-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.75);
+}
+
+.ct-card::before,
+.folga-card::before,
+.folga-day-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(59, 130, 246, 0.12),
+    transparent 70%
+  );
+  z-index: 0;
+}
+
+.folga-day-btn.is-off::before {
+  background: radial-gradient(
+    200px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(251, 113, 133, 0.16),
+    transparent 70%
+  );
+}
+
+.ct-card:hover::before,
+.folga-card:hover::before,
+.folga-day-btn:hover::before {
+  opacity: 1;
+}
+
+.ct-card > *,
+.folga-card > *,
+.folga-day-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.folga-card,
+.folga-day-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.folga-day-btn:focus-visible,
+.ct-seg-btn:focus-visible,
+.ct-filter-pill:focus-visible,
+.booksy-cat-pill:focus-visible,
+.nav-item:focus-visible,
+.day-chip:focus-visible,
+.slot:focus-visible,
+.control:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* ------------------ NOVA RUNTIME SaaS UI Polish (Skeletons, Lottie, Dashboard, Breakpoints) ------------------ */
+
+.sidebar {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+}
+
+.topbar {
+  background: rgba(8, 11, 18, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.card,
+.ct-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.ct-card-accent {
+  border-color: rgba(59, 130, 246, 0.42);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, var(--surface) 100%);
+}
+
+/* Assinatura discreta NOVA RUNTIME */
+.nr-signature {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.nr-signature strong {
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+/* Containers vetoriais Lottie */
+.lottie-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.lottie-sm {
+  width: 36px;
+  height: 36px;
+}
+
+.lottie-md {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+}
+
+.lottie-lg {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 8px;
+}
+
+/* Skeleton Loading (Linear / Vercel style) */
+@keyframes nrShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--surface) 20%,
+    var(--surface-3) 50%,
+    var(--surface) 80%
+  );
+  background-size: 200% 100%;
+  animation: nrShimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line.w-40 { width: 40%; }
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-80 { width: 80%; }
+
+.skeleton-val {
+  height: 28px;
+  width: 55%;
+  margin: 12px 0;
+  border-radius: var(--radius-md);
+}
+
+.skeleton-card {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.skeleton-table-row {
+  display: grid;
+  grid-template-columns: 80px 1.4fr 1fr 1fr 90px;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Novos painéis analíticos e operacionais do Dashboard */
+.ct-analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ct-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.fin-chart-wrap {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.fin-chart-svg {
+  width: 100%;
+  height: 168px;
+  display: block;
+  overflow: visible;
+}
+
+.fin-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+.fin-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+.barber-perf-list,
+.upcoming-list,
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.barber-perf-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.barber-perf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.upcoming-item,
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  font-size: 12.5px;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.upcoming-item[data-appt],
+.activity-item[data-appt] {
+  cursor: pointer;
+}
+
+.upcoming-item[data-appt]:hover,
+.activity-item[data-appt]:hover {
+  border-color: var(--accent-line);
+  background: var(--surface-2);
+}
+
+.upcoming-meta,
+.activity-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upcoming-meta strong,
+.activity-meta strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upcoming-meta span,
+.activity-meta span {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Breakpoints calibrados: 1920px, 1366px, 1024px, 768px, 430px, 390px, 375px, 320px */
+@media (min-width: 1680px) {
+  .content {
+    max-width: 1640px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 1366px) {
+  :root {
+    --sidebar-w: 232px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .ct-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  .ct-ops-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .ct-ops-grid {
+    grid-template-columns: 1fr;
+  }
+  .skeleton-table-row {
+    grid-template-columns: 64px 1fr 80px;
+  }
+}
+
+@media (max-width: 430px) {
+  .ct-controls .btn span {
+    display: none;
+  }
+  .folga-closures-row .control {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .ct-seg-btn {
+    padding: 5px 8px;
+    font-size: 11.5px;
+  }
+}
+
+@media (max-width: 320px) {
+  .content {
+    padding: 10px 8px 32px;
+  }
+  .ct-seg-btn {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

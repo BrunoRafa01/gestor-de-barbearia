@@ -3,7 +3,7 @@
 > **Produto Comercial de Gestão, Agendamento Online e Crescimento para Barbearias Modernas.**  
 > Desenvolvido pela **Nova Runtime Tecnologia** para transformar barbearias reais em negócios digitais de alta performance e fidelização de clientes.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-Tipos_de_Dom%C3%ADnio-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25_Strict-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22.5+-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Dual--Database-SQLite%20%7C%20Turso-000000?style=flat&logo=sqlite&logoColor=white)](https://turso.tech/)
 [![Security & LGPD](https://img.shields.io/badge/Controles-LGPD%20%26%20CDC-10B981?style=flat)](/compliance.html)
@@ -27,16 +27,15 @@ O sistema adota um Design System em **Preto Obsidiana + Azul Limpo** focado em l
 
 | Token | Valor | Finalidade |
 | :--- | :--- | :--- |
-| **Fundo Principal (`--bg`)** | `#07080B` / `#09090B` | Base escura em preto obsidiana |
-| **Sidebar (`--bg-secondary`)** | `#0B0C0F` | Navegação lateral e cabeçalhos |
-| **Superfícies (`--surface`)** | `#0E1015` / `#111216` | Cards, painéis bento e tabelas |
-| **Elevação (`--surface-2`)** | `#17181E` | Abas ativas, modais e hover |
-| **Bordas (`--border`)** | `rgba(255, 255, 255, 0.06)` | Linhas divisórias *hairline* sutis |
-| **Azul Principal (`--accent`)** | `#3B82F6` / `#2563EB` | Ações primárias, seleção e gráficos |
-| **Azul Destaque (`--accent-hover`)** | `#60A5FA` | Preços, links, hover e curvas SVG |
-| **Texto Principal (`--text`)** | `#F4F4F5` | Tipografia de alto contraste |
-| **Texto Secundário (`--text-dim`)** | `#A1A1AA` | Metadados, subtítulos e legendas |
-| **Sucesso / Alerta / Erro** | `#34D399` · `#FBBF24` · `#FB7185` | Pílulas de status translúcidas |
+| **Fundo Principal (`--bg`)** | `#080B12` | Base escura principal |
+| **Fundo Secundário (`--bg-secondary`)** | `#101622` | Sidebar, cabeçalhos e áreas secundárias |
+| **Superfícies (`--surface`)** | `#141C2D` | Cards, painéis analíticos e tabelas |
+| **Bordas (`--border`)** | `#1E293B` | Linhas divisórias estruturais precisas |
+| **Azul Principal (`--accent`)** | `#3B82F6` | Ações primárias, seleção e gráficos |
+| **Azul Secundário (`--accent-2`)** | `#60A5FA` | Hover, links e curvas secundárias SVG |
+| **Texto Principal (`--text`)** | `#F8FAFC` | Tipografia de alto contraste |
+| **Texto Secundário (`--text-dim`)** | `#94A3B8` | Metadados, subtítulos e legendas |
+| **Sucesso (`--ok`)** | `#10B981` | Confirmações, metas atingidas e pílulas de status |
 
 ---
 
@@ -125,13 +124,12 @@ O sistema implementa **controles técnicos alinhados à LGPD (Lei nº 13.709/201
 
 | Camada | Tecnologia | Justificativa Técnica |
 | :--- | :--- | :--- |
-| **Runtime** | Node.js 22.5+ (ES Modules) | Suporte nativo ao `node:sqlite` com zero dependências externas de compilação. |
-| **Linguagem & Tipagem** | TypeScript (Strict) + JS | Contratos de domínio rigorosamente tipados em `server/types.ts` validados via `tsc --noEmit`. |
+| **Runtime** | Node.js 22.5+ (ES Modules) | Suporte nativo ao `node:sqlite` com zero dependências nativas C++. |
+| **Linguagem Única** | TypeScript 100% (`strict: true`) | Backend (`server/`), Frontend (`src/client/`), Animações (`src/animations/`), Scripts (`scripts/`) e Testes (`tests/`) inteiramente em TypeScript estrito, compilados para `dist/`. |
 | **Backend & Roteador** | HTTP Nativo (`node:http`) | Altíssimo desempenho, baixa pegada de memória (~35MB RAM) e sem overhead de frameworks externos. |
-| **Persistência Local** | SQLite (`node:sqlite`) | Armazenamento local rápido e independente com WAL (Write-Ahead Logging). |
-| **Persistência em Nuvem** | Turso / libSQL (`@libsql/client`) | Banco distribuído via HTTP que viabiliza deploy gratuito no Render com persistência durável. |
-| **Frontend** | HTML5 Semântico + CSS Design System + Vanilla JS | Interface SPA leve, sem bundlers pesados, com cache-busting e carregamento direto sem dependência de instalação PWA. |
-| **Criptografia** | `node:crypto` | Funções criptográficas nativas do kernel do Node.js. |
+| **Persistência & Migrations** | `node:sqlite` + `@libsql/client` | Paridade local/nuvem com controle versionado em `schema_migrations`. |
+| **Frontend & Animações** | Vanilla TS + GSAP + Motion + Lenis + Lottie | Arquitetura SPA leve compilada via `esbuild` para `dist/public/`, com GSAP (motor principal), Motion (springs), Lenis (páginas públicas) e Lottie SVG (`lottie_light`). |
+| **Criptografia** | `node:crypto` | Funções criptográficas nativas (`scrypt`, HMAC-SHA256, `timingSafeEqual`). |
 
 ---
 
@@ -147,12 +145,13 @@ O sistema implementa **controles técnicos alinhados à LGPD (Lei nº 13.709/201
    cd gestor-de-barbearia
    ```
 
-2. **Instale as dependências:**
+2. **Instale as dependências e gere o build de produção (`dist/`):**
    ```bash
    npm install
+   npm run build
    ```
 
-3. **Inicie o servidor de desenvolvimento:**
+3. **Inicie o servidor compilado (ou `npm run dev` para watch mode):**
    ```bash
    npm start
    ```
