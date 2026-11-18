@@ -16,3 +16,4 @@
 
 # Evita que o GitHub trate o projeto como linguagem errada.
 package-lock.json linguist-generated=true
+*.ts linguist-detectable=true
