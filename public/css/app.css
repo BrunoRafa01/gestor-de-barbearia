@@ -4480,6 +4480,43 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
+  align-items: stretch;
+}
+
+.ct-kpi-grid > .ct-card,
+.ct-analytics-grid > .ct-card,
+.ct-ops-grid > .ct-card,
+.ct-mid-grid > .ct-card {
+  height: 100%;
+  justify-content: flex-start;
+}
+
+.ct-kpi-grid > .ct-card .ct-card-head > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ct-kpi-grid > .ct-card .ct-card-label,
+.ct-kpi-grid > .ct-card .ct-card-sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ct-kpi-grid > .ct-card .ct-card-head .ct-pill {
+  flex-shrink: 0;
+}
+
+.ct-kpi-grid > .ct-card .ct-spark-row,
+.ct-kpi-grid > .ct-card > .ct-kpi-val {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.ct-kpi-grid > .ct-card .ct-kpi-foot {
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .ct-card {
@@ -5112,7 +5149,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   gap: 14px;
   flex-wrap: nowrap;
   padding: 12px 16px;
-  margin: -8px -16px 14px;
+  margin: 0 0 16px;
   border-radius: var(--radius-lg);
   background: var(--bg);
   border: 1px solid var(--border);
@@ -5173,7 +5210,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   .ct-header.is-sticky {
     flex-wrap: wrap;
     padding: 10px 12px;
-    margin: -6px -12px 12px;
+    margin: 0 0 14px;
     gap: 10px;
   }
   .ct-header-left {
@@ -5561,4 +5598,117 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ------------------ Astryx Design System Semantic Tokens & Polish ------------------ */
+:root {
+  --color-background-body: var(--bg);
+  --color-background-surface: var(--bg-secondary);
+  --color-background-card: var(--surface);
+  --color-background-popover: var(--surface-2);
+  --color-background-muted: var(--surface-3);
+  --color-overlay-hover: rgba(248, 250, 252, 0.045);
+  --color-overlay-pressed: rgba(248, 250, 252, 0.085);
+  --color-tint-hover: rgba(59, 130, 246, 0.12);
+
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-dim);
+  --color-text-muted: var(--text-faint);
+
+  --color-success: #10B981;
+  --color-success-muted: rgba(16, 185, 129, 0.14);
+  --color-border-success: rgba(16, 185, 129, 0.32);
+  --color-text-success: #34D399;
+
+  --color-warning: #FBBF24;
+  --color-warning-muted: rgba(251, 191, 36, 0.13);
+  --color-border-warning: rgba(251, 191, 36, 0.32);
+  --color-text-warning: #FDE68A;
+
+  --color-error: #FB7185;
+  --color-error-muted: rgba(251, 113, 133, 0.14);
+  --color-border-error: rgba(251, 113, 133, 0.34);
+  --color-text-error: #FDA4AF;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 26px -16px rgba(0, 0, 0, 0.65);
+  --shadow-popover: 0 18px 42px -14px rgba(0, 0, 0, 0.78), 0 0 0 1px var(--border);
+}
+
+.card,
+.ct-card {
+  background: var(--color-background-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.modal,
+.user-menu-dropdown,
+.toast {
+  background: var(--color-background-popover);
+  box-shadow: var(--shadow-popover);
+}
+
+.btn {
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--color-overlay-hover);
+  border-color: var(--border-strong);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--color-overlay-pressed);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-pressed);
+  border-color: var(--accent-pressed);
+}
+
+.nav-item:hover {
+  background: var(--color-overlay-hover);
+}
+
+.nav-item.active {
+  background: var(--color-tint-hover);
+  color: var(--color-text-primary);
+  border-color: var(--accent-line);
+}
+
+.table tbody tr {
+  transition: background-color 0.14s ease;
+}
+
+.table tbody tr:hover td {
+  background: var(--color-overlay-hover);
+}
+
+.pill-confirmed {
+  background: var(--color-success-muted);
+  border-color: var(--color-border-success);
+  color: var(--color-text-success);
+}
+
+.pill-cancelled {
+  background: var(--color-error-muted);
+  border-color: var(--color-border-error);
+  color: var(--color-text-error);
+}
+
+.pill-pending {
+  background: var(--color-warning-muted);
+  border-color: var(--color-border-warning);
+  color: var(--color-text-warning);
 }

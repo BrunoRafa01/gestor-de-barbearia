@@ -792,10 +792,11 @@ function buildFinancialChartSvg(
       : [{ date: fallbackDate, realized: fallbackRealized, expected: fallbackExpected }];
 
   const chartPoints = rows.length === 1 ? [rows[0]!, rows[0]!] : rows;
-  const maxVal = Math.max(
-    1,
+  const rawMaxVal = Math.max(
+    0,
     ...chartPoints.map((p) => Math.max(p.realized, p.expected))
   );
+  const maxVal = Math.max(1, rawMaxVal);
 
   const vbW = 560;
   const vbH = 168;
@@ -879,7 +880,7 @@ function buildFinancialChartSvg(
         <span><i class="fin-legend-dot" style="background:#10B981"></i>Receita realizada</span>
         <span><i class="fin-legend-dot" style="background:#60A5FA"></i>Receita prevista</span>
         <span class="spacer"></span>
-        <span class="mono">Pico: ${esc(money(maxVal))}</span>
+        <span class="mono">Pico: ${esc(money(rawMaxVal))}</span>
       </div>
     </div>`;
 }
