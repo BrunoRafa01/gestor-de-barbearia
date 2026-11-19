@@ -4,7 +4,7 @@
   "private": true,
   "description": "Gestor de Barbearia — SaaS comercial de gestão de agendamentos, clientes e faturamento desenvolvido por NOVA RUNTIME (100% TypeScript)",
   "author": "NOVA RUNTIME",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22.5.0"
