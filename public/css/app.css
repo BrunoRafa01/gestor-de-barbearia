@@ -1332,10 +1332,10 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 .card-header .card-sub { font-size: 11.5px; color: var(--text-faint); }
 .card-header .spacer { margin-left: auto; }
 
-.grid { display: grid; gap: 14px; }
-.grid-kpi { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.grid { display: grid; gap: 16px; }
+.grid-kpi { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+.grid-3 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 
 .kpi {
   position: relative;

@@ -4666,7 +4666,7 @@ async function viewFinance(): Promise<void> {
   };
 
   content().innerHTML = `
-    <div class="stack" style="gap:18px">
+    <div class="stack" style="gap:22px">
       <div class="ct-header is-sticky">
         <div class="ct-segmented" role="tablist" aria-label="Período financeiro">
           ${(
@@ -4800,7 +4800,7 @@ async function viewFinance(): Promise<void> {
                   <option value="other">Outro</option>
                 </select>
               </div>
-              <div class="field span-2">
+              <div class="field" style="grid-column:1 / -1;display:flex;align-items:flex-end;justify-content:flex-end;margin-top:4px">
                 <button type="submit" class="btn btn-primary">Registrar Despesa</button>
               </div>
             </form>
