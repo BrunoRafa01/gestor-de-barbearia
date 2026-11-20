@@ -1334,7 +1334,7 @@ button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, 
 
 .grid { display: grid; gap: 16px; }
 .grid-kpi { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid-3 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 
 .kpi {
@@ -3353,6 +3353,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .stack {
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
 .hours-head,
