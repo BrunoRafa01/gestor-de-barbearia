@@ -178,7 +178,7 @@ const refresh = (): Promise<void> => navigate(state.view);
 
 function getStoredTheme(): ThemeMode {
   try {
-    return localStorage.getItem('gb_theme') === 'light' ? 'light' : 'dark';
+    return localStorage.getItem('gb_theme_v2') === 'light' ? 'light' : 'dark';
   } catch {
     return 'dark';
   }
@@ -195,7 +195,8 @@ function applyTheme(theme: ThemeMode): void {
   const next: ThemeMode = theme === 'light' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   try {
-    localStorage.setItem('gb_theme', next);
+    localStorage.setItem('gb_theme_v2', next);
+    localStorage.removeItem('gb_theme');
   } catch {
     /* ignora */
   }
