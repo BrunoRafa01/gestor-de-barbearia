@@ -3358,9 +3358,19 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
 .hours-head,
 .hours-row {
   display: grid;
-  grid-template-columns: 110px 70px 1fr 1fr 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: 164px repeat(4, minmax(112px, 1fr));
+  gap: 10px;
   align-items: center;
+}
+
+.hours-row .field-check {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.hours-row .control {
+  width: 100%;
+  min-width: 0;
 }
 
 .hours-head {
@@ -3368,6 +3378,20 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   color: var(--text-faint);
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 720px) {
+  .hours-head {
+    display: none;
+  }
+  .hours-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .hours-row .field-check {
+    grid-column: 1 / -1;
+  }
 }
 
 .ios-install-sheet {
