@@ -54,7 +54,6 @@ export function initGsapMotion(): void {
 
   cleanupCallbacks.push(initMotionMicroInteractions());
   cleanupCallbacks.push(setupEditorialHoverDelegation());
-  cleanupCallbacks.push(setupCardSpotlightDelegation());
 }
 
 /** Limpa listeners e timelines globais quando necessário (ex.: desmontagem/testes). */
@@ -126,27 +125,6 @@ function setupEditorialHoverDelegation(): () => void {
   return () => {
     document.removeEventListener('pointerover', onOver);
     document.removeEventListener('pointerout', onOut);
-  };
-}
-
-function setupCardSpotlightDelegation(): () => void {
-  if (typeof window === 'undefined' || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    return () => {};
-  }
-
-  const SPOTLIGHT_SELECTOR = '.ct-card, .folga-card, .folga-day-btn, .card';
-
-  const onMove = (ev: PointerEvent): void => {
-    const card = (ev.target as HTMLElement | null)?.closest?.(SPOTLIGHT_SELECTOR) as HTMLElement | null;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    card.style.setProperty('--mx', `${Math.round(ev.clientX - rect.left)}px`);
-    card.style.setProperty('--my', `${Math.round(ev.clientY - rect.top)}px`);
-  };
-
-  document.addEventListener('pointermove', onMove, { passive: true });
-  return () => {
-    document.removeEventListener('pointermove', onMove);
   };
 }
 
