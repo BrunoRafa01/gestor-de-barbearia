@@ -114,6 +114,7 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :root[data-theme="light"] {
@@ -177,8 +178,6 @@ body {
 :root[data-theme="light"] .ct-filter-pill.active {
   color: #1D4ED8;
   background: rgba(37, 99, 235, 0.12);
-}
-  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
