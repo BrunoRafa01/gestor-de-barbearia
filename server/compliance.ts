@@ -131,7 +131,7 @@ export function runComplianceAudit(): ComplianceAuditReport {
       category: 'Seguranca',
       ...verify(
         securityTs.includes('Content-Security-Policy'),
-        'Content-Security-Policy (script-src self) e sanitizacao de strings de entrada.'
+        'Content-Security-Policy (script-src self) e escape de saida via esc() em src/client/ui.ts.'
       ),
     },
     {

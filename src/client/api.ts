@@ -5,12 +5,19 @@
 export class ApiError extends Error {
   public readonly status: number;
   public readonly details?: unknown;
+  public readonly payload?: Record<string, unknown> | null;
 
-  constructor(status: number, message: string, details?: unknown) {
+  constructor(
+    status: number,
+    message: string,
+    details?: unknown,
+    payload?: Record<string, unknown> | null
+  ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.details = details;
+    this.payload = payload ?? null;
   }
 }
 
@@ -61,11 +68,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 
   if (!response.ok) {
-    const errObj = (payload && typeof payload === 'object' ? payload : null) as ErrorPayload | null;
+    const errObj = (payload && typeof payload === 'object' ? payload : null) as
+      | (ErrorPayload & Record<string, unknown>)
+      | null;
     throw new ApiError(
       response.status,
       errObj?.error || `Erro ${response.status}`,
-      errObj?.details
+      errObj?.details,
+      errObj
     );
   }
 

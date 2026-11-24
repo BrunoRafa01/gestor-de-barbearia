@@ -15,8 +15,10 @@
     "dev": "npm run build && node --watch --experimental-sqlite --import tsx server/server.ts",
     "demo": "npm run build && node --experimental-sqlite dist/scripts/demo.js",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json && tsc -p tsconfig.sw.json",
-    "lint": "npm run typecheck",
-    "test": "node --experimental-sqlite dist/tests/smoke.js",
+    "lint": "eslint server src scripts tests && npm run typecheck",
+    "format": "prettier --write \"server/**/*.ts\" \"src/**/*.ts\" \"scripts/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"server/**/*.ts\" \"src/**/*.ts\" \"scripts/**/*.ts\" \"tests/**/*.ts\"",
+    "test": "node --experimental-sqlite dist/tests/smoke.js && node --experimental-sqlite dist/tests/etapa1-encryption-backup.test.js && node --experimental-sqlite dist/tests/etapa2-security.test.js && node --experimental-sqlite dist/tests/etapa3-operations.test.js && node dist/tests/etapa5-perf-a11y.test.js",
     "test:turso": "node --experimental-sqlite dist/tests/turso-check.js",
     "test:whatsapp": "node --experimental-sqlite dist/tests/whatsapp-cloud.test.js",
     "test:responsive": "node dist/tests/responsive-check.js",
@@ -25,6 +27,7 @@
     "audit:compliance": "node dist/scripts/compliance-audit.js",
     "audit:deps": "npm audit",
     "backup": "node --experimental-sqlite dist/scripts/backup-db.js",
+    "restore": "node --experimental-sqlite dist/scripts/restore-db.js",
     "retention:purge": "node --experimental-sqlite dist/scripts/retention-purge.js",
     "screenshots": "node --import tsx scripts/capture-all-screenshots.ts"
   },
@@ -36,9 +39,14 @@
     "motion": "^14.14.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
     "esbuild": "^0.28.2",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.10.1",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.74.0"
   }
 }

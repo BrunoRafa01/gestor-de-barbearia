@@ -11,6 +11,7 @@ import {
   driverKind,
   getSettingsMap,
   loadSettings,
+  migrateClientsEncryption,
 } from '../db.js';
 import { HttpError } from '../http.js';
 import type { BatchStatement, DbRow, RouteContext, RouteDefinition } from '../types.js';
@@ -231,6 +232,7 @@ export const backupRoutes: RouteDefinition[] = [
       }
 
       await batch(statements);
+      await migrateClientsEncryption();
 
       // Recarrega configuracoes e invalida caches de disponibilidade.
       await loadSettings();

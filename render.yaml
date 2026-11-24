@@ -39,6 +39,10 @@ services:
       # Chave de assinatura HMAC das sessoes gerada automaticamente
       - key: SESSION_SECRET
         generateValue: true
+      # Chave AES-256-GCM (64 caracteres hex) para criptografia de dados pessoais de clientes.
+      # Gere com `openssl rand -hex 32` e guarde uma copia segura antes do deploy.
+      - key: DATA_ENCRYPTION_KEY
+        sync: false
       # Banco persistente na nuvem (Turso/libSQL). Preencha no dashboard.
       - key: TURSO_DATABASE_URL
         sync: false
@@ -46,6 +50,9 @@ services:
         sync: false
       # Segredo da Meta para validar X-Hub-Signature-256 no webhook do WhatsApp
       - key: WHATSAPP_APP_SECRET
+        sync: false
+      # Token opcional para disparo de lembretes via cron externo (POST /api/internal/run-reminders)
+      - key: INTERNAL_CRON_TOKEN
         sync: false
       # Login administrativo com Google OAuth 2.0 (opcional)
       - key: GOOGLE_CLIENT_ID

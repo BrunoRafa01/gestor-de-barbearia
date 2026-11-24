@@ -2,8 +2,6 @@
  * Banner Interativo de Gestão de Consentimento (CMP) - LGPD — NOVA RUNTIME
  */
 
-import { getGsap } from '../animations/index.js';
-
 interface ConsentState {
   necessary: boolean;
   analytics: boolean;
@@ -101,14 +99,19 @@ function createBanner(): void {
     </div>
   `;
 
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (!reducedMotion) {
+    wrapper.style.opacity = '0';
+    wrapper.style.transform = 'translateY(10px)';
+    wrapper.style.transition = 'opacity 220ms ease, transform 220ms ease';
+  }
+
   document.body.appendChild(wrapper);
-  const gsap = getGsap();
-  if (gsap) {
-    gsap.fromTo(
-      wrapper,
-      { opacity: 0, y: 14 },
-      { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out', clearProps: 'transform' }
-    );
+  if (!reducedMotion) {
+    requestAnimationFrame(() => {
+      wrapper.style.opacity = '1';
+      wrapper.style.transform = 'translateY(0)';
+    });
   }
 
   const customDiv = document.getElementById('consent-custom-options');
@@ -117,18 +120,13 @@ function createBanner(): void {
   const rejectBtn = document.getElementById('consent-btn-reject');
 
   const closeBanner = (): void => {
-    const g = getGsap();
-    if (g) {
-      g.to(wrapper, {
-        opacity: 0,
-        y: 10,
-        duration: 0.18,
-        ease: 'power2.in',
-        onComplete: () => wrapper.remove(),
-      });
-    } else {
+    if (reducedMotion) {
       wrapper.remove();
+      return;
     }
+    wrapper.style.opacity = '0';
+    wrapper.style.transform = 'translateY(8px)';
+    window.setTimeout(() => wrapper.remove(), 180);
   };
 
   customBtn?.addEventListener('click', () => {
@@ -140,10 +138,6 @@ function createBanner(): void {
       acceptBtn.textContent = 'Salvar';
     } else if (acceptBtn) {
       acceptBtn.textContent = 'Aceitar';
-    }
-    const g = getGsap();
-    if (opening && g) {
-      g.fromTo(customDiv, { opacity: 0, y: -4 }, { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' });
     }
   });
 
@@ -197,3 +191,5 @@ if (document.readyState === 'loading') {
 } else {
   bootConsent();
 }
+
+export {};

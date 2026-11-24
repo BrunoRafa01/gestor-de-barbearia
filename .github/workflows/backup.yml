@@ -1,0 +1,39 @@
+name: Scheduled Database Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run Backup Routine
+        env:
+          BACKUP_RETENTION_COUNT: '14'
+          BACKUP_RETENTION_DAYS: '30'
+        run: npm run backup
+
+      - name: Upload Backup Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backups-${{ github.run_number }}
+          path: data/backups/*.db
+          if-no-files-found: ignore
+          retention-days: 14

@@ -9,7 +9,10 @@ import {
   animateToastIn,
   hydrateLottieElements,
 } from '../animations/index.js';
+import { esc, safeUrl } from './escape.js';
 import type { AppointmentStatus } from './types.js';
+
+export { esc, safeUrl };
 
 /* -------------------------------- Ícones Lucide -------------------------- */
 
@@ -61,16 +64,6 @@ export function icon(name: string, extra = ''): string {
 }
 
 /* ------------------------------ Segurança -------------------------------- */
-
-export function esc(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 /* ------------------------------- Formatos -------------------------------- */
 
@@ -245,8 +238,11 @@ export function statusPill(status: string): string {
 }
 
 export function initials(name: string | null | undefined): string {
-  return String(name || '?')
-    .trim()
+  const cleaned = String(name || '')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .trim();
+  if (!cleaned) return '?';
+  return cleaned
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0] ?? '')
@@ -263,6 +259,8 @@ function toastStack(): HTMLElement {
   if (!stack) {
     stack = document.createElement('div');
     stack.className = 'toast-stack';
+    stack.setAttribute('aria-live', 'polite');
+    stack.setAttribute('aria-atomic', 'false');
     document.body.appendChild(stack);
   }
   return stack;
@@ -273,6 +271,7 @@ export function toast(message: string, type: ToastType = 'ok'): void {
   const node = document.createElement('div');
   node.className = `toast ${normalizedType}`;
   node.setAttribute('role', normalizedType === 'error' ? 'alert' : 'status');
+  node.setAttribute('aria-live', normalizedType === 'error' || normalizedType === 'warn' ? 'assertive' : 'polite');
   const toastIcon =
     normalizedType === 'error'
       ? icon('ban')

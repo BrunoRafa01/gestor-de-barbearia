@@ -4,6 +4,7 @@
 // demonstracao para clientes e testes manuais) sem usar nenhuma informacao real.
 
 import { batch, get, run, setSetting } from './db.js';
+import { blindIndex, encryptSensitiveField } from './security.js';
 import { addDays, hhmmToMinutes, minutesToHHMM, todayISO, weekdayOf } from './time.js';
 import type { AppointmentSource, AppointmentStatus, BatchStatement } from './types.js';
 
@@ -202,8 +203,14 @@ export async function seedDemoData({ force = false }: SeedDemoOptions = {}): Pro
     const phone = `119000000${String(index + 1).padStart(2, '0')}`;
     const firstWord = (name.split(' ')[0] ?? 'cliente').toLowerCase();
     const info = await run(
-      'INSERT INTO clients (name, phone, email, notes) VALUES (?, ?, ?, ?)',
-      [name, phone, `${firstWord}@exemplo.com`, 'Cliente ficticio do modo demonstracao.']
+      'INSERT INTO clients (name, phone, phone_hash, email, notes) VALUES (?, ?, ?, ?, ?)',
+      [
+        encryptSensitiveField(name),
+        encryptSensitiveField(phone),
+        blindIndex(phone),
+        encryptSensitiveField(`${firstWord}@exemplo.com`),
+        'Cliente ficticio do modo demonstracao.',
+      ]
     );
     clients.push({ id: Number(info.lastInsertRowid), name, phone });
   }

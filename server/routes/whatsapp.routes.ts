@@ -215,6 +215,45 @@ export const whatsappRoutes: RouteDefinition[] = [
     },
   },
 
+  // 5b. Disparo externo protegido por token para cron (ex.: Render Cron / GitHub Actions)
+  {
+    method: 'POST',
+    path: '/api/internal/run-reminders',
+    auth: false,
+    handler: async ({ req }: RouteContext) => {
+      const expectedToken = (process.env.INTERNAL_CRON_TOKEN || process.env.CRON_SECRET || '').trim();
+      if (!expectedToken) {
+        throw new HttpError(503, 'Token interno de cron (INTERNAL_CRON_TOKEN) nao configurado.');
+      }
+
+      const authHeader = String(req.headers.authorization || '').trim();
+      const bearerToken = authHeader.toLowerCase().startsWith('bearer ')
+        ? authHeader.slice(7).trim()
+        : '';
+      const headerToken = String(req.headers['x-internal-token'] || '').trim();
+      const provided = bearerToken || headerToken;
+
+      const a = Buffer.from(provided);
+      const b = Buffer.from(expectedToken);
+      if (!provided || a.length !== b.length || !timingSafeEqual(a, b)) {
+        throw new HttpError(401, 'Token interno invalido ou ausente.');
+      }
+
+      const result = await processAppointmentReminders();
+      return {
+        status: 200,
+        body: {
+          ok: true,
+          ran_at: new Date().toISOString(),
+          processed: result.processed,
+          scanned: result.scanned ?? result.processed,
+          sent: result.sent,
+          skipped: Boolean(result.skipped),
+        },
+      };
+    },
+  },
+
   // 6. Webhook da Meta: verificacao GET (publico)
   {
     method: 'GET',

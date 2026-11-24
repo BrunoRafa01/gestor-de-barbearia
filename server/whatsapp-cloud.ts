@@ -4,6 +4,8 @@
 
 import { timingSafeEqual } from 'node:crypto';
 import { all, get, getSetting, run } from './db.js';
+import { logStructuredError } from './logger.js';
+import { decryptSensitiveField } from './security.js';
 import { addDays, formatDateBR, minutesToHHMM, nowMinutes, todayISO } from './time.js';
 import { buildMessages, normalizePhone, type WhatsAppAppointmentInput } from './whatsapp.js';
 
@@ -175,7 +177,7 @@ export async function sendMetaCloudMessage({
   }
 
   // 2. Registro pendente no banco
-  let messageRecordId: number | null = null;
+  let messageRecordId: number | null;
   const contentPreview = bodyText || `Template: ${templateName} [${templateParams.join(', ')}]`;
 
   if (idempotencyKey) {
@@ -562,7 +564,7 @@ export async function processAppointmentReminders(): Promise<ReminderBatchResult
   let sentCount = 0;
 
   for (const appt of appointments) {
-    const clientPhone = appt['client_phone'] ? String(appt['client_phone']) : '';
+    const clientPhone = appt['client_phone'] ? decryptSensitiveField(String(appt['client_phone'])) : '';
     if (!clientPhone) continue;
 
     const apptId = Number(appt['id']);
@@ -571,7 +573,7 @@ export async function processAppointmentReminders(): Promise<ReminderBatchResult
     const messages = buildMessages({
       date: apptDate,
       start_time: String(appt['start_time'] ?? ''),
-      client_name: appt['client_name'] ? String(appt['client_name']) : null,
+      client_name: appt['client_name'] ? decryptSensitiveField(String(appt['client_name'])) : null,
       barber_name: appt['barber_name'] ? String(appt['barber_name']) : null,
       service_name: appt['service_name'] ? String(appt['service_name']) : null,
     });
@@ -605,7 +607,14 @@ export async function processAppointmentReminders(): Promise<ReminderBatchResult
     }
   }
 
-  return { processed: appointments.length, scanned: appointments.length, sent: sentCount };
+  const result: ReminderBatchResult = {
+    processed: appointments.length,
+    scanned: appointments.length,
+    sent: sentCount,
+  };
+  lastReminderRunAt = new Date().toISOString();
+  lastReminderResult = result;
+  return result;
 }
 
 /**
@@ -636,10 +645,10 @@ export async function processPostAppointmentFollowups(): Promise<ReminderBatchRe
   let sent = 0;
 
   for (const appt of completedToday) {
-    const clientPhone = appt['client_phone'] ? String(appt['client_phone']) : '';
+    const clientPhone = appt['client_phone'] ? decryptSensitiveField(String(appt['client_phone'])) : '';
     if (!clientPhone) continue;
     const apptId = Number(appt['id']);
-    const clientName = String(appt['client_name'] ?? 'cliente');
+    const clientName = appt['client_name'] ? decryptSensitiveField(String(appt['client_name'])) : 'cliente';
     const barberName = String(appt['barber_name'] ?? 'nosso profissional');
     const bodyText = `Olá ${clientName}! Obrigado por escolher a ${shopName} hoje com ${barberName}. Conte pra gente como foi sua experiência!`;
     try {
@@ -668,25 +677,78 @@ export async function processPostAppointmentFollowups(): Promise<ReminderBatchRe
  * ------------------------------------------------------------------------ */
 
 let workerInterval: ReturnType<typeof setInterval> | null = null;
+let lastReminderRunAt: string | null = null;
+let lastReminderResult: ReminderBatchResult | null = null;
+
+export interface ReminderQueueStats {
+  pending_queue: number;
+  worker_active: boolean;
+  last_run_at: string | null;
+  last_result: ReminderBatchResult | null;
+  last_whatsapp: {
+    status: string | null;
+    sent_at: string | null;
+  };
+}
+
+export async function getReminderQueueStats(): Promise<ReminderQueueStats> {
+  const config = getWhatsAppConfig();
+  const hours = Math.max(1, Number(config.reminderHours) || 24);
+  const today = todayISO();
+  const nowMin = nowMinutes();
+  const startDT = `${today} ${minutesToHHMM(nowMin)}`;
+  const endTotalMin = nowMin + hours * 60;
+  const endDate = addDays(today, Math.floor(endTotalMin / 1440));
+  const endDT = `${endDate} ${minutesToHHMM(endTotalMin % 1440)}`;
+
+  const [queueRow, lastMsgRow] = await Promise.all([
+    get(
+      `SELECT COUNT(*) AS total
+         FROM appointments a
+        WHERE a.status IN ('pending', 'confirmed')
+          AND (a.date || ' ' || a.start_time) >= ?
+          AND (a.date || ' ' || a.start_time) <= ?
+          AND NOT EXISTS (
+            SELECT 1 FROM whatsapp_messages wm
+             WHERE wm.appointment_id = a.id
+               AND wm.message_type = 'reminder'
+               AND wm.status IN ('sent', 'delivered', 'read')
+          )`,
+      [startDT, endDT]
+    ),
+    get(
+      `SELECT status, COALESCE(sent_at, created_at) AS at
+         FROM whatsapp_messages
+        ORDER BY id DESC
+        LIMIT 1`,
+      []
+    ),
+  ]);
+
+  return {
+    pending_queue: Number(queueRow?.['total'] || 0),
+    worker_active: Boolean(workerInterval),
+    last_run_at: lastReminderRunAt,
+    last_result: lastReminderResult,
+    last_whatsapp: {
+      status: lastMsgRow?.['status'] ? String(lastMsgRow['status']) : null,
+      sent_at: lastMsgRow?.['at'] ? String(lastMsgRow['at']) : null,
+    },
+  };
+}
 
 export function startWhatsAppWorker(intervalMs: number = 60000): void {
   if (workerInterval) return;
 
   setTimeout(() => {
     processAppointmentReminders().catch((err: unknown) => {
-      console.error(
-        '[WhatsApp Worker] Erro na execucao inicial:',
-        err instanceof Error ? err.message : err
-      );
+      logStructuredError(err, { scope: 'whatsapp-worker-initial', status: 500 });
     });
   }, 5000).unref();
 
   workerInterval = setInterval(() => {
     processAppointmentReminders().catch((err: unknown) => {
-      console.error(
-        '[WhatsApp Worker] Erro no ciclo de lembretes:',
-        err instanceof Error ? err.message : err
-      );
+      logStructuredError(err, { scope: 'whatsapp-worker-interval', status: 500 });
     });
   }, intervalMs);
 

@@ -25,14 +25,7 @@ interface ComplianceStatusResponse {
   requisitos?: ComplianceReqItem[];
 }
 
-function escHtml(v: unknown): string {
-  return String(v ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+import { esc as escHtml } from './ui.js';
 
 function errMsg(err: unknown): string {
   return err instanceof Error ? err.message : 'Erro inesperado.';

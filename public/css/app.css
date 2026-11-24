@@ -29,7 +29,7 @@
   /* Tipografia de Alto Contraste */
   --text: #F8FAFC;
   --text-dim: #94A3B8;
-  --text-faint: #64748B;
+  --text-faint: #8B9BB4;
 
   /* Azul Principal & Secundário */
   --accent: #3B82F6;
@@ -2238,7 +2238,7 @@ input[type='date'], input[type='time'] { color-scheme: dark; }
   height: 176px;
   background:
     linear-gradient(180deg, rgba(7, 8, 11, 0.12) 0%, rgba(14, 16, 21, 0.92) 100%),
-    url('/img/barber-studio-hero.jpg?v=20261115f') center 28% / cover no-repeat;
+    url('/img/barber-studio-hero.webp?v=20261123a') center 28% / cover no-repeat;
   border-bottom: 1px solid var(--border);
   position: relative;
   display: flex;

@@ -403,6 +403,10 @@ export interface AuthMeResponse {
   authenticated: boolean;
   demo?: boolean;
   password_is_default?: boolean;
+  is_master?: boolean;
+  totp_enabled?: boolean;
+  totp_required?: boolean;
+  mfa_verified?: boolean;
   shop_name?: string;
   oauth_providers?: {
     google?: boolean;

@@ -14,8 +14,8 @@ import {
   animateSlotsGrid,
   animateStickyBarPrice,
   initGsapMotion,
-  initPublicSmoothScroll,
 } from '../animations/index.js';
+import { initPublicSmoothScroll } from '../animations/smooth-scroll.js';
 import { api, errorMessage, errorStatus, query } from './api.js';
 import type {
   Appointment,
@@ -333,7 +333,7 @@ function renderCategoryPills(): string {
     .filter((d) => d.id === 'all' || counts[d.id] >= 2)
     .map(
       (d) =>
-        `<button type="button" class="booksy-cat-pill${state.serviceCategory === d.id ? ' active' : ''}" data-cat="${d.id}">${d.label}</button>`
+        `<button type="button" class="booksy-cat-pill${state.serviceCategory === d.id ? ' active' : ''}" data-cat="${esc(d.id)}">${esc(d.label)}</button>`
     )
     .join('');
 }
@@ -358,7 +358,7 @@ function bookingLayoutHtml(): string {
         </div>
         <div class="figma-lookbook-grid">
           <button type="button" class="figma-lookbook-card" data-demo-keyword="degrad">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.jpg?v=20261115h" alt="Degradê Navalhado" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-degrade.webp?v=20261123a" srcset="/img/cuts/cut-degrade-480w.webp 480w, /img/cuts/cut-degrade-960w.webp 960w" sizes="(max-width: 600px) 50vw, 240px" alt="Degradê Navalhado" loading="lazy" decoding="async" />
             <span class="figma-lookbook-tag">Mais pedido</span>
             <div class="figma-lookbook-caption">
               <strong>Degradê Navalhado</strong>
@@ -366,7 +366,7 @@ function bookingLayoutHtml(): string {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="barba">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.jpg?v=20261115h" alt="Barboterapia Tradicional" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-barboterapia.webp?v=20261123a" srcset="/img/cuts/cut-barboterapia-480w.webp 480w, /img/cuts/cut-barboterapia-960w.webp 960w" sizes="(max-width: 600px) 50vw, 240px" alt="Barboterapia Tradicional" loading="lazy" decoding="async" />
             <span class="figma-lookbook-tag">Barba</span>
             <div class="figma-lookbook-caption">
               <strong>Barboterapia</strong>
@@ -374,7 +374,7 @@ function bookingLayoutHtml(): string {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="social">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-social.jpg?v=20261115h" alt="Corte Clássico na Tesoura" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-social.webp?v=20261123a" srcset="/img/cuts/cut-social-480w.webp 480w, /img/cuts/cut-social-960w.webp 960w" sizes="(max-width: 600px) 50vw, 240px" alt="Corte Clássico na Tesoura" loading="lazy" decoding="async" />
             <span class="figma-lookbook-tag">Clássico</span>
             <div class="figma-lookbook-caption">
               <strong>Corte Clássico</strong>
@@ -382,7 +382,7 @@ function bookingLayoutHtml(): string {
             </div>
           </button>
           <button type="button" class="figma-lookbook-card" data-demo-keyword="combo">
-            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.jpg?v=20261115h" alt="Acabamento e Barba" loading="eager" />
+            <img class="figma-lookbook-img" src="/img/cuts/cut-platinado.webp?v=20261123a" srcset="/img/cuts/cut-platinado-480w.webp 480w, /img/cuts/cut-platinado-960w.webp 960w" sizes="(max-width: 600px) 50vw, 240px" alt="Acabamento e Barba" loading="lazy" decoding="async" />
             <span class="figma-lookbook-tag">Completo</span>
             <div class="figma-lookbook-caption">
               <strong>Acabamento &amp; Barba</strong>
@@ -585,24 +585,24 @@ async function loadSlots(): Promise<void> {
 
 function servicePhoto(name = ''): string {
   const n = String(name).toLowerCase();
-  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.jpg?v=20261115h';
+  if (n.includes('barba') || n.includes('barboterapia')) return '/img/cuts/cut-barboterapia.webp?v=20261123a';
   if (n.includes('social') || n.includes('clássico') || n.includes('classico') || n.includes('tesoura')) {
-    return '/img/cuts/cut-social.jpg?v=20261115h';
+    return '/img/cuts/cut-social.webp?v=20261123a';
   }
   if (n.includes('platinado') || n.includes('textur') || n.includes('combo') || n.includes('+') || n.includes('visagismo')) {
-    return '/img/cuts/cut-platinado.jpg?v=20261115h';
+    return '/img/cuts/cut-platinado.webp?v=20261123a';
   }
-  return '/img/cuts/cut-degrade.jpg?v=20261115h';
+  return '/img/cuts/cut-degrade.webp?v=20261123a';
 }
 
 function barberPhoto(barber: Partial<Barber> = {}, index = 0): string {
   const photos: readonly string[] = [
-    '/img/barber-1.jpg?v=20261115h',
-    '/img/barber-2.jpg?v=20261115h',
-    '/img/barber-3.jpg?v=20261115h',
+    '/img/barber-1.webp?v=20261123a',
+    '/img/barber-2.webp?v=20261123a',
+    '/img/barber-3.webp?v=20261123a',
   ];
   const idx = Math.abs(Number(barber.id || index + 1) - 1) % photos.length;
-  return photos[idx] ?? '/img/barber-1.jpg?v=20261115h';
+  return photos[idx] ?? '/img/barber-1.webp?v=20261123a';
 }
 
 function updateBooksyChrome(): void {
@@ -1477,10 +1477,10 @@ function renderBookingTab(): void {
 
 function renderCutsTab(): void {
   const distinctPhotos: readonly string[] = [
-    '/img/cuts/cut-degrade.jpg?v=20261115h',
-    '/img/cuts/cut-barboterapia.jpg?v=20261115h',
-    '/img/cuts/cut-social.jpg?v=20261115h',
-    '/img/cuts/cut-platinado.jpg?v=20261115h',
+    '/img/cuts/cut-degrade.webp?v=20261123a',
+    '/img/cuts/cut-barboterapia.webp?v=20261123a',
+    '/img/cuts/cut-social.webp?v=20261123a',
+    '/img/cuts/cut-platinado.webp?v=20261123a',
   ];
   const defaultCuts: CutGalleryItem[] = [
     { tag: 'Degradê', title: 'Degradê Navalhado (Fade)', desc: 'Disfarce limpo na zero ou navalha com acabamento preciso.', img: distinctPhotos[0] },
@@ -1494,7 +1494,7 @@ function renderCutsTab(): void {
     const candidate = cut.img
       ? `${String(cut.img).split('?')[0]}?v=20261115h`
       : servicePhoto(`${cut.title || ''} ${cut.tag || ''}`);
-    const fallbackImg = distinctPhotos[idx % distinctPhotos.length] ?? '/img/cuts/cut-degrade.jpg?v=20261115h';
+    const fallbackImg = distinctPhotos[idx % distinctPhotos.length] ?? '/img/cuts/cut-degrade.webp?v=20261123a';
     const finalImg = !usedPhotos.has(candidate) ? candidate : fallbackImg;
     usedPhotos.add(finalImg);
     return {

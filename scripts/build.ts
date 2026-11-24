@@ -4,7 +4,7 @@
 // 3. Empacota e otimiza os modulos do navegador (src/client/*.ts + src/animations/*.ts) -> dist/public/
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build as esbuild } from 'esbuild';
@@ -69,7 +69,18 @@ async function runBuild(): Promise<void> {
     });
   }
 
-  console.log('[build] Artefatos JavaScript gerados com sucesso em dist/ (TypeScript 100%).');
+  const cssPartsDir = join(ROOT, 'public', 'css', 'parts');
+  if (existsSync(cssPartsDir)) {
+    const parts = readdirSync(cssPartsDir)
+      .filter((name) => name.endsWith('.css'))
+      .sort();
+    if (parts.length > 0) {
+      const combined = parts.map((name) => readFileSync(join(cssPartsDir, name), 'utf8').trimEnd()).join('\n\n') + '\n';
+      writeFileSync(join(ROOT, 'public', 'css', 'app.css'), combined);
+    }
+  }
+
+  console.log('[build] Artefatos JavaScript e CSS gerados com sucesso em dist/ (TypeScript 100%).');
 }
 
 runBuild().catch((err: unknown) => {

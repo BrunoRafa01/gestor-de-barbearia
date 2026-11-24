@@ -2,15 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  test:
-    name: Verificação de Tipos e Testes Automatizados
+  lint:
+    name: ESLint, Formatação e TypeScript
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -22,7 +21,47 @@ jobs:
           cache: 'npm'
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
-      - name: Executar verificação estrita TypeScript, build de produção, auditoria e todas as suítes de teste
-        run: npm run test:all && npm run audit:compliance && npm run audit:deps
+      - name: Executar ESLint e Typecheck
+        run: npm run lint
+
+  test:
+    name: Build e Suítes de Teste
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci --legacy-peer-deps
+
+      - name: Compilar e executar testes
+        run: npm run test:all
+
+  security-audit:
+    name: Compliance LGPD e Auditoria de Dependências
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci --legacy-peer-deps
+
+      - name: Build e auditorias de segurança
+        run: npm run build && npm run audit:compliance && npm run audit:deps

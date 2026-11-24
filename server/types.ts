@@ -25,6 +25,7 @@ export interface SessionPayload {
   shop_id: number;
   role: UserRole | string;
   ver: number;
+  mfa?: boolean;
   iat: number;
   exp: number;
 }

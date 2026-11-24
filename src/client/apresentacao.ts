@@ -3,7 +3,8 @@
  * alimentado pelo motor GSAP Studio Motion + Lenis Smooth Scroll — NOVA RUNTIME.
  */
 
-import { animatePresentationPage, getGsap, initPublicSmoothScroll } from '../animations/index.js';
+import { animatePresentationPage, getGsap } from '../animations/index.js';
+import { initPublicSmoothScroll } from '../animations/smooth-scroll.js';
 
 function initSlotTicker(): void {
   const slots: readonly string[] = ['09:30', '10:30', '14:30', '16:00', '18:15'];

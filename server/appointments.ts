@@ -13,6 +13,7 @@
 import { randomBytes } from 'node:crypto';
 import { assertSlotAvailable, endTimeFor } from './availability.js';
 import { all, get, getSetting, run } from './db.js';
+import { blindIndex, decryptClientFields, decryptSensitiveField, encryptSensitiveField } from './security.js';
 import { PAYMENT_METHODS } from './finance.js';
 import { HttpError } from './http.js';
 import { ACTIVE_STATUSES, addDays, isValidStatus, todayISO } from './time.js';
@@ -132,9 +133,9 @@ function mapRow(row: DbRow | null): Appointment | null {
     cancel_token: row['cancel_token'] ? String(row['cancel_token']) : null,
     created_at: String(row['created_at'] ?? ''),
     updated_at: row['updated_at'] ? String(row['updated_at']) : null,
-    client_name: row['client_name'] ? String(row['client_name']) : undefined,
-    client_phone: row['client_phone'] ? String(row['client_phone']) : undefined,
-    client_email: row['client_email'] ? String(row['client_email']) : null,
+    client_name: row['client_name'] ? decryptSensitiveField(String(row['client_name'])) : undefined,
+    client_phone: row['client_phone'] ? decryptSensitiveField(String(row['client_phone'])) : undefined,
+    client_email: row['client_email'] ? decryptSensitiveField(String(row['client_email'])) : null,
     barber_name: row['barber_name'] ? String(row['barber_name']) : undefined,
     barber_color: row['barber_color'] ? String(row['barber_color']) : null,
     service_name: row['service_name'] ? String(row['service_name']) : null,
@@ -146,14 +147,15 @@ function mapRow(row: DbRow | null): Appointment | null {
 }
 
 function mapClientRow(row: DbRow): Client {
+  const decrypted = decryptClientFields(row);
   return {
-    id: Number(row['id']),
-    shop_id: row['shop_id'] !== undefined ? Number(row['shop_id']) : undefined,
-    name: String(row['name'] ?? ''),
-    phone: String(row['phone'] ?? ''),
-    email: row['email'] ? String(row['email']) : null,
-    notes: row['notes'] ? String(row['notes']) : null,
-    created_at: String(row['created_at'] ?? ''),
+    id: Number(decrypted['id']),
+    shop_id: decrypted['shop_id'] !== undefined ? Number(decrypted['shop_id']) : undefined,
+    name: String(decrypted['name'] ?? ''),
+    phone: String(decrypted['phone'] ?? ''),
+    email: decrypted['email'] ? String(decrypted['email']) : null,
+    notes: decrypted['notes'] ? String(decrypted['notes']) : null,
+    created_at: String(decrypted['created_at'] ?? ''),
   };
 }
 
@@ -625,15 +627,16 @@ export async function upsertClientByPhone({
   const sid = Number(shopId ?? shop_id) || 1;
   const digits = String(phone || '').replace(/\D/g, '');
   if (!digits) throw new HttpError(400, 'Informe um telefone valido.');
+  const phoneHash = blindIndex(digits);
 
-  const existing = await get('SELECT * FROM clients WHERE shop_id = ? AND phone = ?', [
-    sid,
-    digits,
-  ]);
+  const existing = await get(
+    'SELECT * FROM clients WHERE shop_id = ? AND (phone_hash = ? OR phone = ?)',
+    [sid, phoneHash, digits]
+  );
   if (existing) {
     if ((!existing['email'] || existing['email'] === '') && email) {
       await run('UPDATE clients SET email = ? WHERE id = ? AND shop_id = ?', [
-        email,
+        encryptSensitiveField(email),
         existing['id'],
         sid,
       ]);
@@ -648,17 +651,21 @@ export async function upsertClientByPhone({
 
   // Nao sobrescreve o nome ja cadastrado pelo telefone no formulario publico;
   // preenche apenas campos vazios (ex.: e-mail).
+  const encEmail = email ? encryptSensitiveField(email) : null;
   await run(
-    `INSERT INTO clients (shop_id, name, phone, email) VALUES (?, ?, ?, ?)
+    `INSERT INTO clients (shop_id, name, phone, phone_hash, email) VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(phone) DO UPDATE SET
        email = CASE
          WHEN (clients.email IS NULL OR clients.email = '') AND excluded.email IS NOT NULL
          THEN excluded.email
          ELSE clients.email
        END`,
-    [sid, name, digits, email]
+    [sid, encryptSensitiveField(name), encryptSensitiveField(digits), phoneHash, encEmail]
   );
-  const upserted = await get('SELECT * FROM clients WHERE phone = ?', [digits]);
+  const upserted = await get(
+    'SELECT * FROM clients WHERE shop_id = ? AND (phone_hash = ? OR phone = ?)',
+    [sid, phoneHash, digits]
+  );
   if (!upserted) {
     throw new HttpError(500, 'Falha ao localizar cliente apos o cadastro.');
   }

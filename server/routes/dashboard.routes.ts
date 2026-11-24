@@ -1,6 +1,7 @@
 import { listAppointments } from '../appointments.js';
 import { dayWindows } from '../availability.js';
 import { all, get, getSetting } from '../db.js';
+import { decryptSensitiveField } from '../security.js';
 import { hhmmToMinutes, startOfWeek, endOfWeek, todayISO, toISODate } from '../time.js';
 import type { Appointment, RouteContext, RouteDefinition } from '../types.js';
 
@@ -115,7 +116,7 @@ export const dashboardRoutes: RouteDefinition[] = [
         source: String(row.source || 'admin'),
         created_at: String(row.created_at || ''),
         updated_at: row.updated_at ? String(row.updated_at) : null,
-        client_name: String(row.client_name || ''),
+        client_name: decryptSensitiveField(String(row.client_name || '')),
         barber_name: String(row.barber_name || ''),
         service_name: row.service_name ? String(row.service_name) : null,
       }));

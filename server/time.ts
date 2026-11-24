@@ -19,6 +19,16 @@ export function appTimeZone(): string {
   return process.env.TZ || 'America/Fortaleza';
 }
 
+export function isValidTimeZone(tz: unknown): tz is string {
+  if (typeof tz !== 'string' || !tz.trim() || tz.length > 64) return false;
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz.trim() });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function dateTimeParts(date: Date, timeZone: string = appTimeZone()): DateTimeParts {
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -87,16 +97,16 @@ export function minutesToHHMM(minutes: number): string {
 }
 
 /** Converte um objeto Date para "YYYY-MM-DD" no fuso configurado. */
-export function toISODate(date: Date): string {
-  return dateTimeParts(date).isoDate;
+export function toISODate(date: Date, timeZone: string = appTimeZone()): string {
+  return dateTimeParts(date, timeZone).isoDate;
 }
 
-export function todayISO(now: Date = new Date()): string {
-  return toISODate(now);
+export function todayISO(now: Date = new Date(), timeZone: string = appTimeZone()): string {
+  return toISODate(now, timeZone);
 }
 
-export function nowMinutes(now: Date = new Date()): number {
-  const { hour, minute } = dateTimeParts(now);
+export function nowMinutes(now: Date = new Date(), timeZone: string = appTimeZone()): number {
+  const { hour, minute } = dateTimeParts(now, timeZone);
   return hour * 60 + minute;
 }
 

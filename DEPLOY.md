@@ -263,3 +263,30 @@ os valores atuais em <https://render.com/pricing> e <https://turso.tech/pricing>
 - `ADMIN_ALLOWED_EMAILS`: lista de e-mails autorizados via Google para a barbearia principal.
 - `OAUTH_ALLOW_SIGNUP=true`: permite que novas barbearias criem conta automaticamente pelo Google OAuth.
 - `MASTER_ALLOWED_EMAILS`: e-mails com permissao `master` para acessar `#/master` (Torre de Controle da Nova Runtime: planos, suspensao/reativacao e logs).
+
+---
+
+## Criptografia de Dados Pessoais (`DATA_ENCRYPTION_KEY`) e Rotacao de Chave
+
+Em producao (`NODE_ENV=production`), o sistema exige `DATA_ENCRYPTION_KEY` (64 caracteres hexadecimais = 32 bytes) para cifrar com AES-256-GCM os campos `name`, `phone` e `email` da tabela `clients`, alem de gerar o indice cego HMAC (`phone_hash`).
+
+1. **Como gerar e guardar:**
+   ```bash
+   openssl rand -hex 32
+   ```
+   Cadastre o valor gerado em **Environment** no Render (ou no `.env` local) e salve uma copia em um **cofre de senhas** fora do servidor. **Nunca** envie essa chave para o Git. Sem ela, os dados cifrados no banco nao podem ser lidos.
+2. **Como rotacionar a chave sem perder dados:**
+   - Gere uma nova chave (`openssl rand -hex 32`).
+   - Defina `DATA_ENCRYPTION_PREVIOUS_KEY` com a chave antiga e atualize `DATA_ENCRYPTION_KEY` com a chave nova.
+   - Execute a re-criptografia dos registros de clientes:
+     ```bash
+     node --experimental-sqlite -e "import('./dist/server/db.js').then(m => m.migrateClientsEncryption(undefined, { reencrypt: true }))"
+     ```
+   - Apos confirmar que os dados abrem normalmente no painel, remova `DATA_ENCRYPTION_PREVIOUS_KEY`.
+
+---
+
+## Backup Automatico e Restauracao
+
+- **Script de backup (`npm run backup`):** gera snapshot integro (`VACUUM INTO` + `PRAGMA integrity_check`) com retencao configuravel por `BACKUP_RETENTION_COUNT` (padrao `14` arquivos) e `BACKUP_RETENTION_DAYS` (padrao `30` dias). O workflow `.github/workflows/backup.yml` executa a rotina diariamente (e via acionamento manual).
+- **Script de restauracao (`npm run restore`):** valida `PRAGMA integrity_check` do arquivo escolhido (`--file <caminho>` ou o snapshot mais recente), cria um snapshot de seguranca do banco atual e restaura o arquivo de forma atomica.

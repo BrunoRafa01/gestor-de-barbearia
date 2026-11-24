@@ -8,14 +8,15 @@ import { networkInterfaces } from 'node:os';
 import { join } from 'node:path';
 
 import {
-  assertAuthenticated,
+  assertActiveSession,
   ensureAdminPassword,
-  getSessionPayload,
   isUsingDefaultPassword,
+  validateActiveSession,
 } from './auth.js';
 import { closeDatabase, driverKind, driverLabel, get, initDatabase } from './db.js';
 import { isDemoMode, seedDemoData } from './demo.js';
 import { HttpError, readJsonBody, sendError, sendJson, serveStatic } from './http.js';
+import { logStructuredError } from './logger.js';
 import { DATA_DIR, DIST_PUBLIC_DIR, PROJECT_ROOT, PUBLIC_DIR } from './paths.js';
 import { apiRoutes } from './routes/index.js';
 import { applySecurityHeaders, isSecureRequest, newRequestId } from './security.js';
@@ -208,7 +209,7 @@ const server = createServer(async (req, response) => {
   applySecurityHeaders(response, { secure, requestId });
 
   let url: URL;
-  let pathname = '/';
+  let pathname: string;
   try {
     url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
     pathname = decodeURIComponent(url.pathname);
@@ -230,8 +231,12 @@ const server = createServer(async (req, response) => {
         return;
       }
 
+      const session =
+        match.route.auth !== false
+          ? await assertActiveSession(request, response)
+          : await validateActiveSession(request, response);
+
       if (match.route.auth !== false) {
-        assertAuthenticated(request);
         if (!isDemoMode() && isUsingDefaultPassword() && pathname !== '/api/settings/password') {
           throw new HttpError(
             403,
@@ -249,12 +254,19 @@ const server = createServer(async (req, response) => {
         : {};
       const query = Object.fromEntries(url.searchParams.entries());
 
-      const session = getSessionPayload(request);
       const shopId = Number(session?.shopId ?? session?.shop_id) || 1;
       const isMaster = session?.role === 'master';
 
-      if (match.route.masterOnly && !isMaster) {
-        throw new HttpError(403, 'Acesso restrito a administradores master da Nova Runtime.');
+      if (match.route.masterOnly) {
+        if (!isMaster) {
+          throw new HttpError(403, 'Acesso restrito a administradores master da Nova Runtime.');
+        }
+        if (!session?.mfa) {
+          throw new HttpError(
+            403,
+            'Autenticacao em duas etapas (2FA/TOTP) obrigatoria para acessar o Painel Master.'
+          );
+        }
       }
 
       if (
@@ -339,16 +351,34 @@ const server = createServer(async (req, response) => {
       if (servePublicFile(request, response, 'apresentacao.html')) return;
     }
 
+    if (pathname.startsWith('/img/screens/')) {
+      const fileName = pathname.slice('/img/screens/'.length);
+      if (/^[a-z0-9._-]+\.png$/i.test(fileName)) {
+        const screenPath = join(PROJECT_ROOT, 'docs', 'screenshots', fileName);
+        if (existsSync(screenPath)) {
+          response.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=3600' });
+          response.end(readFileSync(screenPath));
+          return;
+        }
+      }
+    }
+
     const alias = PAGE_ALIASES[pathname.replace(/\/$/, '') || '/'];
     if (alias && servePublicFile(request, response, alias)) return;
     if (servePublicFile(request, response, pathname)) return;
 
-    servePublicFile(request, response, '404.html') ||
+    if (!servePublicFile(request, response, '404.html')) {
       sendError(response, 404, 'Pagina nao encontrada.');
+    }
   } catch (error) {
     const httpError = translateError(error);
     if (!(httpError instanceof HttpError)) {
-      console.error(`[erro:${requestId}]`, error);
+      logStructuredError(error, {
+        requestId,
+        method: request.method,
+        path: pathname,
+        status: 500,
+      });
       const isProd = process.env.NODE_ENV === 'production';
       const errMsg = error instanceof Error ? error.message : String(error);
       sendError(

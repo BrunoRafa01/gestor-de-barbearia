@@ -11,6 +11,12 @@ function requireMaster(session: SessionPayload | null): void {
   if (!session || session.role !== 'master') {
     throw new HttpError(403, 'Acesso restrito a administradores master da Nova Runtime.');
   }
+  if (!session.mfa) {
+    throw new HttpError(
+      403,
+      'Autenticacao em duas etapas (2FA/TOTP) obrigatoria para acessar o Painel Master.'
+    );
+  }
 }
 
 export const masterRoutes: RouteDefinition[] = [

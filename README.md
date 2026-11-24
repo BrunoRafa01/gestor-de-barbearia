@@ -113,9 +113,9 @@ O sistema implementa **controles técnicos alinhados à LGPD (Lei nº 13.709/201
 
 * **Autenticação e Sessão:** Senhas com hash `scrypt` (salt aleatório), comparação `timingSafeEqual`, cookies `HttpOnly` assinados com HMAC-SHA256 e troca obrigatória da senha provisória no primeiro acesso.
 * **Controle de Acesso e Anti-Abuso:** Isolamento entre rotas públicas (`auth: false`) e painel administrativo (`assertAuthenticated`), proteção CSRF por `Origin`, CSP (`script-src 'self'`), HSTS em HTTPS e rate limiters por IP.
-* **Prevenção a SQL Injection e XSS:** Consultas parametrizadas no SQLite / Turso e sanitização de entradas de texto.
+* **Prevenção a SQL Injection e XSS:** Consultas parametrizadas no SQLite / Turso e escape sistemático de saída HTML com `esc()` em `src/client/ui.ts` somado à `Content-Security-Policy` (`script-src 'self'`).
 * **Privacidade e Titulares (LGPD):** Páginas públicas (`/privacidade.html`, `/cookies.html`, `/termos.html`, `/compliance.html`), banner de consentimento (`/js/consent.js`), portal de solicitações DSR (`/api/lgpd/request`) e exportação JSON (`/api/lgpd/export`).
-* **Backup e Auditoria:** Backup manual via `npm run backup` (`scripts/backup-db.mjs`) ou exportação/restauração JSON no painel (`/api/backup`), trilha de eventos em `/api/admin/security-logs`, arquivo `/.well-known/security.txt` e verificação técnica via `npm run audit:compliance`.
+* **Backup e Auditoria:** Backup manual via `npm run backup` (`scripts/backup-db.ts`) ou exportação/restauração JSON no painel (`/api/backup`), trilha de eventos em `/api/admin/security-logs`, arquivo `/.well-known/security.txt` e verificação técnica via `npm run audit:compliance`.
 * **Itens dependentes de operação (autodeclarados/pendentes):** Revisão jurídica dos textos legais, preenchimento dos dados empresariais (CNPJ/razão social do estabelecimento quando aplicável), formalização de contratos DPA e eventual adição de SAST/pentest dedicado no CI.
 
 ---

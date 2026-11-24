@@ -1,6 +1,5 @@
 import {
   hashPassword,
-  isAuthenticated,
   passwordIssue,
   rotateSessionSecret,
   startSession,
@@ -21,7 +20,7 @@ import {
 } from '../db.js';
 import { HttpError } from '../http.js';
 import { isSecureRequest } from '../security.js';
-import { WEEKDAYS, isValidTime } from '../time.js';
+import { WEEKDAYS, isValidTime, isValidTimeZone } from '../time.js';
 import type { BatchStatement, DbRow, RouteContext, RouteDefinition } from '../types.js';
 import {
   digitsOnly,
@@ -73,6 +72,13 @@ function normalizeSetting(key: string, value: unknown): string {
       return String(Math.round(requiredNumber(value, 'antecedencia maxima', { min: 1, max: 365 })));
     case 'public_booking':
       return String(value) === '0' || value === false || value === 'false' ? '0' : '1';
+    case 'timezone': {
+      const tz = String(value ?? '').trim();
+      if (!isValidTimeZone(tz)) {
+        throw new HttpError(400, 'Fuso horario invalido (use formato IANA, ex.: America/Sao_Paulo).');
+      }
+      return tz;
+    }
     case 'whatsapp_country_code': {
       const code = digitsOnly(value);
       if (code.length < 1 || code.length > 4) {
@@ -185,6 +191,9 @@ export const settingsRoutes: RouteDefinition[] = [
 
       for (const [key, value] of normalized) {
         await setShopSetting(targetShopId, key, value);
+        if (key === 'timezone') {
+          await run('UPDATE barbershops SET timezone = ? WHERE id = ?', [value, targetShopId]);
+        }
         if (targetShopId === 1) await setSetting(key, value);
       }
 
@@ -209,26 +218,28 @@ export const settingsRoutes: RouteDefinition[] = [
 
       if (sub !== 'admin' || sid !== 1) {
         const user = await get(
-          'SELECT id, email, password_hash, shop_id, role FROM users WHERE email = ? AND shop_id = ?',
+          'SELECT id, email, password_hash, shop_id, role, session_version FROM users WHERE email = ? AND shop_id = ?',
           [sub, sid]
         );
         if (!user || !verifyPassword(current, user.password_hash)) {
           throw new HttpError(400, 'Senha atual incorreta.');
         }
-        await run('UPDATE users SET password_hash = ? WHERE id = ? AND shop_id = ?', [
-          hashPassword(next),
-          Number(user.id),
-          Number(user.shop_id),
-        ]);
+        const nextVer = (Number(user.session_version ?? 1) || 1) + 1;
+        await run(
+          'UPDATE users SET password_hash = ?, session_version = ? WHERE id = ? AND shop_id = ?',
+          [hashPassword(next), nextVer, Number(user.id), Number(user.shop_id)]
+        );
         if (res) {
           startSession(res, {
             sub: String(user.email || sub),
             shopId: Number(user.shop_id) || sid,
             role: String(user.role || 'owner'),
+            ver: nextVer,
+            mfa: Boolean(session?.mfa),
             secure: isSecureRequest(req),
           });
         }
-        return { status: 200, body: { updated: true, authenticated: isAuthenticated(req) } };
+        return { status: 200, body: { updated: true, authenticated: true } };
       }
 
       const stored = getSettingsMap().admin_password_hash;
@@ -239,16 +250,19 @@ export const settingsRoutes: RouteDefinition[] = [
 
       // Rotaciona o secret e a versao de sessao para invalidar outras sessoes ativas
       await rotateSessionSecret();
+      const nextAdminVer = Number(getSettingsMap().session_version || '1') || 1;
       if (res) {
         startSession(res, {
           sub: 'admin',
           shopId: 1,
           role: session?.role || 'owner',
+          ver: nextAdminVer,
+          mfa: Boolean(session?.mfa),
           secure: isSecureRequest(req),
         });
       }
 
-      return { status: 200, body: { updated: true, authenticated: isAuthenticated(req) } };
+      return { status: 200, body: { updated: true, authenticated: true } };
     },
   },
   {

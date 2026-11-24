@@ -22,7 +22,7 @@
 |---|---|---|---|
 | 01 | Autenticação de Segurança | Segurança | Sessões seguras, tokens criptográficos, timing-safe compare |
 | 02 | Controle de Acesso (RBAC) | Segurança | Middleware de permissões (admin, user, public) |
-| 03 | Criptografia de Dados | Segurança | Criptografia AES-256-GCM para PII e bcrypt work factor 12 |
+| 03 | Criptografia de Dados | Segurança | Criptografia AES-256-GCM para PII de clientes e hash scrypt com salt aleatório para senhas |
 | 04 | HTTPS/TLS | Segurança | HSTS, cookies Secure; HttpOnly; SameSite=Strict |
 | 05 | Rotina de Senhas | Segurança | Validação de entropia, complexidade e rotação de senhas |
 | 06 | SQL Injection | Segurança | Queries estritamente parametrizadas / ORM sem concatenação |

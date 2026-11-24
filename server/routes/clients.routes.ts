@@ -1,15 +1,20 @@
 import { all, get, run } from '../db.js';
 import { HttpError } from '../http.js';
-import type { DbRow, RouteContext, RouteDefinition, SqlParam } from '../types.js';
+import { blindIndex, decryptClientFields, encryptSensitiveField } from '../security.js';
+import type { DbRow, RouteContext, RouteDefinition } from '../types.js';
 import { digitsOnly, optionalEmail, optionalString, requiredId, requiredString } from '../validate.js';
 
 function mapClient(row: DbRow | null) {
   if (!row) return null;
+  const decrypted = decryptClientFields(row);
   return {
-    ...row,
-    id: Number(row.id),
+    ...decrypted,
+    id: Number(decrypted.id),
+    name: String(decrypted.name ?? ''),
+    phone: String(decrypted.phone ?? ''),
+    email: decrypted.email ? String(decrypted.email) : null,
     appointments_total:
-      row.appointments_total === undefined ? undefined : Number(row.appointments_total),
+      decrypted.appointments_total === undefined ? undefined : Number(decrypted.appointments_total),
   };
 }
 
@@ -35,23 +40,32 @@ export const clientRoutes: RouteDefinition[] = [
     method: 'GET',
     path: '/api/clients',
     handler: async ({ query, shopId = 1 }: RouteContext) => {
-      const where = ['c.shop_id = ?'];
-      const params: SqlParam[] = [shopId];
+      const rows = await all(`${CLIENT_SELECT} WHERE c.shop_id = ?`, [shopId]);
+      let items = rows.map(mapClient).filter((c): c is NonNullable<typeof c> => c !== null);
+
       if (query.search) {
-        where.push("(c.name LIKE ? ESCAPE '\\' OR c.phone LIKE ? ESCAPE '\\' OR c.email LIKE ? ESCAPE '\\')");
-        const escaped = String(query.search).replace(/[\\%_]/g, '\\$&');
-        const term = `%${escaped}%`;
-        params.push(term, term, term);
+        const needle = String(query.search).trim().toLowerCase();
+        const needleDigits = digitsOnly(String(query.search));
+        items = items.filter((c) => {
+          if (c.name.toLowerCase().includes(needle)) return true;
+          if (c.phone.toLowerCase().includes(needle)) return true;
+          if (c.email && c.email.toLowerCase().includes(needle)) return true;
+          if (needleDigits && digitsOnly(c.phone).includes(needleDigits)) return true;
+          return false;
+        });
       }
+
+      items.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
       const limit = query.limit ? Math.min(500, Math.max(1, Number(query.limit) || 100)) : null;
       const offset = query.offset ? Math.max(0, Number(query.offset) || 0) : 0;
-      const paginationSql = limit ? ' LIMIT ? OFFSET ?' : '';
-      if (limit) params.push(limit, offset);
+      if (limit) {
+        items = items.slice(offset, offset + limit);
+      } else if (offset > 0) {
+        items = items.slice(offset);
+      }
 
-      const sql = `${CLIENT_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-                   ORDER BY c.name COLLATE NOCASE ASC${paginationSql}`;
-      const rows = await all(sql, params);
-      return { status: 200, body: rows.map(mapClient) };
+      return { status: 200, body: items };
     },
   },
   {
@@ -82,17 +96,23 @@ export const clientRoutes: RouteDefinition[] = [
     handler: async ({ body, shopId = 1 }: RouteContext) => {
       const name = requiredString(body.name, 'nome do cliente', { max: 120 });
       const phone = phoneOrFail(body.phone);
+      const phoneHash = blindIndex(phone);
+      const email = optionalEmail(body.email);
 
-      const duplicated = await get('SELECT id FROM clients WHERE shop_id = ? AND phone = ?', [shopId, phone]);
+      const duplicated = await get(
+        'SELECT id FROM clients WHERE shop_id = ? AND (phone_hash = ? OR phone = ?)',
+        [shopId, phoneHash, phone]
+      );
       if (duplicated) throw new HttpError(409, 'Ja existe um cliente com este telefone.');
 
       const info = await run(
-        'INSERT INTO clients (shop_id, name, phone, email, birth_date, notes) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO clients (shop_id, name, phone, phone_hash, email, birth_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           shopId,
-          name,
-          phone,
-          optionalEmail(body.email),
+          encryptSensitiveField(name),
+          encryptSensitiveField(phone),
+          phoneHash,
+          email ? encryptSensitiveField(email) : null,
           optionalString(body.birth_date, 'data de nascimento', 10),
           optionalString(body.notes, 'observacoes', 500),
         ]
@@ -114,16 +134,22 @@ export const clientRoutes: RouteDefinition[] = [
 
       const name = requiredString(body.name, 'nome do cliente', { max: 120 });
       const phone = phoneOrFail(body.phone);
+      const phoneHash = blindIndex(phone);
+      const email = optionalEmail(body.email);
 
-      const duplicated = await get('SELECT id FROM clients WHERE shop_id = ? AND phone = ? AND id != ?', [shopId, phone, id]);
+      const duplicated = await get(
+        'SELECT id FROM clients WHERE shop_id = ? AND (phone_hash = ? OR phone = ?) AND id != ?',
+        [shopId, phoneHash, phone, id]
+      );
       if (duplicated) throw new HttpError(409, 'Ja existe outro cliente com este telefone.');
 
       await run(
-        'UPDATE clients SET name = ?, phone = ?, email = ?, birth_date = ?, notes = ? WHERE id = ? AND shop_id = ?',
+        'UPDATE clients SET name = ?, phone = ?, phone_hash = ?, email = ?, birth_date = ?, notes = ? WHERE id = ? AND shop_id = ?',
         [
-          name,
-          phone,
-          optionalEmail(body.email),
+          encryptSensitiveField(name),
+          encryptSensitiveField(phone),
+          phoneHash,
+          email ? encryptSensitiveField(email) : null,
           optionalString(body.birth_date, 'data de nascimento', 10),
           optionalString(body.notes, 'observacoes', 500),
           id,

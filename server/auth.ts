@@ -4,12 +4,14 @@
 
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { ServerResponse } from 'node:http';
-import { getSetting, setSetting } from './db.js';
+import { get, getSetting, run, setSetting } from './db.js';
 import { HttpError, clearCookie, parseCookies, setCookie } from './http.js';
+import { isSecureRequest } from './security.js';
 import type { AppRequest, SessionPayload, UserRole } from './types.js';
 
 export const SESSION_COOKIE = 'gb_session';
-const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 dias
+export const SESSION_TTL_MS = 1000 * 60 * 60 * 24; // 24 horas (com renovacao deslizante)
+export const SESSION_SLIDING_WINDOW_MS = 1000 * 60 * 15; // renova cookie apos 15 min de uso ativo
 
 export type AuthSessionPayload = SessionPayload & {
   shopId: number;
@@ -30,6 +32,8 @@ export interface CreateSessionTokenOptions {
   shopId?: number;
   shop_id?: number;
   role?: UserRole | string;
+  ver?: number;
+  mfa?: boolean;
 }
 
 export interface StartSessionOptions extends CreateSessionTokenOptions {
@@ -54,33 +58,73 @@ export function verifyPassword(password: unknown, stored: unknown): boolean {
   return timingSafeEqual(derived, expected);
 }
 
+const COMMON_WEAK_PASSWORDS = new Set([
+  '12345678',
+  '123456789',
+  '1234567890',
+  '00000000',
+  '11111111',
+  '87654321',
+  'admin123',
+  'admin1234',
+  'admin@123',
+  'administrador',
+  'administrador123',
+  'password',
+  'password1',
+  'password123',
+  'passw0rd',
+  'qwerty123',
+  'qwertyuiop',
+  'asdfghjkl',
+  'zxcvbnm1',
+  'iloveyou',
+  'iloveyou1',
+  'welcome1',
+  'welcome123',
+  'letmein1',
+  'monkey123',
+  'dragon123',
+  'master123',
+  'changeme',
+  'changeme123',
+  'mudar123',
+  'mudar@123',
+  'senha123',
+  'senha1234',
+  'senha@123',
+  'minhasenha1',
+  'barbearia',
+  'barbearia1',
+  'barbearia123',
+  'barbeiro123',
+  'navalha123',
+  'brasil123',
+  'sucesso123',
+  'atendimento1',
+  'gestor123',
+]);
+
 /**
- * Politica minima de senha para o painel.
- * Retorna mensagem de erro ou null se a senha for aceitavel.
+ * Unica fonte de verdade da politica de senha em todo o sistema.
+ * Retorna mensagem de erro ou null se a senha atender aos requisitos.
  */
 export function passwordIssue(password: unknown): string | null {
   const value = String(password ?? '');
   if (value.length < 8) return 'A senha deve ter ao menos 8 caracteres.';
   if (value.length > 128) return 'A senha deve ter no maximo 128 caracteres.';
+  if (COMMON_WEAK_PASSWORDS.has(value.toLowerCase())) {
+    return 'Esta senha e muito comum e insegura. Escolha outra combinacao.';
+  }
   if (!/[A-Z]/.test(value)) return 'A senha deve conter ao menos uma letra maiuscula.';
   if (!/[a-z]/.test(value)) return 'A senha deve conter ao menos uma letra minuscula.';
   if (!/\d/.test(value)) return 'A senha deve conter ao menos um numero.';
   return null;
 }
 
-const COMMON_WEAK_PASSWORDS = new Set([
-  'admin123',
-  '12345678',
-  '123456789',
-  'password',
-  'barbearia',
-  'qwerty123',
-]);
-
 export function isWeakInitialPassword(password: unknown): boolean {
   const value = String(password ?? '');
   if (!value) return true;
-  if (COMMON_WEAK_PASSWORDS.has(value.toLowerCase())) return true;
   return passwordIssue(value) !== null;
 }
 
@@ -134,13 +178,20 @@ export function createSessionToken({
   shopId,
   shop_id,
   role = 'owner',
+  ver,
+  mfa = false,
 }: CreateSessionTokenOptions = {}): string {
   const secret = process.env.SESSION_SECRET || getSetting('session_secret');
   if (!secret) {
     throw new Error('Segredo de sessao nao inicializado.');
   }
   const resolvedShopId = Number(shopId ?? shop_id) || 1;
-  const ver = Number(getSetting('session_version', '1')) || 1;
+  const resolvedVer =
+    ver !== undefined
+      ? Number(ver) || 1
+      : sub === 'admin'
+        ? Number(getSetting('session_version', '1')) || 1
+        : 1;
   const now = Date.now();
   const payload = base64url(
     JSON.stringify({
@@ -148,7 +199,8 @@ export function createSessionToken({
       shopId: resolvedShopId,
       shop_id: resolvedShopId,
       role,
-      ver,
+      ver: resolvedVer,
+      mfa: Boolean(mfa),
       iat: now,
       exp: now + SESSION_TTL_MS,
     })
@@ -168,6 +220,20 @@ export async function revokeAllSessions(): Promise<number> {
   const nextVer = (Number(getSetting('session_version', '1')) || 1) + 1;
   await setSetting('session_version', String(nextVer));
   return nextVer;
+}
+
+/** Incrementa session_version da conta informada ('admin' ou email na tabela users). */
+export async function revokeUserSessions(sub?: string | null): Promise<number> {
+  const normalized = String(sub || 'admin').trim();
+  if (!normalized || normalized === 'admin') {
+    return revokeAllSessions();
+  }
+  await run(
+    'UPDATE users SET session_version = COALESCE(session_version, 1) + 1 WHERE email = ?',
+    [normalized]
+  );
+  const row = await get('SELECT session_version FROM users WHERE email = ?', [normalized]);
+  return Number(row?.['session_version']) || 1;
 }
 
 export function parseSessionToken(token: string | null | undefined): AuthSessionPayload | null {
@@ -190,17 +256,21 @@ export function parseSessionToken(token: string | null | undefined): AuthSession
       string,
       unknown
     >;
-    const currentVer = Number(getSetting('session_version', '1')) || 1;
-    if (data['ver'] !== undefined && Number(data['ver']) !== currentVer) return null;
+    const sub = typeof data['sub'] === 'string' && data['sub'] ? data['sub'] : 'admin';
+    if (sub === 'admin') {
+      const currentVer = Number(getSetting('session_version', '1')) || 1;
+      if (data['ver'] !== undefined && Number(data['ver']) !== currentVer) return null;
+    }
     const exp = data['exp'];
     if (typeof exp !== 'number' || exp <= Date.now()) return null;
     const resolvedShopId = Number(data['shopId'] ?? data['shop_id']) || 1;
     return {
-      sub: typeof data['sub'] === 'string' && data['sub'] ? data['sub'] : 'admin',
+      sub,
       shop_id: resolvedShopId,
       shopId: resolvedShopId,
       role: typeof data['role'] === 'string' && data['role'] ? data['role'] : 'owner',
       ver: Number(data['ver']) || 1,
+      mfa: Boolean(data['mfa']),
       iat: typeof data['iat'] === 'number' ? data['iat'] : exp - SESSION_TTL_MS,
       exp,
     };
@@ -237,10 +307,25 @@ export function getSessionPayload(req: AppRequest): AuthSessionPayload | null {
 /** Cria a sessao. `secure` marca o cookie como exclusivo de HTTPS. */
 export function startSession(
   res: ServerResponse,
-  { secure = false, sub = 'admin', shopId, shop_id, role = 'owner' }: StartSessionOptions = {}
+  {
+    secure = false,
+    sub = 'admin',
+    shopId,
+    shop_id,
+    role = 'owner',
+    ver,
+    mfa = false,
+  }: StartSessionOptions = {}
 ): string {
   const resolvedShopId = Number(shopId ?? shop_id) || 1;
-  const token = createSessionToken({ sub, shopId: resolvedShopId, shop_id: resolvedShopId, role });
+  const token = createSessionToken({
+    sub,
+    shopId: resolvedShopId,
+    shop_id: resolvedShopId,
+    role,
+    ver,
+    mfa,
+  });
   setCookie(res, SESSION_COOKIE, token, {
     maxAge: SESSION_TTL_MS,
     secure,
@@ -248,6 +333,58 @@ export function startSession(
     httpOnly: true,
   });
   return token;
+}
+
+/**
+ * Valida a sessao contra o banco (incluindo session_version de usuarios multi-tenant)
+ * e aplica renovacao deslizante do cookie quando necessario.
+ */
+export async function validateActiveSession(
+  req: AppRequest,
+  res?: ServerResponse | null
+): Promise<AuthSessionPayload | null> {
+  const session = getSessionPayload(req);
+  if (!session) return null;
+
+  if (
+    session.sub !== 'admin' &&
+    session.sub !== 'demo' &&
+    session.sub !== 'demo@novaruntime.local'
+  ) {
+    const user = await get(
+      'SELECT session_version, active, role FROM users WHERE email = ?',
+      [session.sub]
+    );
+    if (!user || Number(user['active']) !== 1) return null;
+    const dbVer = Number(user['session_version'] ?? 1) || 1;
+    if (session.ver !== dbVer) return null;
+    session.role = String(user['role'] || session.role);
+  }
+
+  // Renovacao deslizante se ja passou da janela minima desde a emissao
+  if (res && !res.headersSent && Date.now() - session.iat >= SESSION_SLIDING_WINDOW_MS) {
+    startSession(res, {
+      secure: isSecureRequest(req),
+      sub: session.sub,
+      shopId: session.shopId,
+      role: session.role,
+      ver: session.ver,
+      mfa: session.mfa,
+    });
+  }
+
+  return session;
+}
+
+export async function assertActiveSession(
+  req: AppRequest,
+  res?: ServerResponse | null
+): Promise<AuthSessionPayload> {
+  const session = await validateActiveSession(req, res);
+  if (!session) {
+    throw new HttpError(401, 'Sessao expirada ou revogada. Faca login novamente.');
+  }
+  return session;
 }
 
 export function endSession(

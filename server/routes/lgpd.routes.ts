@@ -2,12 +2,14 @@
 // Gestao de Consentimento e Auditoria de Seguranca.
 
 import { randomBytes } from 'node:crypto';
-import { isAuthenticated } from '../auth.js';
+import { validateActiveSession } from '../auth.js';
 import { runComplianceAudit } from '../compliance.js';
 import { all, get } from '../db.js';
 import { HttpError } from '../http.js';
 import {
+  blindIndex,
   clientIp,
+  decryptClientFields,
   dsrLimiter,
   getSecurityLogs,
   logSecurityEvent,
@@ -44,10 +46,12 @@ export const lgpdRoutes: RouteDefinition[] = [
       if (cleanPhone.length < 10) {
         throw new HttpError(400, 'Telefone invalido.');
       }
+      const phoneHash = blindIndex(cleanPhone);
 
-      // Exige sessao administrativa OU token valido de agendamento pertencente ao titular
+      // Exige sessao administrativa ativa OU token valido de agendamento pertencente ao titular
       let targetShopId = Number(shopId) || 1;
-      if (!isAuthenticated(req)) {
+      const activeSession = await validateActiveSession(req);
+      if (!activeSession) {
         const token = String(query?.token || '').trim();
         if (!/^[a-f0-9]{16,64}$/i.test(token)) {
           throw new HttpError(
@@ -58,8 +62,8 @@ export const lgpdRoutes: RouteDefinition[] = [
         const owned = await get(
           `SELECT a.id, a.shop_id FROM appointments a
            JOIN clients c ON c.id = a.client_id
-           WHERE a.cancel_token = ? AND REPLACE(REPLACE(REPLACE(REPLACE(c.phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?`,
-          [token, cleanPhone]
+           WHERE a.cancel_token = ? AND (c.phone_hash = ? OR REPLACE(REPLACE(REPLACE(REPLACE(c.phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?)`,
+          [token, phoneHash, cleanPhone]
         );
         if (!owned) {
           throw new HttpError(403, 'Codigo de agendamento nao corresponde ao telefone informado.');
@@ -67,21 +71,23 @@ export const lgpdRoutes: RouteDefinition[] = [
         targetShopId = Number(owned.shop_id) || 1;
       }
 
-      const client = await get(
-        "SELECT id, name, phone, email, notes, created_at FROM clients WHERE shop_id = ? AND REPLACE(REPLACE(REPLACE(REPLACE(phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?",
-        [targetShopId, cleanPhone]
+      const rawClient = await get(
+        "SELECT id, name, phone, email, notes, created_at FROM clients WHERE shop_id = ? AND (phone_hash = ? OR REPLACE(REPLACE(REPLACE(REPLACE(phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?)",
+        [targetShopId, phoneHash, cleanPhone]
       );
+      const client = rawClient ? decryptClientFields(rawClient) : null;
 
-      const appointments = await all(
+      const rawAppointments = await all(
         `SELECT a.id, c.name AS client_name, c.phone AS client_phone, s.name AS service_name, b.name AS barber_name, a.price, a.date, a.start_time, a.end_time, a.status, a.created_at
          FROM appointments a
          JOIN clients c ON c.id = a.client_id
          LEFT JOIN services s ON s.id = a.service_id
          LEFT JOIN barbers b ON b.id = a.barber_id
-         WHERE a.shop_id = ? AND REPLACE(REPLACE(REPLACE(REPLACE(c.phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?
+         WHERE a.shop_id = ? AND (c.phone_hash = ? OR REPLACE(REPLACE(REPLACE(REPLACE(c.phone, '-', ''), '(', ''), ')', ''), ' ', '') = ?)
          ORDER BY a.date DESC`,
-        [targetShopId, cleanPhone]
+        [targetShopId, phoneHash, cleanPhone]
       );
+      const appointments = rawAppointments.map((row) => decryptClientFields(row));
 
       logSecurityEvent(
         'DSR_DATA_EXPORT',
@@ -248,7 +254,7 @@ export const lgpdRoutes: RouteDefinition[] = [
       if (session?.role !== 'master' && !(Number(shopId) === 1 && session?.sub === 'admin')) {
         throw new HttpError(403, 'Acesso restrito aos logs globais de seguranca.');
       }
-      const logs = getSecurityLogs(100);
+      const logs = await getSecurityLogs(100);
       return {
         status: 200,
         body: {

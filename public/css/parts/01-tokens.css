@@ -1,0 +1,236 @@
+/* ---------------------------------------------------------------------------
+   Gestor de Barbearia — NOVA RUNTIME Commercial SaaS Design System
+   Referências: Linear, Stripe Dashboard, Vercel, Raycast
+   - Background principal: #080B12
+   - Background secundário: #101622
+   - Cards e superfícies: #141C2D
+   - Bordas: #1E293B
+   - Azul principal: #3B82F6 | Azul secundário: #60A5FA
+   - Textos principais: #F8FAFC | Textos secundários: #94A3B8
+   - Sucesso: #10B981
+   --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: dark;
+
+  /* Paleta Calibrada NOVA RUNTIME */
+  --bg: #080B12;
+  --bg-secondary: #101622;
+  --bg-soft: #101622;
+  --surface: #141C2D;
+  --surface-2: #182236;
+  --surface-3: #1E293B;
+
+  /* Bordas Precisas */
+  --border: #1E293B;
+  --border-strong: #334155;
+  --border-subtle: rgba(30, 41, 59, 0.72);
+
+  /* Tipografia de Alto Contraste */
+  --text: #F8FAFC;
+  --text-dim: #94A3B8;
+  --text-faint: #8B9BB4;
+
+  /* Azul Principal & Secundário */
+  --accent: #3B82F6;
+  --accent-2: #60A5FA;
+  --accent-hover: #60A5FA;
+  --accent-pressed: #2563EB;
+  --accent-soft: rgba(59, 130, 246, 0.14);
+  --accent-line: rgba(59, 130, 246, 0.32);
+  --accent-glow: rgba(59, 130, 246, 0.16);
+
+  /* Aliases semânticos para compatibilidade com módulos */
+  --primary: var(--accent);
+  --primary-hover: var(--accent-hover);
+  --primary-soft: var(--accent-soft);
+  --primary-glow: var(--accent-glow);
+  --primary-line: var(--accent);
+
+  --gold: var(--accent);
+  --gold-primary: var(--accent);
+  --gold-bright: var(--accent-hover);
+  --gold-light: var(--accent-hover);
+  --gold-soft: var(--accent-soft);
+  --gold-line: var(--accent-line);
+  --gold-glow: var(--accent-glow);
+
+  --blue-primary: var(--accent);
+  --blue-accent: var(--accent-hover);
+  --blue-light: var(--accent-hover);
+  --blue-soft: var(--accent-soft);
+  --blue-line: var(--accent-line);
+  --blue-glow: var(--accent-glow);
+
+  /* Cores Semânticas */
+  --ok: #10B981;
+  --ok-soft: rgba(16, 185, 129, 0.12);
+  --warn: #FBBF24;
+  --warn-soft: rgba(251, 191, 36, 0.12);
+  --danger: #FB7185;
+  --danger-soft: rgba(251, 113, 133, 0.12);
+  --info: #94A3B8;
+  --info-soft: rgba(148, 163, 184, 0.14);
+
+  /* Escala Espacial & Raios */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius: 12px;
+  --shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.65);
+  --sidebar-w: 244px;
+  --slot-h: 44px;
+
+  /* Tipografia */
+  --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Foco & Curva de Movimento */
+  --ring: 0 0 0 2px rgba(59, 130, 246, 0.42);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F4F6FB;
+  --bg-secondary: #EDF1F8;
+  --bg-soft: #EDF1F8;
+  --surface: #FFFFFF;
+  --surface-2: #F8FAFC;
+  --surface-3: #EFF4FF;
+  --border: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-subtle: rgba(15, 23, 42, 0.06);
+  --text: #0F172A;
+  --text-dim: #334155;
+  --text-faint: #64748B;
+  --ok: #059669;
+  --ok-soft: rgba(5, 150, 105, 0.10);
+  --warn: #D97706;
+  --warn-soft: rgba(217, 119, 6, 0.10);
+  --danger: #DC2626;
+  --danger-soft: rgba(220, 38, 38, 0.10);
+  --shadow: 0 10px 28px -12px rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] body {
+  background: #F4F6FB;
+}
+
+:root[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+}
+
+:root[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.86);
+}
+
+:root[data-theme="light"] .ct-bar-track {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .ct-pill {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.10);
+  border-color: rgba(5, 150, 105, 0.22);
+}
+
+:root[data-theme="light"] .ct-pill.is-blue {
+  color: #1D4ED8;
+  background: rgba(37, 99, 235, 0.10);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+:root[data-theme="light"] .ct-pill.is-warn {
+  color: #B45309;
+  background: rgba(217, 119, 6, 0.10);
+  border-color: rgba(217, 119, 6, 0.24);
+}
+
+:root[data-theme="light"] .ct-seg-btn.active,
+:root[data-theme="light"] .ct-filter-pill.active {
+  color: #1D4ED8;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+p { margin: 0; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button, .btn, .icon-btn, .nav-item, .choice, .slot, .day-chip, .sidebar-toggle, a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
+
+.muted { color: var(--text-dim); }
+.faint { color: var(--text-faint); }
+.gold, .brand-blue { color: var(--gold-light); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.hidden { display: none !important; }
+
+/* Foco Acessivel Minimalista */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.nav-item:focus-visible,
+.slot:focus-visible,
+.choice:focus-visible,
+.day-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}

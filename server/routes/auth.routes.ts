@@ -1,17 +1,17 @@
 import { randomBytes } from 'node:crypto';
 import type { ServerResponse } from 'node:http';
 import {
+  type AuthSessionPayload,
   endSession,
-  getSessionPayload,
   hashPassword,
-  isAuthenticated,
   isUsingDefaultPassword,
   passwordIssue,
-  revokeAllSessions,
+  revokeUserSessions,
   startSession,
+  validateActiveSession,
   verifyPassword,
 } from '../auth.js';
-import { get, getSetting, run } from '../db.js';
+import { get, getSetting, getSettingsMap, run, setSetting } from '../db.js';
 import { isDemoMode } from '../demo.js';
 import { HttpError, clearCookie, parseCookies, setCookie } from '../http.js';
 import {
@@ -24,12 +24,34 @@ import {
   verifyOAuthState,
 } from '../oauth.js';
 import { getShopPlan, listPlans, setShopPlan } from '../plans.js';
-import { clientIp, isSecureRequest, loginLimiter } from '../security.js';
+import {
+  checkAccountLockout,
+  clientIp,
+  decryptSensitiveField,
+  encryptSensitiveField,
+  isSecureRequest,
+  loginLimiter,
+  logSecurityEvent,
+  recordAccountLoginFailure,
+  resetAccountLockout,
+} from '../security.js';
+import { buildOtpAuthUri, generateTotpSecret, verifyTotpCode } from '../totp.js';
 import type { AppRequest, RouteContext, RouteDefinition } from '../types.js';
 import { optionalEmail, requiredString } from '../validate.js';
 
-function statusPayload(req: AppRequest, authenticated: boolean): Record<string, unknown> {
-  const session = authenticated ? getSessionPayload(req) : null;
+async function isTotpEnabledForSubject(sub?: string | null): Promise<boolean> {
+  const normalized = String(sub || 'admin').trim();
+  if (!normalized || normalized === 'admin') {
+    return getSetting('admin_totp_enabled', '0') === '1';
+  }
+  const user = await get('SELECT totp_enabled FROM users WHERE email = ?', [normalized]);
+  return Number(user?.totp_enabled) === 1;
+}
+
+async function buildStatusPayload(
+  session: AuthSessionPayload | null
+): Promise<Record<string, unknown>> {
+  const authenticated = Boolean(session);
   const payload: Record<string, unknown> = {
     authenticated,
     shop_name: getSetting('shop_name', 'Gestor de Barbearia'),
@@ -39,13 +61,17 @@ function statusPayload(req: AppRequest, authenticated: boolean): Record<string, 
       google: isGoogleOAuthEnabled(),
     },
   };
-  if (authenticated) {
+  if (authenticated && session) {
+    const totpEnabled = await isTotpEnabledForSubject(session.sub);
     payload.password_is_default = isUsingDefaultPassword();
-    payload.is_master = session?.role === 'master';
+    payload.is_master = session.role === 'master';
+    payload.totp_enabled = totpEnabled;
+    payload.totp_required = session.role === 'master';
+    payload.mfa_verified = Boolean(session.mfa);
     payload.user = {
-      email: session?.sub || 'admin',
-      role: session?.role || 'owner',
-      shop_id: Number(session?.shop_id ?? session?.shopId) || 1,
+      email: session.sub || 'admin',
+      role: session.role || 'owner',
+      shop_id: Number(session.shop_id ?? session.shopId) || 1,
     };
   }
   return payload;
@@ -72,43 +98,95 @@ export const authRoutes: RouteDefinition[] = [
     auth: false,
     handler: async ({ req, res, body }: RouteContext) => {
       const ip = clientIp(req);
-      const key = `login:${ip}`;
-      const limit = loginLimiter.check(key);
+      const ipKey = `login:${ip}`;
+      const limit = loginLimiter.check(ipKey);
 
       if (!limit.allowed) {
         res.setHeader('Retry-After', String(limit.retryAfterSeconds));
+        logSecurityEvent('LOGIN_IP_RATE_LIMIT', {}, req);
         throw new HttpError(429, limit.message ?? 'Muitas tentativas de login.');
       }
 
       const password = requiredString(body.password, 'senha', { max: 128 });
       const email = optionalEmail(body.email);
+      const accountKey = email ? email.toLowerCase() : '__local_admin__';
+
+      const accountCheck = checkAccountLockout(accountKey);
+      if (!accountCheck.allowed) {
+        res.setHeader('Retry-After', String(accountCheck.retryAfterSeconds));
+        logSecurityEvent('LOGIN_ACCOUNT_LOCKED', { account: accountKey }, req);
+        throw new HttpError(429, accountCheck.message ?? 'Conta temporariamente bloqueada.');
+      }
 
       if (email) {
-        const emailKey = `login-email:${email.toLowerCase()}`;
-        const emailLimit = loginLimiter.check(emailKey);
-        if (!emailLimit.allowed) {
-          res.setHeader('Retry-After', String(emailLimit.retryAfterSeconds));
-          throw new HttpError(429, emailLimit.message ?? 'Muitas tentativas de login.');
-        }
         const user = await get('SELECT * FROM users WHERE email = ? AND active = 1', [email]);
         if (!user || !verifyPassword(password, user.password_hash)) {
+          const afterFail = recordAccountLoginFailure(accountKey);
+          logSecurityEvent('LOGIN_FAILED', { email, failures: afterFail.failures }, req);
+          if (!afterFail.allowed) {
+            res.setHeader('Retry-After', String(afterFail.retryAfterSeconds));
+            throw new HttpError(429, afterFail.message ?? 'Conta temporariamente bloqueada.');
+          }
           throw new HttpError(401, 'E-mail ou senha incorretos.');
         }
-        loginLimiter.reset(key);
-        loginLimiter.reset(emailKey);
+
+        let mfa = false;
+        if (Number(user.totp_enabled) === 1 && user.totp_secret) {
+          const totpCode = body.totp_code ?? body.code;
+          if (!totpCode) {
+            return {
+              status: 401,
+              body: {
+                error: 'Informe o codigo de autenticacao em duas etapas (2FA).',
+                requires_2fa: true,
+              },
+            };
+          }
+          const secret = decryptSensitiveField(String(user.totp_secret));
+          if (!verifyTotpCode(secret, totpCode)) {
+            const afterFail = recordAccountLoginFailure(accountKey);
+            logSecurityEvent('LOGIN_2FA_FAILED', { email, failures: afterFail.failures }, req);
+            if (!afterFail.allowed) {
+              res.setHeader('Retry-After', String(afterFail.retryAfterSeconds));
+              throw new HttpError(429, afterFail.message ?? 'Conta temporariamente bloqueada.');
+            }
+            throw new HttpError(401, 'Codigo 2FA invalido ou expirado.');
+          }
+          mfa = true;
+        }
+
+        loginLimiter.reset(ipKey);
+        resetAccountLockout(accountKey);
+
         const userEmail = String(user.email || email);
         const userShopId = Number(user.shop_id) || 1;
         const userRole = String(user.role || 'owner');
+        const userVer = Number(user.session_version ?? 1) || 1;
+
         startSession(res, {
           secure: isSecureRequest(req),
           sub: userEmail,
           shopId: userShopId,
           role: userRole,
+          ver: userVer,
+          mfa,
         });
+        logSecurityEvent('LOGIN_SUCCESS', { email: userEmail, mfa }, req);
+
+        const issuedSession: AuthSessionPayload = {
+          sub: userEmail,
+          shop_id: userShopId,
+          shopId: userShopId,
+          role: userRole,
+          ver: userVer,
+          mfa,
+          iat: Date.now(),
+          exp: Date.now() + 86_400_000,
+        };
         return {
           status: 200,
           body: {
-            ...statusPayload(req, true),
+            ...(await buildStatusPayload(issuedSession)),
             shop_id: userShopId,
             role: userRole,
             user: userEmail,
@@ -117,14 +195,60 @@ export const authRoutes: RouteDefinition[] = [
       }
 
       const stored = getSetting('admin_password_hash');
-
       if (!verifyPassword(password, stored)) {
+        const afterFail = recordAccountLoginFailure(accountKey);
+        logSecurityEvent('LOGIN_FAILED', { account: 'admin', failures: afterFail.failures }, req);
+        if (!afterFail.allowed) {
+          res.setHeader('Retry-After', String(afterFail.retryAfterSeconds));
+          throw new HttpError(429, afterFail.message ?? 'Conta temporariamente bloqueada.');
+        }
         throw new HttpError(401, 'Senha incorreta.');
       }
 
-      loginLimiter.reset(key);
-      startSession(res, { secure: isSecureRequest(req) });
-      return { status: 200, body: statusPayload(req, true) };
+      let mfa = false;
+      const adminTotpEnabled = getSetting('admin_totp_enabled', '0') === '1';
+      const adminTotpSecretEnc = getSetting('admin_totp_secret', '');
+      if (adminTotpEnabled && adminTotpSecretEnc) {
+        const totpCode = body.totp_code ?? body.code;
+        if (!totpCode) {
+          return {
+            status: 401,
+            body: {
+              error: 'Informe o codigo de autenticacao em duas etapas (2FA).',
+              requires_2fa: true,
+            },
+          };
+        }
+        const secret = decryptSensitiveField(adminTotpSecretEnc);
+        if (!verifyTotpCode(secret, totpCode)) {
+          const afterFail = recordAccountLoginFailure(accountKey);
+          logSecurityEvent('LOGIN_2FA_FAILED', { account: 'admin', failures: afterFail.failures }, req);
+          if (!afterFail.allowed) {
+            res.setHeader('Retry-After', String(afterFail.retryAfterSeconds));
+            throw new HttpError(429, afterFail.message ?? 'Conta temporariamente bloqueada.');
+          }
+          throw new HttpError(401, 'Codigo 2FA invalido ou expirado.');
+        }
+        mfa = true;
+      }
+
+      loginLimiter.reset(ipKey);
+      resetAccountLockout(accountKey);
+      const adminVer = Number(getSetting('session_version', '1')) || 1;
+      startSession(res, { secure: isSecureRequest(req), ver: adminVer, mfa });
+      logSecurityEvent('LOGIN_SUCCESS', { account: 'admin', mfa }, req);
+
+      const issuedAdminSession: AuthSessionPayload = {
+        sub: 'admin',
+        shop_id: 1,
+        shopId: 1,
+        role: 'owner',
+        ver: adminVer,
+        mfa,
+        iat: Date.now(),
+        exp: Date.now() + 86_400_000,
+      };
+      return { status: 200, body: await buildStatusPayload(issuedAdminSession) };
     },
   },
   {
@@ -165,7 +289,7 @@ export const authRoutes: RouteDefinition[] = [
       );
       const shopId = Number(shopInfo.lastInsertRowid);
       await run(
-        'INSERT INTO users (shop_id, email, name, password_hash, role, active) VALUES (?, ?, ?, ?, ?, 1)',
+        'INSERT INTO users (shop_id, email, name, password_hash, role, active, session_version) VALUES (?, ?, ?, ?, ?, 1, 1)',
         [shopId, email, ownerName, hashPassword(password), 'owner']
       );
       await setShopPlan(shopId, 'free', { provider: 'onboarding' });
@@ -175,6 +299,7 @@ export const authRoutes: RouteDefinition[] = [
         sub: email,
         shopId,
         role: 'owner',
+        ver: 1,
       });
 
       return {
@@ -192,21 +317,190 @@ export const authRoutes: RouteDefinition[] = [
     path: '/api/auth/logout',
     auth: false,
     handler: async ({ req, res }: RouteContext) => {
-      if (isAuthenticated(req)) {
-        await revokeAllSessions();
+      const active = await validateActiveSession(req);
+      if (active) {
+        await revokeUserSessions(active.sub);
+        logSecurityEvent('LOGOUT', { sub: active.sub }, req);
       }
       endSession(res, { secure: isSecureRequest(req) });
       return { status: 200, body: { authenticated: false } };
     },
   },
   {
+    method: 'POST',
+    path: '/api/auth/logout-all',
+    handler: async ({ req, res, session }: RouteContext) => {
+      const sub = session?.sub || 'admin';
+      const nextVer = await revokeUserSessions(sub);
+      logSecurityEvent('LOGOUT_ALL_DEVICES', { sub, session_version: nextVer }, req);
+      endSession(res, { secure: isSecureRequest(req) });
+      return { status: 200, body: { revoked: true, authenticated: false, session_version: nextVer } };
+    },
+  },
+  {
     method: 'GET',
     path: '/api/auth/me',
     auth: false,
-    handler: ({ req }: RouteContext) => ({
-      status: 200,
-      body: statusPayload(req, isAuthenticated(req)),
-    }),
+    handler: async ({ req, res }: RouteContext) => {
+      const session = await validateActiveSession(req, res);
+      return {
+        status: 200,
+        body: await buildStatusPayload(session),
+      };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/auth/2fa/status',
+    handler: async ({ session }: RouteContext) => {
+      const sub = session?.sub || 'admin';
+      const enabled = await isTotpEnabledForSubject(sub);
+      return {
+        status: 200,
+        body: {
+          enabled,
+          required: session?.role === 'master',
+          mfa_verified: Boolean(session?.mfa),
+        },
+      };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/auth/2fa/setup',
+    handler: async ({ req, session }: RouteContext) => {
+      const sub = String(session?.sub || 'admin');
+      const secret = generateTotpSecret();
+      const encrypted = encryptSensitiveField(secret);
+
+      if (sub === 'admin') {
+        await setSetting('admin_totp_pending_secret', encrypted);
+      } else {
+        await run('UPDATE users SET totp_pending_secret = ? WHERE email = ?', [encrypted, sub]);
+      }
+
+      const otpauthUrl = buildOtpAuthUri({
+        secret,
+        accountName: sub,
+        issuer: getSetting('shop_name', 'Gestor de Barbearia'),
+      });
+      logSecurityEvent('TOTP_2FA_SETUP_STARTED', { sub }, req);
+      return {
+        status: 200,
+        body: {
+          secret,
+          otpauth_url: otpauthUrl,
+        },
+      };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/auth/2fa/enable',
+    handler: async ({ req, res, body, session }: RouteContext) => {
+      const sub = String(session?.sub || 'admin');
+      const code = requiredString(body.code, 'codigo 2FA', { max: 12 });
+
+      let pendingEnc: string;
+      if (sub === 'admin') {
+        pendingEnc = getSetting('admin_totp_pending_secret', '');
+      } else {
+        const row = await get('SELECT totp_pending_secret FROM users WHERE email = ?', [sub]);
+        pendingEnc = row?.totp_pending_secret ? String(row.totp_pending_secret) : '';
+      }
+
+      if (!pendingEnc) {
+        throw new HttpError(400, 'Inicie a configuracao do 2FA antes de ativar.');
+      }
+
+      const secret = decryptSensitiveField(pendingEnc);
+      if (!verifyTotpCode(secret, code)) {
+        logSecurityEvent('TOTP_2FA_ENABLE_FAILED', { sub }, req);
+        throw new HttpError(400, 'Codigo 2FA invalido. Confira o horario do aplicativo autenticador.');
+      }
+
+      const encryptedSecret = encryptSensitiveField(secret);
+      if (sub === 'admin') {
+        await setSetting('admin_totp_secret', encryptedSecret);
+        await setSetting('admin_totp_enabled', '1');
+        await setSetting('admin_totp_pending_secret', '');
+      } else {
+        await run(
+          'UPDATE users SET totp_secret = ?, totp_enabled = 1, totp_pending_secret = NULL WHERE email = ?',
+          [encryptedSecret, sub]
+        );
+      }
+
+      if (res && session) {
+        startSession(res, {
+          secure: isSecureRequest(req),
+          sub: session.sub,
+          shopId: Number(session.shop_id) || 1,
+          role: session.role,
+          ver: session.ver,
+          mfa: true,
+        });
+      }
+
+      logSecurityEvent('TOTP_2FA_ENABLED', { sub }, req);
+      return { status: 200, body: { enabled: true, mfa_verified: true } };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/auth/2fa/disable',
+    handler: async ({ req, res, body, session }: RouteContext) => {
+      if (session?.role === 'master') {
+        throw new HttpError(
+          403,
+          'Contas Master nao podem desativar a autenticacao em duas etapas (2FA obrigatorio).'
+        );
+      }
+      const sub = String(session?.sub || 'admin');
+      const password = requiredString(body.password ?? body.current_password, 'senha atual', { max: 128 });
+      const code = requiredString(body.code, 'codigo 2FA', { max: 12 });
+
+      if (sub === 'admin') {
+        const storedHash = getSettingsMap().admin_password_hash;
+        if (!verifyPassword(password, storedHash)) {
+          throw new HttpError(400, 'Senha atual incorreta.');
+        }
+        const secretEnc = getSetting('admin_totp_secret', '');
+        if (!secretEnc || !verifyTotpCode(decryptSensitiveField(secretEnc), code)) {
+          throw new HttpError(400, 'Codigo 2FA invalido.');
+        }
+        await setSetting('admin_totp_secret', '');
+        await setSetting('admin_totp_enabled', '0');
+        await setSetting('admin_totp_pending_secret', '');
+      } else {
+        const user = await get('SELECT password_hash, totp_secret FROM users WHERE email = ?', [sub]);
+        if (!user || !verifyPassword(password, user.password_hash)) {
+          throw new HttpError(400, 'Senha atual incorreta.');
+        }
+        const secretEnc = user.totp_secret ? String(user.totp_secret) : '';
+        if (!secretEnc || !verifyTotpCode(decryptSensitiveField(secretEnc), code)) {
+          throw new HttpError(400, 'Codigo 2FA invalido.');
+        }
+        await run(
+          'UPDATE users SET totp_secret = NULL, totp_enabled = 0, totp_pending_secret = NULL WHERE email = ?',
+          [sub]
+        );
+      }
+
+      if (res && session) {
+        startSession(res, {
+          secure: isSecureRequest(req),
+          sub: session.sub,
+          shopId: Number(session.shop_id) || 1,
+          role: session.role,
+          ver: session.ver,
+          mfa: false,
+        });
+      }
+
+      logSecurityEvent('TOTP_2FA_DISABLED', { sub }, req);
+      return { status: 200, body: { enabled: false, mfa_verified: false } };
+    },
   },
   {
     method: 'GET',
@@ -274,11 +568,15 @@ export const authRoutes: RouteDefinition[] = [
           );
         }
 
+        const userRow = await get('SELECT session_version FROM users WHERE email = ?', [
+          authResult.user.email,
+        ]);
         startSession(res, {
           secure,
           sub: authResult.user.email,
           shopId: authResult.user.shop_id,
           role: authResult.user.role,
+          ver: Number(userRow?.session_version ?? 1) || 1,
         });
         res.writeHead(302, { Location: '/#dashboard' });
         res.end();
