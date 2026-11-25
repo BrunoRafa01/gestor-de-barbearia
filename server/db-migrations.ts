@@ -104,7 +104,6 @@ CREATE TABLE IF NOT EXISTS clients (
 );
 
 CREATE INDEX IF NOT EXISTS idx_clients_shop_phone ON clients(shop_id, phone);
-CREATE INDEX IF NOT EXISTS idx_clients_shop_phone_hash ON clients(shop_id, phone_hash);
 
 CREATE TABLE IF NOT EXISTS appointments (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
